@@ -1,0 +1,72 @@
+// === MISSION OVERVIEW
+
+overviewText 	= "Trouble in Terrorist Town";	// mission summary
+overviewPicture = "data\loading.jpg";
+
+// === LOAD SCREEN
+
+loadScreen = "data\loading.jpg";
+author = "Waldo"; // Author
+onLoadName = "Trouble in Terrorist Town"; // Mission name
+onLoadMission = "Version 1.2.6"; // Description
+
+class Header
+{
+ 	gameType = Coop;
+	minPlayers = 1;
+	maxPlayers = 16;
+};
+
+// HUD Setup
+
+#include "data\TTTHud\common.hpp"
+#include "data\TTTHud\TTTHud.hpp"
+
+enableDebugConsole = 1;
+disabledAI = 1;
+Saving = 0;
+
+respawn = 3;
+respawnDelay = 2400;
+respawnTemplates[] = {"Spectator"}; 
+
+class CfgDebriefing
+{  
+	class End1
+	{
+		title = "Innocents Win";
+		subtitle = "All Traitors Eliminated";
+		description = "";
+		pictureBackground = "";
+		picture = "KIA";
+		pictureColor[] = {0.0,0.3,0.6,1};
+	};
+	class End2
+	{
+		title = "Traitors Win";
+		subtitle = "All Innocents Eliminated";
+		description = "";
+		pictureBackground = "";
+		picture = "KIA";
+		pictureColor[] = {0.6,0.1,0.1,1};
+	};
+	class End3
+	{
+		title = "Innocents Win";
+		subtitle = "One Or More Innocents Survived";
+		description = "";
+		pictureBackground = "";
+		picture = "KIA";
+		pictureColor[] = {0.0,0.3,0.6,1};
+	};
+};
+
+class CfgSounds 
+{
+	sound[] = {};
+	class suicide {
+		name = "Suicide";
+		sound[] = {"data\suicide.ogg", 2, 1};
+		titles[] = {};
+	};
+};

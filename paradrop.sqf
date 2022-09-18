@@ -5,7 +5,7 @@ _loadoutsLimit = airdropLoadoutsAmount;
 _center = missionNamespace getVariable "mapPos";
 _distance = (missionNamespace getVariable "mapRadius") * 0.9;
 _parachute = createVehicle ["B_Parachute_02_F", [(_center select 0) - (_distance / 2) +random(_distance),(_center select 1) - (_distance / 2) +random(_distance),250], [], 0, 'FLY'];
-_crate = createVehicle ["B_CargoNet_01_ammo_F", position _parachute, [], 0, 'NONE'];
+_crate = createVehicle ["B_supplyCrate_F", position _parachute, [], 0, 'NONE'];
 clearItemCargoGlobal _crate;
 clearMagazineCargoGlobal _crate;
 clearWeaponCargoGlobal _crate;

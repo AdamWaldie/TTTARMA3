@@ -12,7 +12,7 @@ class EditorData
 	};
 	class ItemIDProvider
 	{
-		nextID=358;
+		nextID=361;
 	};
 	class LayerIndexProvider
 	{
@@ -20,10 +20,10 @@ class EditorData
 	};
 	class Camera
 	{
-		pos[]={-114.70805,109.19025,211.7182};
-		dir[]={-0.018666973,-0.50325304,-0.86393744};
-		up[]={-0.010871178,0.86413914,-0.50313556};
-		aside[]={-0.99976671,0,0.021601817};
+		pos[]={-14.786955,35.763687,31.156052};
+		dir[]={0.40929246,-0.4262296,-0.80672985};
+		up[]={0.19284795,0.9046132,-0.38010982};
+		aside[]={-0.89179212,1.2811506e-007,-0.45244998};
 	};
 };
 binarizationWanted=0;
@@ -183,9 +183,9 @@ class Mission
 		forecastLightnings=0.1;
 		wavesForced=1;
 		windForced=1;
-		year=2008;
-		month=6;
-		day=24;
+		year=2022;
+		month=9;
+		day=18;
 		hour=12;
 		minute=0;
 		startFogDecay=0.014;
@@ -363,7 +363,7 @@ class Mission
 					};
 					id=39;
 					type="I_Survivor_F";
-					atlOffset=0.16828632;
+					atlOffset=0.16828585;
 					class CustomAttributes
 					{
 						class Attribute0
@@ -400,7 +400,7 @@ class Mission
 			{
 			};
 			id=38;
-			atlOffset=0.16828632;
+			atlOffset=0.16828585;
 		};
 		class Item3
 		{

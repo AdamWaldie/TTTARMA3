@@ -43,7 +43,7 @@ if (isServer) then {
 	//Set scalable Arena based on players present
 	missionNamespace setVariable ["mapRadius",50 + ((count allUnits) * 7.5),true];
 	//Random Enviroment Setup
-	setDate [2018, 9, 24, random(timeTo-timeFrom-1)+timeFrom, random(60)];
+	setDate [2022, 9, 18, random(timeTo-timeFrom-1)+timeFrom, random(60)];
 	setWind [0, 0, true];
 	0 setOvercast random(1);
 	if(floor (random(100)) < chanceRain && allowRain) then {
@@ -110,7 +110,7 @@ if (isServer) then {
 	//GUI for setup
 	for "_i" from 0 to roundWarmupLength-1 do {
 		{
-			_text = "<t align='center' size='1.5'><t color='#ffbb00' shadow='1'>Picking:</t><br />"+str(-(_i-roundWarmupLength))+"</t>";
+			_text = "<t align='center' size='1.5'><t color='#ffbb00' shadow='1'>Selecting Roles:</t><br />"+str(-(_i-roundWarmupLength))+"</t>";
 			(parseText _text) remoteExec ["hint", _x];
 		} forEach allUnits;
 		missionNamespace setVariable ["mapDone",true,true];
@@ -241,12 +241,14 @@ if (isServer) then {
 			if(_role == "Detective") then {
 				_color = "#326ba8";
 			};
-			_text = "<t align='center' size='1.5'><t color='"+_color+"' shadow='1'>Role:</t><br />"+_role+"</t><br /><br /><t align='center' size='1.5'><t color='#ffbb00' shadow='1'>Timer:</t><br />"+_civiltimer+"</t>";
+			//_text = "<t align='center' size='1.5'><t color='"+_color+"' shadow='1'>Role:</t><br />"+_role+"</t><br /><br /><t align='center' size='1.5'><t color='#ffbb00' shadow='1'>Timer:</t><br />"+_civiltimer+"</t>";
+			_text = "<t align='center' size='1.5'><t color='#ffbb00' shadow='1'>Round Timer:</t><br />"+_civiltimer+"</t>";
 			if(_role == "Detective") then {
 				_text = _text + "<br /><br /><t align='center' size='0.8'><t shadow='1'>Press 'B' to open BuyMenu</t>";
 			};
 			if((_traitors find _x) != -1) then {
-				_text = "<t align='center' size='1.5'><t color='"+_color+"' shadow='1'>Role:</t><br />"+_role+"</t><br /><br /><t align='center' size='1.5'><t color='#ffbb00' shadow='1'>Timer:</t><br />"+_traitortimer+" ("+_civiltimer+")</t><br /><br /><t align='center' size='0.8'><t shadow='1'>Press 'B' to open BuyMenu</t>";
+				//_text = "<t align='center' size='1.5'><t color='"+_color+"' shadow='1'>Role:</t><br />"+_role+"</t><br /><br /><t align='center' size='1.5'><t color='#ffbb00' shadow='1'>Timer:</t><br />"+_traitortimer+" ("+_civiltimer+")</t><br /><br /><t align='center' size='0.8'><t shadow='1'>Press 'B' to open BuyMenu</t>";
+				_text = "<t align='center' size='1.5'><t color='#ffbb00' shadow='1'>Round Timer:</t><br />"+_traitortimer+" ("+_civiltimer+")</t><br /><br /><t align='center' size='0.8'><t shadow='1'>Press 'B' to open BuyMenu</t>";
 			};
 			(parseText _text) remoteExec ["hintsilent", _x];
 		} forEach allPlayers;

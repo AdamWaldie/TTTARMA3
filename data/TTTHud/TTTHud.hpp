@@ -40,7 +40,7 @@ class RscTitles
 				idc = 1001;
 				text = ""; 
 				x = (safezoneW + safezoneX) - (0.160 * safezoneH);
-				y = (safezoneH + safezoneY) - (0.20 * safezoneH) + (0.00870 * safezoneW);
+				y = (safezoneH + safezoneY) - (0.20 * safezoneH) + (0.01000 * safezoneW);
 				w = 0.15 * safezoneH;
 				h = 0.15 * safezoneW;
 				size = 0.12 * safezoneW;

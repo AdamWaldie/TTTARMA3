@@ -1,14 +1,14 @@
 // === MISSION OVERVIEW
 
-overviewText 	= "Trouble in Terrorist Town";	// mission summary
+overviewText 	= "Trouble in ArmaVille";	// mission summary
 overviewPicture = "data\loading.jpg";
 
 // === LOAD SCREEN
 
 loadScreen = "data\loading.jpg";
 author = "Waldo"; // Author
-onLoadName = "Trouble in Terrorist Town"; // Mission name
-onLoadMission = "Version 1.2.6"; // Description
+onLoadName = "Trouble in ArmaVille"; // Mission name
+onLoadMission = "Version 2.1.0"; // Description
 
 class Header
 {

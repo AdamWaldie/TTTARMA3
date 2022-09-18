@@ -35,6 +35,9 @@ while {!(missionNamespace getVariable "mapDone")} do {
 
 //ARENA READY 
 
+//Obscure PEOPLE's Nametags
+ACE_NO_RECOGNIZE = true; publicVariable "ACE_NO_RECOGNIZE";
+
 // 3D Marker Draw
 player execVM "icons.sqf";
 
@@ -49,6 +52,28 @@ player setPos _pos;
 player setDir _dir;
 player allowDamage false;
 removeBackpack player;
+
+
+//TTT Title Screen
+_missionTitle = getText (missionConfigFile >> "onLoadName");
+_localeName = worldName;
+_timeConfig = [dayTime, "ARRAY"] call BIS_fnc_timeToString; 
+_time = (_timeConfig select 0) + (_timeConfig select 1) + ' hrs';
+_date =  str (date select 2) + '/' + str (date select 1) + '/' + str (date select 0);
+_missionTime = str (time/60);
+_localePos = 'Grid ' + mapGridPosition player + ', ' + _localeName; 
+_textColour = "'#770000'";
+_text1 = str composeText ["<t align = 'center' shadow = '1' size = '1.0' font='PuristaBold' color=", _textColour, ">%1</t><br/>"];  
+_text2 = "<t align = 'center' shadow = '1' size = '0.8' color='#808080'>%1</t><br/>";  
+  
+[  
+    [  
+        [_missionTitle, _text1],  
+        [_localePos, _text2],
+		[_date, "<t align = 'center' shadow = '1' size = '0.7' font='PuristaBold'>%1</t><br/>", 5],
+		[_time, "<t align = 'center' shadow = '1' size = '0.6'>%1</t><br/>"]
+    ]  
+] spawn BIS_fnc_typeText;
 
 //Sleep until game START
 while {!(missionNamespace getVariable "gameOn")} do {

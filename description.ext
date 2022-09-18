@@ -59,6 +59,15 @@ class CfgDebriefing
 		picture = "KIA";
 		pictureColor[] = {0.0,0.3,0.6,1};
 	};
+	class End4
+	{
+		title = "Jesters Win";
+		subtitle = "A Jester Was killed";
+		description = "";
+		pictureBackground = "";
+		picture = "KIA";
+		pictureColor[] = {0.4,0,0.5,1};
+	};
 };
 
 class CfgSounds 

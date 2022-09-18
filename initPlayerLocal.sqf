@@ -94,6 +94,10 @@ player addMPEventHandler ["MPKilled", {
 	_guilty = true;
 	if ((_unit getVariable "role") == "Traitor") then {
 		_guilty = false;
+		//Credit Update For Detective
+		_DecPlayer = missionNamespace getVariable "DETECTIVE_PLAYER";
+		_DecPoints = _decPlayer getVariable "points";
+
 	};
 	if ((_instigator getVariable "role") == "Traitor") then {
 		_guilty = false;
@@ -103,4 +107,12 @@ player addMPEventHandler ["MPKilled", {
 		_string = "player_"+str(_uid)+"_punish";
 		profileNamespace setVariable [_string,true];
 	};
-}];
+	}
+];
+
+
+//ACE Uncon to Kill EV 
+["ace_unconscious", {
+params ["_unit", "_state"];
+_unit setDamage 1;
+}] call CBA_fnc_addEventHandler;

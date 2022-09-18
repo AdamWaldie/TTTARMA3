@@ -124,6 +124,8 @@ if (isServer) then {
 	
 	*/
 	
+	_detectives = [];
+	_jesters = [];
 
 	//Traitor CFG
 	_traitorsAmount = floor ((count allUnits) / 3);
@@ -191,6 +193,22 @@ if (isServer) then {
 					_detective addItemToVest _x;
 				}forEach _vestItems;
 				_searchDetective = false;
+				_detectives append [_detective];
+			};
+		};
+	};
+
+	// Jester Assignment (> 6 players required)
+	private "_Jester";
+	if((count allUnits) > 6 && JesterEnabled) then {
+		_searchJester = true;
+		while {_searchJester} do {
+			_Jester = selectRandom allPlayers;
+			if((_traitors find _Jester) == -1) then {
+				_Jester setVariable ["role","Jester",true];
+				_Jester addEventHandler["Fired", {deletevehicle (_this select 6)}];
+				_searchJester = false;
+				_jesters append [_Jester];
 			};
 		};
 	};
@@ -213,6 +231,7 @@ if (isServer) then {
 	_paradropTimer = 0;
 	_timelimit = missionNamespace getVariable "timelimit";
 	_timer = 0;
+
 
 	//Main game Loop
 	while {_gameOn} do {
@@ -261,6 +280,12 @@ if (isServer) then {
 		};
 
 		//Round Win Conditions
+		_JesterWin = false;
+		{
+			if(!alive _x) then {
+				_JesterWin = true;
+			};
+		} forEach _jesters;
 		_innoWin = true;
 		{
 			if(alive _x) then {
@@ -283,6 +308,10 @@ if (isServer) then {
 		};
 		if(_timer == _timelimit) exitWith {
 			"END3" call BIS_fnc_endMissionServer;
+			_gameOn = false;
+		};
+		if(_JesterWin) exitWith {
+			"END4" call BIS_fnc_endMissionServer;
 			_gameOn = false;
 		};
 		sleep 1;

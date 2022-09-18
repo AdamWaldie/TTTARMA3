@@ -11,6 +11,9 @@ if(_role == "Traitor") then {
 if(_role == "Detective") then {
 	_color = [0.01,0.45,1,1];
 };
+if(_role == "Jester") then {
+	_color = [0.4,0,0.5,1];
+};
 _setColor = _display displayCtrl 1000;
 _setColor ctrlSetTextColor _color;
 _setText = _display displayCtrl 1001;

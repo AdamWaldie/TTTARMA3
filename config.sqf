@@ -112,4 +112,10 @@ timeFrom = 5;
 // Latest time of day in hours
 timeTo = 18;
 
+
+// -- Game Options -- //
+
+JesterEnabled = true;
+
+
 diag_log ("Config loaded");

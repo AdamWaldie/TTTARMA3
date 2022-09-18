@@ -279,6 +279,40 @@ if (isServer) then {
 			_paradropTimer = 0; 
 		};
 
+		//Point Allocation
+		killedTraitors = 0;
+		killedInnocents = 0;
+		killedDetectives = 0;
+		//Gather Deaths
+		{
+			if(!alive _x) then {
+				killedTraitors = killedTraitors + 1
+			};
+		} forEach _traitors;
+		{
+			if(!alive _x) then {
+				killedDetectives = killedDetectives + 1
+			};
+		} forEach _detectives;
+		_innocents = allPlayers - _detectives;
+		_innocents = allPlayers - _traitors;
+		{
+			if(!alive _x) then {
+				killedInnocents = killedInnocents + 1
+			};
+		} forEach _innocents;
+
+		//Assign Points
+		{
+			_dp = _x getVariable "points";
+			_x setVariable ["points",_dp+KilledTraitors,true];
+		} forEach _detectives;
+		{
+			_tp = _x getVariable "points";
+			killedInnocents = round(killedInnocents/2);
+			_x setVariable ["points",_tp+killedDetectives+killedInnocents,true];
+		} forEach _traitors;
+
 		//Round Win Conditions
 		_JesterWin = false;
 		{

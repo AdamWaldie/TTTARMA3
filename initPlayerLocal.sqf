@@ -28,7 +28,7 @@ player allowDamage false;
 
 // Pregame UI
 while {!(missionNamespace getVariable "mapDone")} do {
-	_text = "<t align='center' size='1.0'><t color='#d11b1b' shadow='1'>Setting up the playarea!</t>";
+	_text = "<t align='center' size='1.0'><t color='#d11b1b' shadow='1'>Setting up the Arena, Hold Tight!</t>";
 	hintSilent (parseText _text);
 	sleep 0.25;
 };
@@ -60,7 +60,7 @@ while {!(missionNamespace getVariable "gameOn")} do {
 removeBackpack player;
 player allowDamage true;
 
-//player execVM "data\TTTHud\init.sqf";
+player execVM "data\TTTHud\init.sqf";
 
 //ROUND Handle EV 
 player addMPEventHandler ["MPKilled", {

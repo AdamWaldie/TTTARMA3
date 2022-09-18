@@ -1,6 +1,6 @@
 disableSerialization;
 
-0 cutRsc ["TTTHud","PLAIN"];
+titleRsc ["TTTHud","PLAIN",1,false];
 waitUntil {!isNull (uiNameSpace getVariable "TTTHud")};
 _display = uiNameSpace getVariable "TTTHud";
 _role = player getVariable "role";

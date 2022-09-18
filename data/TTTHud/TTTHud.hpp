@@ -38,7 +38,7 @@ class RscTitles
 			class roleText: RscStructuredText
 			{
 				idc = 1001;
-				text = "ROLE"; 
+				text = ""; 
 				x = (safezoneW + safezoneX) - (0.075 * safezoneH);
 				y = (safezoneH + safezoneY) - (0.85 * safezoneH) + (0.00875 * safezoneW);
 				w = 0.05 * safezoneH;

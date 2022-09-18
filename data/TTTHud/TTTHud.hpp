@@ -20,30 +20,30 @@ class RscTitles
 			{
 				idc = 999;
 				text = "data\TTTHud\rolebg.paa"; 
-				x = (safezoneW + safezoneX) - (0.075 * safezoneH);
-				y = (safezoneH + safezoneY) - (0.85 * safezoneH);
-				w = 0.05 * safezoneH;
-				h = 0.05 * safezoneW;
+				x = (safezoneW + safezoneX) - (0.160 * safezoneH);
+				y = (safezoneH + safezoneY) - (0.20 * safezoneH);
+				w = 0.15 * safezoneH;
+				h = 0.15 * safezoneW;
 				color = [1,1,1,0.5];
 			};
 			class roleTextBG: RscPicture
 			{
 				idc = 1000;
 				text = "data\TTTHud\role.paa"; 
-				x = (safezoneW + safezoneX) - (0.075 * safezoneH);
-				y = (safezoneH + safezoneY) - (0.85 * safezoneH);
-				w = 0.05 * safezoneH;
-				h = 0.05 * safezoneW;
+				x = (safezoneW + safezoneX) - (0.160 * safezoneH);
+				y = (safezoneH + safezoneY) - (0.20 * safezoneH);
+				w = 0.15 * safezoneH;
+				h = 0.15 * safezoneW;
 			};
 			class roleText: RscStructuredText
 			{
 				idc = 1001;
 				text = ""; 
-				x = (safezoneW + safezoneX) - (0.075 * safezoneH);
-				y = (safezoneH + safezoneY) - (0.85 * safezoneH) + (0.00875 * safezoneW);
-				w = 0.05 * safezoneH;
-				h = 0.05 * safezoneW;
-				size = 0.03 * safezoneW;
+				x = (safezoneW + safezoneX) - (0.160 * safezoneH);
+				y = (safezoneH + safezoneY) - (0.20 * safezoneH) + (0.00870 * safezoneW);
+				w = 0.15 * safezoneH;
+				h = 0.15 * safezoneW;
+				size = 0.12 * safezoneW;
 				type = CT_STRUCTURED_TEXT;
 				style = ST_RIGHT;
 				shadow = false;

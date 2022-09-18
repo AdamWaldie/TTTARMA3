@@ -12,7 +12,7 @@ class EditorData
 	};
 	class ItemIDProvider
 	{
-		nextID=348;
+		nextID=358;
 	};
 	class LayerIndexProvider
 	{
@@ -20,10 +20,10 @@ class EditorData
 	};
 	class Camera
 	{
-		pos[]={60.885632,243.1942,409.69855};
-		dir[]={-0.21662477,-0.56296533,-0.79758632};
-		up[]={-0.1475561,0.82648051,-0.54328376};
-		aside[]={-0.96503943,-7.4505806e-009,0.26210511};
+		pos[]={-114.70805,109.19025,211.7182};
+		dir[]={-0.018666973,-0.50325304,-0.86393744};
+		up[]={-0.010871178,0.86413914,-0.50313556};
+		aside[]={-0.99976671,0,0.021601817};
 	};
 };
 binarizationWanted=0;
@@ -363,7 +363,7 @@ class Mission
 					};
 					id=39;
 					type="I_Survivor_F";
-					atlOffset=0.16828585;
+					atlOffset=0.16828632;
 					class CustomAttributes
 					{
 						class Attribute0
@@ -400,7 +400,7 @@ class Mission
 			{
 			};
 			id=38;
-			atlOffset=0.16828585;
+			atlOffset=0.16828632;
 		};
 		class Item3
 		{

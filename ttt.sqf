@@ -127,9 +127,12 @@ if (isServer) then {
 	_detectives = [];
 	_jesters = [];
 
+	//Traitor Chance Calc For round
+	_TraitorPercentageChance = random [TraitorPercentageChanceLowerBound,((TraitorPercentageChanceLowerBound+TraitorPercentageChanceHigherBound)/2),TraitorPercentageChanceHigherBound];
+
 	//Traitor CFG
-	_traitorsAmount = floor ((count allUnits) / 3);
-	if(_traitorsAmount == 0) then {
+	_traitorsAmount = round ((count allUnits) * _TraitorPercentageChance);
+	if(_traitorsAmount <= 0) then {
 		_traitorsAmount = 1;
 	};
 	_traitors = [];
@@ -144,6 +147,8 @@ if (isServer) then {
 			};
 		};
 	};
+
+	missionNamespace setvariable ["TraitorList",_traitors,true];
 
 	//Innocents & Traitor Assignment
 	{
@@ -198,17 +203,27 @@ if (isServer) then {
 		};
 	};
 
-	// Jester Assignment (> 6 players required)
-	private "_Jester";
-	if((count allUnits) > 6 && JesterEnabled) then {
-		_searchJester = true;
-		while {_searchJester} do {
-			_Jester = selectRandom allPlayers;
-			if((_traitors find _Jester) == -1) then {
-				_Jester setVariable ["role","Jester",true];
-				_Jester addEventHandler["Fired", {deletevehicle (_this select 6)}];
-				_searchJester = false;
-				_jesters append [_Jester];
+	missionNamespace setvariable ["DetectiveList",_detectives,true];
+
+
+	// Jester Assignment > 6 players + Jester Chance + Toggled On
+	if (JesterEnabled) then {
+		_JesterChanceNumber = round(random [0,50,100]);
+		if (_JesterChanceNumber <= (100*JesterPercentagechance)) then {
+			private "_Jester";
+			if((count allUnits) > 6) then {
+				_searchJester = true;
+				while {_searchJester} do {
+					_Jester = selectRandom allPlayers;
+					if((_traitors find _Jester) == -1) then {
+						_Jester setVariable ["role","Jester",true];
+						_Jester addEventHandler["Fired", {deletevehicle (_this select 6)}];
+						_searchJester = false;
+						_jesters append [_Jester];
+					};
+				};
+				systemChat "There Is A Jester This Round";
+				missionNamespace setvariable ["JesterList",_jesters,true];
 			};
 		};
 	};
@@ -279,45 +294,13 @@ if (isServer) then {
 			_paradropTimer = 0; 
 		};
 
-		//Point Allocation
-		killedTraitors = 0;
-		killedInnocents = 0;
-		killedDetectives = 0;
-		//Gather Deaths
-		{
-			if(!alive _x) then {
-				killedTraitors = killedTraitors + 1
-			};
-		} forEach _traitors;
-		{
-			if(!alive _x) then {
-				killedDetectives = killedDetectives + 1
-			};
-		} forEach _detectives;
-		_innocents = allPlayers - _detectives;
-		_innocents = allPlayers - _traitors;
-		{
-			if(!alive _x) then {
-				killedInnocents = killedInnocents + 1
-			};
-		} forEach _innocents;
-
-		//Assign Points
-		{
-			_dp = _x getVariable "points";
-			_x setVariable ["points",_dp+KilledTraitors,true];
-		} forEach _detectives;
-		{
-			_tp = _x getVariable "points";
-			killedInnocents = round(killedInnocents/2);
-			_x setVariable ["points",_tp+killedDetectives+killedInnocents,true];
-		} forEach _traitors;
-
 		//Round Win Conditions
 		_JesterWin = false;
 		{
 			if(!alive _x) then {
-				_JesterWin = true;
+				if (!(isNil "JESTERMURDEREDBYTRAITOR")) then {
+					_JesterWin = true;
+				};
 			};
 		} forEach _jesters;
 		_innoWin = true;

@@ -32,16 +32,26 @@ switch (_this) do {
 				player enableStamina false;
 				closeDialog 1;
 			}];
+			(_display displayCtrl 906) ctrlAddEventHandler [ "ButtonClick", {
+				player setVariable ["powerup","defib",true];
+				player setVariable ["points",(player getVariable "points") - 1,true];
+				player enableStamina false;
+				closeDialog 1;
+			}];
 		} else {
 			(_display displayCtrl 902) ctrlEnable false;
 			(_display displayCtrl 903) ctrlEnable false;
 			(_display displayCtrl 904) ctrlEnable false;
 			(_display displayCtrl 905) ctrlEnable false;
+			(_display displayCtrl 906) ctrlEnable false;
 		};
 	};
 	case 21: {
 		if(_player getVariable "powerup" == "suicide") then {
 			player execVM "data\TraitorItems\suicide.sqf";
+		};
+		if(_player getVariable "powerup" == "defib") then {
+			player execVM "data\TraitorItems\revive.sqf";
 		};
 	};
 };

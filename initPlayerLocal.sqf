@@ -94,6 +94,19 @@ player addMPEventHandler ["MPKilled", {
 	_guilty = true;
 	if ((_unit getVariable "role") == "Traitor") then {
 		_guilty = false;
+		_detectives = missionNamespace getVariable "DetectiveList";
+		{
+			_x setVariable ["points",(_x getVariable "points") + 1,true];
+		} forEach _detectives;
+	};
+	if ((_unit getVariable "role") == "Detective") then {
+		_traitors = missionNamespace getVariable "TraitorList";
+		{
+			_x setVariable ["points",(_x getVariable "points") + 1,true];
+		} forEach _traitors;
+	};
+	if ((_unit getVariable "role") == "Jester" && (_killer getVariable "role") == "Traitor") then {
+		missionNamespace setVariable ["JESTERMURDEREDBYTRAITOR",true,true];
 
 	};
 	if ((_instigator getVariable "role") == "Traitor") then {

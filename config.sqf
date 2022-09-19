@@ -66,23 +66,23 @@ headgears = ["H_Shemag_olive","H_ShemagOpen_tan","H_Cap_oli","H_Booniehat_khk","
 missionNamespace setVariable ["headgearsConfig",headgears,true];
 
 // Player vests
-vests = ["V_TacVest_blk","V_TacVest_brn","V_TacVest_camo","V_TacVest_khk","V_TacVest_oli"];
+vests = ["V_Rangemaster_belt"];
 
 missionNamespace setVariable ["vestsConfig",vests,true];
 
 // Detective loadout ("" means nothing) 
 // ["Uniform","Vest","Headgear",["primaryWeapon","MagazineClassname","Amount"],["sideArm","MagazineClassname","Amount"]]
-detectiveLoadout = ["U_B_GEN_Soldier_F","V_TacVest_blk_POLICE","H_Beret_02",["","",0],["","",0]];
+detectiveLoadout = ["U_B_GEN_Soldier_F","V_TacVest_blk_POLICE","H_Beret_02",["arifle_MXM_Black_F","30Rnd_65x39_caseless_black_mag",3],["","",0]];
 
 missionNamespace setVariable ["detectiveConfig",detectiveLoadout,true];
 
 // -- Loot options -- //
 
 // Spawnable primary weapons
-lootPriWeapons = ["SMG_01_F","SMG_02_F","hgun_PDW2000_F","SMG_03C_TR_black","arifle_Mk20C_plain_F","arifle_SDAR_F","arifle_TRG20_F","SMG_03C_TR_Black","SMG_03C_Black"];
+lootPriWeapons = ["SMG_01_F","SMG_02_F","hgun_PDW2000_F","SMG_03_TR_camo","SMG_03_black","arifle_Mk20C_plain_F","arifle_SDAR_F","arifle_TRG20_F","SMG_03C_TR_Black","SMG_03C_Black","arifle_SDAR_F","SMG_05_F","sgun_HunterShotgun_01_F","sgun_HunterShotgun_01_sawedoff_F"];
 
 // Spawnable secondary weapons
-lootSecWeapons = ["hgun_Pistol_heavy_01_F","hgun_ACPC2_F","hgun_P07_F","hgun_Rook40_F","hgun_Pistol_heavy_02_F"];
+lootSecWeapons = ["hgun_Pistol_heavy_01_F","hgun_ACPC2_F","hgun_P07_F","hgun_Rook40_F","hgun_Pistol_heavy_02_F","hgun_P07_blk_F","hgun_P07_khk_F","hgun_Pistol_01_F","hgun_Pistol_heavy_01_green_F"];
 
 // Blacklisted attachments
 lootAttachments = ["optic_AMS","optic_AMS_khk","optic_AMS_snd","optic_DMS","optic_DMS_ghex_F","optic_DMS_weathered_F","optic_DMS_weathered_Kir_F","optic_KHS_blk","optic_KHS_hex","optic_KHS_old","optic_KHS_tan","optic_LRPS","optic_LRPS_ghex_F","optic_LRPS_tna_F","optic_NVS","optic_NIGHTSTALKER","optic_tws","optic_tws_mg"];
@@ -110,12 +110,21 @@ chanceFog = 20;
 timeFrom = 5;
 
 // Latest time of day in hours
-timeTo = 18;
+timeTo = 19;
 
 
 // -- Game Options -- //
 
+//Toggle For Jester
 JesterEnabled = true;
 
+//Percentage chance Of Jester Spawning
+JesterPercentagechance = 0.25;
+
+//Lower Bound For Chance of Traitor Numbers
+TraitorPercentageChanceLowerBound = 0.25;
+
+//Higher Bound For Chance of Traitor Numbers
+TraitorPercentageChanceHigherBound = 0.45;
 
 diag_log ("Config loaded");

@@ -207,7 +207,7 @@ class dMenu {
 			h = 0.075 * safezoneH;
 			bordersize = 0;
 			style = 0+2;
-			text = "Health Station";
+			text = "Defibrillator";
 			colorBackground[] = {0.01,0.45,1,1};
 			colorBackgroundActive[] = {0,0,1,1};
 			colorBackgroundDisabled[] = {0.2,0.2,0.2,1};
@@ -439,6 +439,38 @@ class tMenu {
 			soundPush[] = {"\A3\ui_f\data\sound\RscButton\soundPush",0.09,1.0};	
 			default = false;
 			tooltip = "Passive Ability";
+		};
+		class Button5
+		{
+			type = 1;
+			idc = 906;
+			x = ((safezoneW + safezoneX) - (0.595 * safezoneW));
+			y = ((safezoneH + safezoneY) - (0.49 * safezoneH));
+			w = 0.09 * safezoneW;
+			h = 0.075 * safezoneH;
+			bordersize = 0;
+			style = 0+2;
+			text = "Defibrillator";
+			colorBackground[] = {0.75,0.21,0.21,1};
+			colorBackgroundActive[] = {1,0,0,1};
+			colorBackgroundDisabled[] = {0.2,0.2,0.2,1};
+			colorBorder[] = {1,1,1,0};
+			colorDisabled[] = {0.2,0.2,0.2,1};
+			colorFocused[] = {0.2,0.2,0.2,1};
+			colorShadow[] = {0,0,0,0};
+			colorText[] = {1,1,1,1};
+			font = "PuristaMedium";
+			offsetPressedX = 0.001;
+			offsetPressedY = 0.001;
+			offsetX = 0;
+			offsetY = 0;
+			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1);
+			soundClick[] = {"\A3\ui_f\data\sound\RscButton\soundClick",0.09,1.0};
+			soundEnter[] = {"\A3\ui_f\data\sound\RscButton\soundEnter",0.09,1.0};
+			soundEscape[] = {"\A3\ui_f\data\sound\RscButton\soundEscape",0.09,1.0};
+			soundPush[] = {"\A3\ui_f\data\sound\RscButton\soundPush",0.09,1.0};		
+			default = false;
+			tooltip = "Activation Ability (Press Y)";
 		};
 	};
 };

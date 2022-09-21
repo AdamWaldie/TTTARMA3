@@ -163,9 +163,9 @@ if (isServer) then {
 		};
 	} forEach allUnits;
 
-	// Detective Assignment (> 4 players required)
+	// Detective Assignment (> 5 players required)
 	private "_detective";
-	if((count allUnits) > 4) then {
+	if((count allUnits) >= 5) then {
 		_searchDetective = true;
 		while {_searchDetective} do {
 			_detective = selectRandom allPlayers;
@@ -201,7 +201,7 @@ if (isServer) then {
 				_detectives append [_detective];
 			};
 		};
-		systemChat "There Is A Detective This Round";
+		["There Is A Detective This Round"] remoteExec ["systemChat",-2];
 	};
 
 	missionNamespace setvariable ["DetectiveList",_detectives,true];
@@ -212,7 +212,7 @@ if (isServer) then {
 		_JesterChanceNumber = round(random [0,50,100]);
 		if (_JesterChanceNumber <= (100*JesterPercentagechance)) then {
 			private "_Jester";
-			if((count allUnits) > 6) then {
+			if((count allUnits) >= 6) then {
 				_searchJester = true;
 				while {_searchJester} do {
 					_Jester = selectRandom allPlayers;
@@ -223,7 +223,7 @@ if (isServer) then {
 						_jesters append [_Jester];
 					};
 				};
-				systemChat "There Is A Jester This Round";
+				["There Is A Jester This Round"] remoteExec ["systemChat",-2];
 				missionNamespace setvariable ["JesterList",_jesters,true];
 			};
 		};
@@ -315,7 +315,7 @@ if (isServer) then {
 			if(alive _x && (_traitors find _x) == -1) then {
 				_traitorWin = false;
 			};
-		} forEach allUnits;
+		} forEach allPlayers;
 		if(_traitorWin && !_developerMode) exitWith {
 			"END2" call BIS_fnc_endMissionServer;
 			_gameOn = false;

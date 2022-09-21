@@ -41,7 +41,6 @@ airdropRandomTimer = 75;
 // ["weapon","WeaponClassname",["MagazineClassname","Amount"],["Attachment1","Attachment2"]]
 airdropLoadouts = [
 ["weapon","arifle_MXM_Black_F",["30Rnd_65x39_caseless_black_mag",5],["acc_flashlight","optic_Hamr","muzzle_snds_h"]],
-["weapon","arifle_MX_GL_Black_F",["30Rnd_65x39_caseless_black_mag",5],["acc_flashlight","optic_aco_smg"]],
 ["weapon","srifle_LRR_F",["7Rnd_408_Mag",3],["optic_LRPS"]],
 ["weapon","srifle_EBR_F",["20Rnd_762x51_Mag",3],["acc_flashlight","muzzle_snds_B","optic_MRCO"]],
 ["weapon","LMG_Mk200_F",["200Rnd_65x39_cased_Box",2],["acc_flashlight","optic_Holosight","bipod_01_F_blk"]],

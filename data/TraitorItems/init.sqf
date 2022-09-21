@@ -33,9 +33,16 @@ switch (_this) do {
 				closeDialog 1;
 			}];
 			(_display displayCtrl 906) ctrlAddEventHandler [ "ButtonClick", {
-				player setVariable ["powerup","defib",true];
+				player setVariable ["powerup","shovel",true];
 				player setVariable ["points",(player getVariable "points") - 1,true];
-				player enableStamina false;
+				closeDialog 1;
+			}];
+			(_display displayCtrl 907) ctrlAddEventHandler [ "ButtonClick", {
+				player setVariable ["powerup","rifleloadout",true];
+				player addWeaponGlobal "srifle_LRR_F";
+				player addPrimaryWeaponItem "optic_LRPS";
+				player addMagazines ["7Rnd_408_Mag",3];
+				player setVariable ["points",(player getVariable "points") - 1,true];
 				closeDialog 1;
 			}];
 		} else {
@@ -44,6 +51,7 @@ switch (_this) do {
 			(_display displayCtrl 904) ctrlEnable false;
 			(_display displayCtrl 905) ctrlEnable false;
 			(_display displayCtrl 906) ctrlEnable false;
+			(_display displayCtrl 907) ctrlEnable false;
 		};
 	};
 	case 21: {
@@ -52,6 +60,9 @@ switch (_this) do {
 		};
 		if(_player getVariable "powerup" == "defib") then {
 			player execVM "data\TraitorItems\revive.sqf";
+		};
+		if(_player getVariable "powerup" == "shovel") then {
+			player execVM "data\TraitorItems\shovel.sqf";
 		};
 	};
 };

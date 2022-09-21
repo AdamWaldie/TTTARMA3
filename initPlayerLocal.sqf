@@ -107,7 +107,6 @@ player addMPEventHandler ["MPKilled", {
 	};
 	if ((_unit getVariable "role") == "Jester" && (_killer getVariable "role") == "Traitor") then {
 		missionNamespace setVariable ["JESTERMURDEREDBYTRAITOR",true,true];
-
 	};
 	if ((_instigator getVariable "role") == "Traitor") then {
 		_guilty = false;

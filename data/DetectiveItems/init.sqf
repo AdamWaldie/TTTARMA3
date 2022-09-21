@@ -21,7 +21,8 @@ switch (_this) do {
 				closeDialog 1;
 			}];
 			(_display displayCtrl 804) ctrlAddEventHandler [ "ButtonClick", {
-				player setVariable ["powerup","defib",true];
+				player setVariable ["powerup","smoke",true];
+				player addMagazine ["SmokeShell", 2];
 				player setVariable ["points",(player getVariable "points") - 1,true];
 				closeDialog 1;
 			}];
@@ -31,11 +32,18 @@ switch (_this) do {
 				player enableStamina false;
 				closeDialog 1;
 			}];
+			(_display displayCtrl 806) ctrlAddEventHandler [ "ButtonClick", {
+				execVM "data\DetectiveItems\armour.sqf";
+				player setVariable ["powerup","bodyArmour",true];
+				player setVariable ["points",(player getVariable "points") - 1,true];
+				closeDialog 1;
+			}];
 		} else {
 			(_display displayCtrl 802) ctrlEnable false;
 			(_display displayCtrl 803) ctrlEnable false;
 			(_display displayCtrl 804) ctrlEnable false;
 			(_display displayCtrl 805) ctrlEnable false;
+			(_display displayCtrl 806) ctrlEnable false;
 		};
 	};
 	case 21: {

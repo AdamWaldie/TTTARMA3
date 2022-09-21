@@ -12,6 +12,9 @@ addMissionEventHandler ["Draw3D", {
 		if(_role == "Detective") then {
 			_color = [0.01,0.45,1,_radar];
 		};
+		if(_role == "Jester") then {
+			_color = [0.4,0,0.5,_radar];
+		};
 		drawIcon3D
 		[
 			"",//Path to image displayed near text
@@ -27,7 +30,7 @@ addMissionEventHandler ["Draw3D", {
 			"center"//align text left, right, or center
 		];
 	} forEach allUnits;
-	player setVariable ["radar",(_radar - 0.004),true];
+	player setVariable ["radar",(_radar - 0.002),true];
 }];
 while {true} do {
 	sleep 30;

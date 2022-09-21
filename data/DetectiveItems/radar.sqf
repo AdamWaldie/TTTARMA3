@@ -21,7 +21,7 @@ addMissionEventHandler ["Draw3D", {
 			"center"//align text left, right, or center
 		];
 	} forEach (allUnits + allDeadMen);
-	player setVariable ["radar",(_radar - 0.004),true];
+	player setVariable ["radar",(_radar - 0.002),true];
 }];
 while {true} do {
 	sleep 45;

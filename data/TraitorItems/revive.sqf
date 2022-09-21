@@ -5,8 +5,15 @@ if(!alive _target && !isNil {_target getVariable "player"}) then {
 		hint "Attempting Revive...";
 		sleep 2;
 		hint "";
+		_revivedRole = _target getVariable "role";
 		[0] remoteExec ["setPlayerRespawnTime", (_target getVariable "player")];
 		sleep 1;
 		[2400] remoteExec ["setPlayerRespawnTime", (_target getVariable "player")];
+		_tList = missionNamespace getVariable "TraitorList";
+		_tList append [_target];
+		_target setVariable ["role","Tratior",true];
+		missionNamespace setVariable ["TraitorList", _tList,true];
+		["data\TTTHud\init.sqf"] remoteExec ["execVM ",_target];
+		
 	};
 };

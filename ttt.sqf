@@ -2,7 +2,7 @@ if (isServer) then {
 	// Establish game setup
 	missionNamespace setVariable ["mapDone",false,true];
 	missionNamespace setVariable ["gameOn",false,true];
-	_developerMode = true;
+	_developerMode = false;
 	_temp = true;
 
 	/*
@@ -201,6 +201,7 @@ if (isServer) then {
 				_detectives append [_detective];
 			};
 		};
+		systemChat "There Is A Detective This Round";
 	};
 
 	missionNamespace setvariable ["DetectiveList",_detectives,true];

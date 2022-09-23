@@ -118,7 +118,7 @@ timeTo = 19;
 JesterEnabled = true;
 
 //Percentage chance Of Jester Spawning
-JesterPercentagechance = 0.25;
+JesterPercentagechance = 0.40;
 
 //Lower Bound For Chance of Traitor Numbers
 TraitorPercentageChanceLowerBound = 0.25;

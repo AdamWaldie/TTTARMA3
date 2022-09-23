@@ -8,3 +8,6 @@ if(!alive _target) then {
 		hideBody _target;
 	};
 };
+waituntil {!isnull (finddisplay 46)};
+(findDisplay 46) displayRemoveAllEventHandlers "KeyDown";
+_shop = findDisplay 46 displayAddEventHandler ["KeyDown", {_this select 1 execVM "shops.sqf"}];

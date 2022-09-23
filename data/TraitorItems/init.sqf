@@ -6,7 +6,7 @@ switch (_this) do {
 		waitUntil {!isNull (uiNameSpace getVariable "tMenu")};
 		_display = uiNameSpace getVariable "tMenu";
 		(_display displayCtrl 900) ctrlEnable false;
-		(_display displayCtrl 901) ctrlSetText ("Points: "+str(_player getVariable "points"));
+		(_display displayCtrl 901) ctrlSetText ("Credits: "+str(_player getVariable "points"));
 		if((player getVariable "points") > 0) then {
 			(_display displayCtrl 902) ctrlAddEventHandler [ "ButtonClick", {
 				player setVariable ["powerup","suicide",true];

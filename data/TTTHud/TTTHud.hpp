@@ -104,7 +104,7 @@ class dMenu {
 			w = 0.20 * safezoneW;
 			h = 0.05 * safezoneH;
 			style = 18;
-			text = "Points: 1";
+			text = "Credits: 1";
 			colorBackground[] = {0.10196,0.10196,0.10196,0};
 			colorText[] = {0.01,0.45,1,1};
 			lineSpacing = 0;
@@ -271,7 +271,7 @@ class dMenu {
 			h = 0.075 * safezoneH;
 			bordersize = 0;
 			style = 0+2;
-			text = "Armour All";
+			text = "Armour Target";
 			colorBackground[] = {0.01,0.45,1,1};
 			colorBackgroundActive[] = {0,0,1,1};
 			colorBackgroundDisabled[] = {0.2,0.2,0.2,1};
@@ -291,7 +291,7 @@ class dMenu {
 			soundEscape[] = {"\A3\ui_f\data\sound\RscButton\soundEscape",0.09,1.0};
 			soundPush[] = {"\A3\ui_f\data\sound\RscButton\soundPush",0.09,1.0};		
 			default = false;
-			tooltip = "Passive Ability";
+			tooltip = "Activation Ability (Press Y)";
 		};
 	};
 };

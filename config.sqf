@@ -115,7 +115,7 @@ timeTo = 19;
 // -- Game Options -- //
 
 //Toggle For Jester
-JesterEnabled = true;
+JesterEnabled = false;
 
 //Percentage chance Of Jester Spawning
 JesterPercentagechance = 0.40;

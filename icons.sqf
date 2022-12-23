@@ -76,7 +76,7 @@ addMissionEventHandler ["Draw3D", {
 					];
 				};
 			};
-			if ((_x getVariable "role") == "Traitor" && (player getVariable "role") == "Jester" && _x != player) then {
+			if ((_x getVariable "role") == "Jester" && (player getVariable "role") == "Traitor" && _x != player) then {
 				if (_distance > 25) then {
 					drawIcon3D
 					[
@@ -109,6 +109,39 @@ addMissionEventHandler ["Draw3D", {
 					];
 				};
 			};
+			if ((_x getVariable "role") == "Traitor" && (player getVariable "role") == "Jester" && _x != player) then {
+				if (_distance > 25) then {
+					drawIcon3D
+					[
+						"",//Path to image displayed near text
+						[0.75,0.21,0.21,1],//color of the text using RGBA
+						_eyePos,//position of the text _x referring to the player in 'allUnits'
+						1,//Width
+						0,//height from position, below
+						0,//angle
+						"T",//text to be displayed
+						2,//shadow on text, 0=none,1=shadow,2=outline
+						0.04,//text size
+						"PuristaMedium",//text font
+						"center"//align text left, right, or center
+					];
+				} else {
+					drawIcon3D
+					[
+						"",//Path to image displayed near text
+						[0.75,0.21,0.21,1],//color of the text using RGBA
+						_eyePos,//position of the text _x referring to the player in 'allUnits'
+						1,//Width
+						0,//height from position, below
+						0,//angle
+						"Traitor",//text to be displayed
+						2,//shadow on text, 0=none,1=shadow,2=outline
+						0.05,//text size
+						"PuristaMedium",//text font
+						"center"//align text left, right, or center
+					];
+				};
+			};
 		};
 	} forEach allUnits;
 	if ((player getVariable "role") == "Detective") then {
@@ -127,7 +160,7 @@ addMissionEventHandler ["Draw3D", {
 			if(_role == "Jester") then {
 				_color = [0.4,0,0.5,1];
 			};
-			if(_distance < 5) then {
+			if(_distance < 6) then {
 				drawIcon3D
 				[
 					"",//Path to image displayed near text

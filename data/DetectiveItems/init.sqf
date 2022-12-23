@@ -33,7 +33,6 @@ switch (_this) do {
 				closeDialog 1;
 			}];
 			(_display displayCtrl 806) ctrlAddEventHandler [ "ButtonClick", {
-				execVM "data\DetectiveItems\armour.sqf";
 				player setVariable ["powerup","bodyArmour",true];
 				player setVariable ["points",(player getVariable "points") - 1,true];
 				closeDialog 1;
@@ -52,6 +51,9 @@ switch (_this) do {
 		};
 		if(_player getVariable "powerup" == "defib") then {
 			player execVM "data\DetectiveItems\revive.sqf";
+		};
+		if(_player getVariable "powerup" == "bodyArmour") then {
+			player execVM "data\DetectiveItems\armour.sqf";
 		};
 	};
 };

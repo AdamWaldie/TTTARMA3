@@ -1,5 +1,8 @@
 sleep 1;
 
+//IntroMusic
+playMusic ["TTTIntroMusic", 20];
+
 //Player Local Setup
 if (missionNamespace getVariable "gameOn") then {
 	player setDammage 1;
@@ -80,6 +83,9 @@ while {!(missionNamespace getVariable "gameOn")} do {
 	sleep 0.25;
 };
 
+//Fade Out music
+10 fadeMusic 0;
+
 //ROUND STARTED
 
 removeBackpack player;
@@ -105,8 +111,8 @@ player addMPEventHandler ["MPKilled", {
 			_x setVariable ["points",(_x getVariable "points") + 1,true];
 		} forEach _traitors;
 	};
-	if ((_unit getVariable "role") == "Jester" && (_killer getVariable "role") == "Traitor") then {
-		missionNamespace setVariable ["JESTERMURDEREDBYTRAITOR",true,true];
+	if (((_unit getVariable "role") == "Jester") && ((_killer getVariable "role") != "Traitor") && (_killer != _unit) && (_killer !=  objNull)) then {
+		missionNamespace setVariable ["JESTERCLEANKILL",true,true];
 	};
 	if ((_instigator getVariable "role") == "Traitor") then {
 		_guilty = false;

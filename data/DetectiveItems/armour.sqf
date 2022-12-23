@@ -1,7 +1,9 @@
 
-["Armour Provided To All!"] remotexec ["hintsilent",-2];
+["Armour Provided Target"] remotexec ["hintsilent",-2];
+removeVest cursorTarget;
+cursorTarget addVest "V_TacVest_blk";
 
-{
-	_x addVest (selectRandom ["V_TacVest_blk","V_TacVest_brn","V_TacVest_oli","V_I_G_resistanceLeader_F"]);
-	
-} forEach  allPlayers;
+player setVariable ["powerup","bodyArmour",false];
+waituntil {!isnull (finddisplay 46)};
+(findDisplay 46) displayRemoveAllEventHandlers "KeyDown";
+_shop = findDisplay 46 displayAddEventHandler ["KeyDown", {_this select 1 execVM "shops.sqf"}];

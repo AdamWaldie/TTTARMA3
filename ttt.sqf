@@ -299,7 +299,7 @@ if (isServer) then {
 		_JesterWin = false;
 		{
 			if(!alive _x) then {
-				if (!(isNil "JESTERMURDEREDBYTRAITOR")) then {
+				if (missionNamespace getVariable "JESTERCLEANKILL") then {
 					_JesterWin = true;
 				};
 			};

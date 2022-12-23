@@ -8,7 +8,7 @@ overviewPicture = "data\loading.jpg";
 loadScreen = "data\loading.jpg";
 author = "Waldo"; // Author
 onLoadName = "Trouble in ArmaVille"; // Mission name
-onLoadMission = "Version 2.3.3"; // Description
+onLoadMission = "Version 2.3.6"; // Description
 
 class Header
 {
@@ -77,5 +77,18 @@ class CfgSounds
 		name = "Suicide";
 		sound[] = {"data\suicide.ogg", 2, 1};
 		titles[] = {};
+	};
+};
+
+class CfgMusic
+{
+	tracks[] = {};
+	class TTTIntroMusic
+	{
+		// display name
+		name	= "TTT Intro";
+
+		// filename, volume, pitch
+		sound[]	= { "\data\TypicalRideOut.ogg", db + 0, 1.0 };
 	};
 };

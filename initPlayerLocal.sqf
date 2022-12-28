@@ -46,6 +46,7 @@ player execVM "icons.sqf";
 
 // TP Player Into Arena
 _center = missionNamespace getVariable "mapPos";
+_ArenaLimits = missionNamespace getVariable "mapRadius";
 _distance = (missionNamespace getVariable "mapRadius") * 0.9;
 player setPos _center;
 _pos = [(_center select 0) - (_distance / 2) +random(_distance),(_center select 1) - (_distance / 2) +random(_distance),0];
@@ -55,7 +56,6 @@ player setPos _pos;
 player setDir _dir;
 player allowDamage false;
 removeBackpack player;
-
 
 //TTT Title Screen
 _missionTitle = getText (missionConfigFile >> "onLoadName");
@@ -125,8 +125,22 @@ player addMPEventHandler ["MPKilled", {
 	}
 ];
 
+[_pos,_dir,_ArenaLimits] spawn {
+	params [_position,_direction,_arenaLimit];
+	//Hacked together distance limiter
+	while {alive player} do {
+		if ((player distance _center) > (_arenaLimit + 5)) then {
+			player setPos _position;
+			player setDir _direction;
+			hintSilent "Do Not Attempt To Escape";
+			sleep 5;
+			hintSilent "";
+		};
+		sleep 10;
+	};
+};
 
-//ACE Uncon to Kill EV 
+//ACE Uncon to Kill EV - This breaks Jester's, so ACE cannot be used with Jester atm. Ive been trying to find a fix, however efforts so far have not worked out.
 ["ace_unconscious", {
 params ["_unit", "_state"];
 _unit setDamage 1;

@@ -12,7 +12,7 @@
 execVM "ModpackConfiguration\Vanilla.sqf";
 
 //WW2 - Northern Fronts + JMs Second Assault
-execVM "ModpackConfiguration\WW2.sqf";
+//execVM "ModpackConfiguration\WW2.sqf";
 
 
 //Custom (Your Edits, by default Vanilla)

@@ -22,8 +22,9 @@ switch (_this) do {
 			(_display displayCtrl 904) ctrlAddEventHandler [ "ButtonClick", {
 				player setVariable ["powerup","launcher",true];
 				player setVariable ["points",(player getVariable "points") - 1,true];
-				player addWeapon "launch_NLAW_F";
-				player addSecondaryWeaponItem "NLAW_F";
+				(missionNamespace getVariable ["TraitorLauncher", "launch_NLAW_F"])
+				player addWeaponGlobal (missionNamespace getVariable ["TraitorLauncher", "launch_NLAW_F"]);
+				player addSecondaryWeaponItem (missionNamespace getVariable ["TraitorLauncherMag", "NLAW_F"]);
 				closeDialog 1;
 			}];
 			(_display displayCtrl 905) ctrlAddEventHandler [ "ButtonClick", {
@@ -33,15 +34,17 @@ switch (_this) do {
 				closeDialog 1;
 			}];
 			(_display displayCtrl 906) ctrlAddEventHandler [ "ButtonClick", {
-				player setVariable ["powerup","shovel",true];
+				player setVariable ["powerup","WarpSmoke",true];
+				player addMagazine ["SmokeShellRed", 2];
+				player execVM "data\TraitorItems\WarpSmoke.sqf";
 				player setVariable ["points",(player getVariable "points") - 1,true];
 				closeDialog 1;
 			}];
 			(_display displayCtrl 907) ctrlAddEventHandler [ "ButtonClick", {
 				player setVariable ["powerup","rifleloadout",true];
-				player addWeaponGlobal "srifle_LRR_F";
-				player addPrimaryWeaponItem "optic_LRPS";
-				player addMagazines ["7Rnd_408_Mag",3];
+				player addWeaponGlobal (missionNamespace getVariable ["TraitorRifle", "srifle_LRR_F"]);
+				player addPrimaryWeaponItem (missionNamespace getVariable ["traitorRifleOptics", "optic_LRPS"]);
+				player addMagazines [(missionNamespace getVariable ["traitorRifleMagazine", "7Rnd_408_Mag"]),3];
 				player setVariable ["points",(player getVariable "points") - 1,true];
 				closeDialog 1;
 			}];
@@ -57,12 +60,6 @@ switch (_this) do {
 	case 21: {
 		if(_player getVariable "powerup" == "suicide") then {
 			player execVM "data\TraitorItems\suicide.sqf";
-		};
-		if(_player getVariable "powerup" == "defib") then {
-			player execVM "data\TraitorItems\revive.sqf";
-		};
-		if(_player getVariable "powerup" == "shovel") then {
-			player execVM "data\TraitorItems\shovel.sqf";
 		};
 	};
 };

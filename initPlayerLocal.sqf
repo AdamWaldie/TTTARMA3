@@ -57,6 +57,22 @@ player setDir _dir;
 player allowDamage false;
 removeBackpack player;
 
+//Escape Preventer (large Lobbies)
+[_pos,_dir,_ArenaLimits,_center] spawn {
+	params ["_p","_d","_AL","_c"];
+	//Hacked together distance limiter
+	while {alive player} do {
+		if ((player distance _c) > (_AL + 5)) then {
+			player setPos _p;
+			player setDir _d;
+			hintSilent "Do Not Attempt To Escape";
+			sleep 5;
+			hintSilent "";
+		};
+		sleep 10;
+	};
+};
+
 //TTT Title Screen
 _missionTitle = getText (missionConfigFile >> "onLoadName");
 _localeName = worldName;
@@ -124,21 +140,6 @@ player addMPEventHandler ["MPKilled", {
 	};
 	}
 ];
-
-[_pos,_dir,_ArenaLimits] spawn {
-	params [_position,_direction,_arenaLimit];
-	//Hacked together distance limiter
-	while {alive player} do {
-		if ((player distance _center) > (_arenaLimit + 5)) then {
-			player setPos _position;
-			player setDir _direction;
-			hintSilent "Do Not Attempt To Escape";
-			sleep 5;
-			hintSilent "";
-		};
-		sleep 10;
-	};
-};
 
 //ACE Uncon to Kill EV - This breaks Jester's, so ACE cannot be used with Jester atm. Ive been trying to find a fix, however efforts so far have not worked out.
 ["ace_unconscious", {

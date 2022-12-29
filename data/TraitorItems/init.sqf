@@ -22,7 +22,6 @@ switch (_this) do {
 			(_display displayCtrl 904) ctrlAddEventHandler [ "ButtonClick", {
 				player setVariable ["powerup","launcher",true];
 				player setVariable ["points",(player getVariable "points") - 1,true];
-				(missionNamespace getVariable ["TraitorLauncher", "launch_NLAW_F"])
 				player addWeaponGlobal (missionNamespace getVariable ["TraitorLauncher", "launch_NLAW_F"]);
 				player addSecondaryWeaponItem (missionNamespace getVariable ["TraitorLauncherMag", "NLAW_F"]);
 				closeDialog 1;

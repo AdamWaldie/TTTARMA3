@@ -8,14 +8,15 @@ player addEventHandler ["Fired", {
                 _flare attachTo [_projectile];
                 triggerAmmo _flare;
                 sleep 2;
-                playSound3D [getMissionPath "Sounds\portalIn.ogg", _unit];
+                playSound3D [getMissionPath "data\portalIn.ogg", _unit];
                 _unit setPos getPos _projectile;
-                playSound3D [getMissionPath "Sounds\portalOut.ogg", _unit];
+                playSound3D [getMissionPath "data\portalOut.ogg", _unit];
                 sleep 0.5;
                 deleteVehicle _flare;
             };
         };
-    }];
+    }
+];
 //player setVariable ["powerup","WarpSmoke",false];
 waituntil {!isnull (finddisplay 46)};
 (findDisplay 46) displayRemoveAllEventHandlers "KeyDown";

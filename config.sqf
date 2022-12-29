@@ -78,7 +78,7 @@ timeTo = 19;
 
 // -- Game Options -- //
 
-//Toggle For Jester
+//Toggle For Jester - Cannot be used with ACE at the moment.
 JesterEnabled = false;
 
 //Percentage chance Of Jester Spawning

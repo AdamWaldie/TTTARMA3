@@ -6,7 +6,6 @@ switch (_this) do {
 		waitUntil {!isNull (uiNameSpace getVariable "dMenu")};
 		_display = uiNameSpace getVariable "dMenu";
 		(_display displayCtrl 800) ctrlEnable false;
-		(_display displayCtrl 804) ctrlEnable false;
 		(_display displayCtrl 801) ctrlSetText ("Points: "+str(_player getVariable "points"));
 		if((player getVariable "points") > 0) then {
 			(_display displayCtrl 802) ctrlAddEventHandler [ "ButtonClick", {

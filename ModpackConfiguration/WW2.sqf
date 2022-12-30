@@ -41,7 +41,7 @@ missionNamespace setVariable ["detectiveConfig",detectiveLoadout,true];
 // -- Loot options -- //
 
 // Spawnable primary weapons
-lootPriWeapons = ["NORTH_fin_M27","NORTH_fin_M28","NORTH_fin_m39_optics","NORTH_nor_smle","EAW_MP28","NORTH_PPD34","EAW_C96_Carbine","NORTH_SVT40","JMSSA_carcano1891_Rifle","CSA38_M1895DE","CSA38_kar98k","CSA38_No4","LIB_M1_Garand","LIB_M1A1_Carbine","LIB_M3_GreaseGun","LIB_M1928A1_Thompson","csa38_mas38","CSA38_Mp40ii","CSA38_OwenMkI2","JMSSA_sten_Rifle","CSA38_vz33ii","CSA38_type24"];
+lootPriWeapons = ["NORTH_fin_M27","NORTH_fin_M28","NORTH_fin_m39_optics","NORTH_nor_smle""EAW_C96_Carbine","NORTH_SVT40","JMSSA_carcano1891_Rifle","CSA38_M1895DE","CSA38_kar98k","CSA38_No4","LIB_M1_Garand","LIB_M1A1_Carbine"];
 
 // Spawnable secondary weapons
 lootSecWeapons = ["LIB_Colt_M1911","JMSSA_M1934_pistol","NORTH_TT33","NORTH_m1895","EAW_C96_Auto","EAW_C96","NORTH_M1914","NORTH_m1893","EAW_Type14"];

@@ -9,7 +9,7 @@ Built for tactical deception, social deduction, and explosive chaos — in the u
 
 ---
 
-## 🎮 About
+## About
 
 Trouble In Armaville (TTT) is a re-imagining of the GMod game mode **Trouble In Terrorist Town**, fully implemented in **Arma 3**.
 
@@ -24,7 +24,7 @@ This version (2.5.0 RC) includes a major refactor for stability, scalability, an
 
 ---
 
-## 🧰 Features
+## Features
 
 - 🔀 **Dynamic Role System** – configurable traitor %, detective, jester inclusion  
 - 🌆 **Arena Generator** – auto-finds towns and builds circular, scalable play zones  
@@ -36,7 +36,7 @@ This version (2.5.0 RC) includes a major refactor for stability, scalability, an
 
 ---
 
-## 📦 Installation
+## Installation
 
 1. Download this repo release.
 2. Copy the mission folder into your Arma 3 missions directory
@@ -44,7 +44,7 @@ This version (2.5.0 RC) includes a major refactor for stability, scalability, an
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ### Editable Parameters (via Lobby Menu):
 
@@ -62,13 +62,7 @@ You can also adjust default values in `config.sqf`.
 
 ---
 
-## 🖼️ Screenshots
-
-*Coming soon*
-
----
-
-## 🛠️ Dependencies
+## Dependencies
 
 - Arma 3
 - CBA_A3
@@ -77,14 +71,14 @@ ACE isn't officially supported but can work if you disable the medical or uncon 
 
 ---
 
-## 📄 License
+## License
 
 This project is released associated with [Waldo’s Mission Pack](https://github.com/AdamWaldie/WaldosMissionPack) and is released under the MIT License.  
 You are free to fork, extend, and contribute.
 
 ---
 
-## 🙌 Credits
+## Credits
 
 Developed by [AdamWaldie](https://github.com/AdamWaldie)  
 Design inspiration from GMod’s original TTT mode and its community.

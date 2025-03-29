@@ -1,8 +1,5 @@
 sleep 1;
 
-//IntroMusic
-playMusic ["TTTIntroMusic", 20];
-
 //Player Local Setup
 if (missionNamespace getVariable "gameOn") then {
 	player setDammage 1;
@@ -28,6 +25,10 @@ if(floor (random(10)) < 6) then {
 	player addHeadgear (selectRandom headgears);
 };
 player allowDamage false;
+
+waitUntil { !isNull player && time > 0 };
+//IntroMusic
+playMusic ["TTTIntroMusic", 20];
 
 // Pregame UI
 while {!(missionNamespace getVariable "mapDone")} do {
@@ -75,7 +76,7 @@ removeBackpack player;
 
 //TTT Title Screen
 _missionTitle = getText (missionConfigFile >> "onLoadName");
-_localeName = worldName;
+_localeName = "Endless Traitorous Hellscape";
 _timeConfig = [dayTime, "ARRAY"] call BIS_fnc_timeToString; 
 _time = (_timeConfig select 0) + (_timeConfig select 1) + ' hrs';
 _date =  str (date select 2) + '/' + str (date select 1) + '/' + str (date select 0);

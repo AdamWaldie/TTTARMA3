@@ -46,4 +46,8 @@ JesterPercentagechance            = (param [17, 30]/100);      missionNamespace 
 TraitorPercentageChanceLowerBound = (param [18, 25]/100);     missionNamespace setVariable ["TraitorPercentageChanceLowerBound", TraitorPercentageChanceLowerBound];
 TraitorPercentageChanceHigherBound = (param [19, 45]/100);    missionNamespace setVariable ["TraitorPercentageChanceHigherBound", TraitorPercentageChanceHigherBound];
 
+//Test flag
+TestingFlag = param [20, False];    missionNamespace setVariable ["TestingFlag", TestingFlag];
+
+
 diag_log "Config loaded from mission parameters using correct param[] indexing.";

@@ -1,20 +1,20 @@
 // === MISSION OVERVIEW
 
 overviewText 	= "Trouble in ArmaVille";	// mission summary
-overviewPicture = "ui\loading.jpg";
+overviewPicture = "ui\TroubleInArmaville.jpg";
 
 // === LOAD SCREEN
 
-loadScreen = "ui\loading.jpg";
+loadScreen = "ui\TroubleInArmaville.jpg";
 author = "Waldo"; // Author
 onLoadName = "Trouble in ArmaVille"; // Mission name
-onLoadMission = "Version 2.4.1"; // Description
+onLoadMission = "Version 2.5.0"; // Description
 
 class Header
 {
  	gameType = Coop;
 	minPlayers = 1;
-	maxPlayers = 16;
+	maxPlayers = 218;
 };
 
 // HUD Setup
@@ -27,7 +27,7 @@ disabledAI = 1;
 Saving = 0;
 
 respawn = 2;
-respawnDelay = 2400;
+respawnDelay = 5800;
 respawnTemplates[] = {"Spectator"}; 
 
 class CfgDebriefing
@@ -226,5 +226,12 @@ class Params {
 		values[] = {40, 45, 50, 60, 70, 80};
 		texts[] = {"40%", "45%", "50%", "60%", "70%", "80%"};
 		default = 45;
+	};
+	// === TESTING OPTIONS ===
+	class TestingFlag {
+		title = "Enable Testing Mode";
+		values[] = {False, True};
+		texts[] = {"No", "Yes"};
+		default = False;
 	};
 };

@@ -11,4 +11,4 @@ if(alive _target) then {
 player setVariable ["powerup","tester",false];
 waituntil {!isnull (finddisplay 46)};
 (findDisplay 46) displayRemoveAllEventHandlers "KeyDown";
-_shop = findDisplay 46 displayAddEventHandler ["KeyDown", {_this select 1 execVM "shops.sqf"}];
+_shop = findDisplay 46 displayAddEventHandler ["KeyDown", {_this select 1 execVM "systems\shops.sqf"}];

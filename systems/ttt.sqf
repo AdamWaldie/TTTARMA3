@@ -2,7 +2,7 @@ if (isServer) then {
 	// Establish game setup
 	missionNamespace setVariable ["mapDone",false,true];
 	missionNamespace setVariable ["gameOn",false,true];
-	_developerMode = false;
+	_developerMode = true;
 	_temp = true;
 
 	/*
@@ -63,7 +63,7 @@ if (isServer) then {
 	_center setPos (missionNamespace getVariable "mapPos");
 	_pos = getPosWorld _center;
 	_distance = missionNamespace getVariable "mapRadius";
-	execVM "loot.sqf";
+	execVM "systems\loot.sqf";
 	
 	// Arena Construction
 	_higher = false;
@@ -290,7 +290,7 @@ if (isServer) then {
 
 		//paradrop Loop
 		if (_paradropTimer + 1 == _paradropWait && airdrop) then {
-			[] execVM "paradrop.sqf";
+			[] execVM "systems\paradrop.sqf";
 			_paradropWait = round(random(airdropRandomTimer)+airdropBaseTimer);
 			_paradropTimer = 0; 
 		};

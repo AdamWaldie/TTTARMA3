@@ -1,5 +1,5 @@
 _player = player;
-[[_player, "suicide"], "Say3dMP", true] spawn BIS_fnc_MP;
+playSound3D [getMissionPath "audio\suicide.ogg", player];
 (findDisplay 46) displayRemoveAllEventHandlers "KeyDown";
 sleep 2;
 if(alive player) then {

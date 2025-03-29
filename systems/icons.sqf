@@ -1,7 +1,7 @@
 waituntil {!isnull (finddisplay 46)};
 (findDisplay 46) displayRemoveAllEventHandlers "KeyDown";
-_shop = findDisplay 46 displayAddEventHandler ["KeyDown", {_this select 1 execVM "shops.sqf"}];
-//_holster = findDisplay 46 displayAddEventHandler ["KeyDown", {_this select 1 execVM "holster.sqf"}];
+_shop = findDisplay 46 displayAddEventHandler ["KeyDown", {_this select 1 execVM "systems\shops.sqf"}];
+//_holster = findDisplay 46 displayAddEventHandler ["KeyDown", {_this select 1 execVM "systems\holster.sqf"}];
 
 addMissionEventHandler ["Draw3D", {
 	{

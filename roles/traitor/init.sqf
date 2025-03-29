@@ -16,7 +16,7 @@ switch (_this) do {
 			(_display displayCtrl 903) ctrlAddEventHandler [ "ButtonClick", {
 				player setVariable ["powerup","radar",true];
 				player setVariable ["points",(player getVariable "points") - 1,true];
-				player execVM "data\TraitorItems\radar.sqf";
+				player execVM "roles\traitor\radar.sqf";
 				closeDialog 1;
 			}];
 			(_display displayCtrl 904) ctrlAddEventHandler [ "ButtonClick", {
@@ -35,7 +35,7 @@ switch (_this) do {
 			(_display displayCtrl 906) ctrlAddEventHandler [ "ButtonClick", {
 				player setVariable ["powerup","WarpSmoke",true];
 				player addMagazine ["SmokeShellRed", 2];
-				player execVM "data\TraitorItems\WarpSmoke.sqf";
+				player execVM "roles\traitor\WarpSmoke.sqf";
 				player setVariable ["points",(player getVariable "points") - 1,true];
 				closeDialog 1;
 			}];
@@ -58,7 +58,7 @@ switch (_this) do {
 	};
 	case 21: {
 		if(_player getVariable "powerup" == "suicide") then {
-			player execVM "data\TraitorItems\suicide.sqf";
+			player execVM "roles\traitor\suicide.sqf";
 		};
 	};
 };

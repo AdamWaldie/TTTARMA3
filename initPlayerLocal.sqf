@@ -42,7 +42,7 @@ while {!(missionNamespace getVariable "mapDone")} do {
 ACE_NO_RECOGNIZE = true; publicVariable "ACE_NO_RECOGNIZE";
 
 // 3D Marker Draw
-player execVM "icons.sqf";
+player execVM "systems\icons.sqf";
 
 // TP Player Into Arena
 _center = missionNamespace getVariable "mapPos";
@@ -107,7 +107,7 @@ while {!(missionNamespace getVariable "gameOn")} do {
 removeBackpack player;
 player allowDamage true;
 
-player execVM "data\TTTHud\init.sqf";
+player execVM "ui\init.sqf";
 
 //ROUND Handle EV 
 player addMPEventHandler ["MPKilled", {

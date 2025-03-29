@@ -1,7 +1,7 @@
 if(isServer) then {
 	execVM "config.sqf";
 	sleep 0.1;
-	execVM "ttt.sqf";
+	execVM "systems\ttt.sqf";
 };
 
 Say3dMP = {

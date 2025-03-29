@@ -13,9 +13,9 @@ if(!alive _target && !isNil {_target getVariable "player"}) then {
 		_tList append [_revivedPlayer];
 		_revivedPlayer setVariable ["role","Tratior",true];
 		missionNamespace setVariable ["TraitorList", _tList,true];
-		["data\TTTHud\init.sqf"] remoteExec ["execVM ",_revivedPlayer];
+		["ui\init.sqf"] remoteExec ["execVM ",_revivedPlayer];
 	};
 };
 waituntil {!isnull (finddisplay 46)};
 (findDisplay 46) displayRemoveAllEventHandlers "KeyDown";
-_shop = findDisplay 46 displayAddEventHandler ["KeyDown", {_this select 1 execVM "shops.sqf"}];
+_shop = findDisplay 46 displayAddEventHandler ["KeyDown", {_this select 1 execVM "systems\shops.sqf"}];

@@ -16,7 +16,7 @@ switch (_this) do {
 			(_display displayCtrl 803) ctrlAddEventHandler [ "ButtonClick", {
 				player setVariable ["powerup","radar",true];
 				player setVariable ["points",(player getVariable "points") - 1,true];
-				player execVM "data\DetectiveItems\radar.sqf";
+				player execVM "roles\detective\radar.sqf";
 				closeDialog 1;
 			}];
 			(_display displayCtrl 804) ctrlAddEventHandler [ "ButtonClick", {
@@ -33,7 +33,7 @@ switch (_this) do {
 			}];
 			(_display displayCtrl 806) ctrlAddEventHandler [ "ButtonClick", {
 				player setVariable ["powerup","FlowerPower",true];
-				player execVM "data\DetectiveItems\FlowerPower.sqf";
+				player execVM "roles\detective\FlowerPower.sqf";
 				player setVariable ["points",(player getVariable "points") - 1,true];
 				closeDialog 1;
 			}];
@@ -47,7 +47,7 @@ switch (_this) do {
 	};
 	case 21: {
 		if(_player getVariable "powerup" == "tester") then {
-			player execVM "data\DetectiveItems\tester.sqf";
+			player execVM "roles\detective\tester.sqf";
 		};
 	};
 };

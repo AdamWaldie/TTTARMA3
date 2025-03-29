@@ -12,4 +12,4 @@ if(!alive _target && !isNil {_target getVariable "player"}) then {
 };
 waituntil {!isnull (finddisplay 46)};
 (findDisplay 46) displayRemoveAllEventHandlers "KeyDown";
-_shop = findDisplay 46 displayAddEventHandler ["KeyDown", {_this select 1 execVM "shops.sqf"}];
+_shop = findDisplay 46 displayAddEventHandler ["KeyDown", {_this select 1 execVM "systems\shops.sqf"}];

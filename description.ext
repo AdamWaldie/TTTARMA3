@@ -1,11 +1,11 @@
 // === MISSION OVERVIEW
 
 overviewText 	= "Trouble in ArmaVille";	// mission summary
-overviewPicture = "data\loading.jpg";
+overviewPicture = "ui\loading.jpg";
 
 // === LOAD SCREEN
 
-loadScreen = "data\loading.jpg";
+loadScreen = "ui\loading.jpg";
 author = "Waldo"; // Author
 onLoadName = "Trouble in ArmaVille"; // Mission name
 onLoadMission = "Version 2.4.1"; // Description
@@ -19,8 +19,8 @@ class Header
 
 // HUD Setup
 
-#include "data\TTTHud\common.hpp"
-#include "data\TTTHud\TTTHud.hpp"
+#include "ui\common.hpp"
+#include "ui\TTTHud.hpp"
 
 enableDebugConsole = 1;
 disabledAI = 1;
@@ -70,16 +70,6 @@ class CfgDebriefing
 	};
 };
 
-class CfgSounds 
-{
-	sound[] = {};
-	class suicide {
-		name = "Suicide";
-		sound[] = {"data\suicide.ogg", 2, 1};
-		titles[] = {};
-	};
-};
-
 class CfgMusic
 {
 	tracks[] = {};
@@ -89,6 +79,152 @@ class CfgMusic
 		name	= "TTT Intro";
 
 		// filename, volume, pitch
-		sound[]	= { "\data\TypicalRideOut.ogg", db + 0, 1.0 };
+		sound[]	= { "audio\TypicalRideOut.ogg", db + 0, 1.0 };
+	};
+};
+
+class Params {
+	// === ROUND OPTIONS ===
+	class roundBaseLength {
+		title = "Base Round Length (seconds)";
+		values[] = {120, 150, 180, 210, 240};
+		texts[]  = {"120", "150", "180", "210", "240"};
+		default  = 180;
+	};
+
+	class roundPlayerLength {
+		title = "Bonus Time Per Player (seconds)";
+		values[] = {15, 30, 45};
+		texts[]  = {"15", "30", "45"};
+		default  = 30;
+	};
+
+	class roundTraitorLength {
+		title = "Traitor Bonus Time (seconds)";
+		values[] = {30, 45, 60};
+		texts[]  = {"30", "45", "60"};
+		default  = 45;
+	};
+
+	class roundDeadLength {
+		title = "Time Added Per Dead Player (seconds)";
+		values[] = {15, 30, 45};
+		texts[]  = {"15", "30", "45"};
+		default  = 30;
+	};
+
+	class roundWarmupLength {
+		title = "Warmup Length (seconds)";
+		values[] = {10, 20, 30, 45};
+		texts[]  = {"10", "20", "30", "45"};
+		default  = 20;
+	};
+
+	// === AIRDROP OPTIONS ===
+	class airdrop {
+		title = "Enable Airdrops";
+		values[] = {False, True};
+		texts[] = {"Disabled", "Enabled"};
+		default = True;
+	};
+
+	class airdropBaseTimer {
+		title = "Airdrop Base Timer (seconds)";
+		values[] = {30, 60, 75, 90, 120};
+		texts[]  = {"30", "60", "75", "90", "120"};
+		default  = 75;
+	};
+
+	class airdropRandomTimer {
+		title = "Airdrop Random Add Time (seconds)";
+		values[] = {0, 30, 60, 75, 90};
+		texts[]  = {"0", "30", "60", "75", "90"};
+		default  = 75;
+	};
+
+	class airdropLoadoutsAmount {
+		title = "Loadouts Per Airdrop";
+		values[] = {1, 2, 3};
+		texts[]  = {"1", "2", "3"};
+		default  = 1;
+	};
+
+	class lootMaxBullets {
+		title = "Max Ammo per Magazine";
+		values[] = {30, 40, 50, 60, 75, 100};
+		texts[]  = {"30", "40", "50", "60", "75", "100"};
+		default  = 50;
+	};
+
+	// === WEATHER OPTIONS ===
+	class allowRain {
+		title = "Allow Rain?";
+		values[] = {False, True};
+		texts[] = {"No", "Yes"};
+		default = True;
+	};
+
+	class chanceRain {
+		title = "Chance of Rain (%)";
+		values[] = {0, 20, 40, 60, 80, 100};
+		texts[] = {"0%", "20%", "40%", "60%", "80%", "100%"};
+		default = 40;
+	};
+
+	class allowFog {
+		title = "Allow Fog?";
+		values[] = {False, True};
+		texts[] = {"No", "Yes"};
+		default = True;
+	};
+
+	class chanceFog {
+		title = "Chance of Fog (%)";
+		values[] = {0, 10, 20, 30, 40};
+		texts[] = {"0%", "10%", "20%", "30%", "40%"};
+		default = 20;
+	};
+
+	class timeFrom {
+		title = "Earliest Time of Day (Hour)";
+		values[] = {0, 4, 5, 6, 7, 8, 9};
+		texts[]  = {"00:00", "04:00", "05:00", "06:00", "07:00", "08:00", "09:00"};
+		default  = 5;
+	};
+
+	class timeTo {
+		title = "Latest Time of Day (Hour)";
+		values[] = {17, 18, 19, 20, 21, 22, 23};
+		texts[]  = {"17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"};
+		default  = 19;
+	};
+
+	// === GAME OPTIONS ===
+	class JesterEnabled {
+		title = "Enable Jester Role?";
+		values[] = {False, True};
+		texts[] = {"Disabled", "Enabled"};
+		default = False;
+	};
+
+	class JesterPercentagechance {
+		title = "Chance of Jester Appearing";
+		values[] = {20, 30, 40, 50, 60};
+		texts[] = {"20%", "30%", "40%", "50%", "60%"};
+		default = 30;
+	};
+
+	class TraitorPercentageChanceLowerBound {
+		title = "Traitor Chance Lower Bound";
+		values[] = {20, 25, 30, 40};
+		texts[] = {"20%", "25%", "30%", "40%"};
+		default = 25;
+	};
+
+	class TraitorPercentageChanceHigherBound {
+		title = "Traitor Chance Upper Bound";
+		values[] = {40, 45, 50, 60, 70, 80};
+		texts[] = {"40%", "45%", "50%", "60%", "70%", "80%"};
+		default = 45;
 	};
 };

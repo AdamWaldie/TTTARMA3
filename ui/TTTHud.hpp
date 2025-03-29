@@ -19,7 +19,7 @@ class RscTitles
 			class roleTextBGBG: RscPicture
 			{
 				idc = 999;
-				text = "data\TTTHud\rolebg.paa"; 
+				text = "ui\rolebg.paa"; 
 				x = (safezoneW + safezoneX) - (0.160 * safezoneH);
 				y = (safezoneH + safezoneY) - (0.20 * safezoneH);
 				w = 0.15 * safezoneH;
@@ -29,7 +29,7 @@ class RscTitles
 			class roleTextBG: RscPicture
 			{
 				idc = 1000;
-				text = "data\TTTHud\role.paa"; 
+				text = "ui\role.paa"; 
 				x = (safezoneW + safezoneX) - (0.160 * safezoneH);
 				y = (safezoneH + safezoneY) - (0.20 * safezoneH);
 				w = 0.15 * safezoneH;

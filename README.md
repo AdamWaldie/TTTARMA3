@@ -3,7 +3,7 @@
 **An Arma 3 adaptation of the iconic Trouble In Terrorist Town game mode.**  
 Built for tactical deception, social deduction, and explosive chaos — in the uniquely sandboxy Arma 3 engine.
 
-![alt text](https://github.com/AdamWaldie/TTTARMA3/blob/main/ui/TroubleInArmaVille.jpg?raw=true)
+![alt text](https://github.com/AdamWaldie/TTTARMA3/blob/main/ui/TroubleInArmaville.jpg?raw=true)
 
 ---
 

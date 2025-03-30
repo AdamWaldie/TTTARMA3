@@ -76,6 +76,8 @@ ACE isn't officially supported but can work if you disable the medical or uncon 
 This project is released associated with [Waldo’s Mission Pack](https://github.com/AdamWaldie/WaldosMissionPack) and is released under the MIT License.  
 You are free to fork, extend, and contribute.
 
+The music used by default is A Typical Ride Out by Noir Et Blanc Vie, it is royalty free and offered as part of youtubes audio library.
+
 ---
 
 ## Credits

@@ -315,7 +315,7 @@ if (isServer) then {
 	if (JesterEnabled) then {
 		_JesterChanceNumber = round(random [0,50,100]);
 
-		if (_JesterChanceNumber <= (100 * JesterPercentagechance)) then {
+		if (_JesterChanceNumber <= (JesterPercentagechance)) then {
 			private "_Jester";
 
 			if ((count allUnits) >= 6) then {

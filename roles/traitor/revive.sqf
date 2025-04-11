@@ -11,7 +11,7 @@ if(!alive _target && !isNil {_target getVariable "player"}) then {
 		[2400] remoteExec ["setPlayerRespawnTime", (_target getVariable "player")];
 		_tList = missionNamespace getVariable "TraitorList";
 		_tList append [_revivedPlayer];
-		_revivedPlayer setVariable ["role","Tratior",true];
+		_revivedPlayer setVariable ["role","Traitor",true];
 		missionNamespace setVariable ["TraitorList", _tList,true];
 		["ui\init.sqf"] remoteExec ["execVM ",_revivedPlayer];
 	};

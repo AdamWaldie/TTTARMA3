@@ -209,8 +209,8 @@ class Params {
 
 	class JesterPercentagechance {
 		title = "Chance of Jester Appearing";
-		values[] = {20, 30, 40, 50, 60};
-		texts[] = {"20%", "30%", "40%", "50%", "60%"};
+		values[] = {20, 30, 40};
+		texts[] = {"20%", "30%", "40%";
 		default = 30;
 	};
 
@@ -223,8 +223,8 @@ class Params {
 
 	class TraitorPercentageChanceHigherBound {
 		title = "Traitor Chance Upper Bound";
-		values[] = {40, 45, 50, 60, 70, 80};
-		texts[] = {"40%", "45%", "50%", "60%", "70%", "80%"};
+		values[] = {40, 45, 50, 60};
+		texts[] = {"40%", "45%", "50%", "60%"};
 		default = 45;
 	};
 	// === TESTING OPTIONS ===

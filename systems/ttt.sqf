@@ -318,13 +318,13 @@ if (isServer) then {
 		if (_JesterChanceNumber <= (JesterPercentagechance)) then {
 			private "_Jester";
 
-			if ((count allUnits) >= 6) then {
+			if ((count allUnits) >= 5) then {
 				_searchJester = true;
 
 				while {_searchJester} do {
 					_Jester = selectRandom allPlayers;
 
-					if ((_traitors find _Jester) == -1) then {
+					if ((_traitors find _Jester) == -1 && (_detectives find _Jester) == -1) then {
 						_Jester setVariable ["role", "Jester", true];
 						// Jester cannot shoot
 						_Jester addEventHandler ["Fired", { deletevehicle (_this select 6) }];

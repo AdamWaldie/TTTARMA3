@@ -14,7 +14,7 @@ class Header
 {
  	gameType = Coop;
 	minPlayers = 1;
-	maxPlayers = 218;
+	maxPlayers = 128; // Matches the 128 playable units placed in mission.sqm
 };
 
 // HUD Setup
@@ -80,6 +80,92 @@ class CfgMusic
 
 		// filename, volume, pitch
 		sound[]	= { "audio\TypicalRideOut.ogg", db + 0, 1.0 };
+	};
+};
+
+// ============================================================================
+// Function library — compiles functions/**/fn_*.sqf into Waldo_fnc_<name>.
+// Branding: Waldo's Mission Pack. See functions/README.md for the layout.
+// ============================================================================
+class CfgFunctions
+{
+	class Waldo
+	{
+		class config
+		{
+			file = "functions\config";
+			class loadParams {};        // Waldo_fnc_loadParams  (server: params + modpack)
+		};
+
+		class core
+		{
+			file = "functions\core";
+			class resetState {};        // Waldo_fnc_resetState  (idempotent round (re)init)
+			class initServer {};        // Waldo_fnc_initServer  (round orchestrator)
+			class initClient {};        // Waldo_fnc_initClient  (per-client setup)
+		};
+
+		class arena
+		{
+			file = "functions\arena";
+			class selectArena {};       // Waldo_fnc_selectArena
+			class buildArena {};        // Waldo_fnc_buildArena
+			class populateLoot {};      // Waldo_fnc_populateLoot
+			class confineToArena {};    // Waldo_fnc_confineToArena
+		};
+
+		class env
+		{
+			file = "functions\env";
+			class setupWeather {};      // Waldo_fnc_setupWeather
+		};
+
+		class round
+		{
+			file = "functions\round";
+			class assignRoles {};       // Waldo_fnc_assignRoles
+			class applyDetectiveLoadout {}; // Waldo_fnc_applyDetectiveLoadout
+			class startRound {};        // Waldo_fnc_startRound
+			class roundLoop {};         // Waldo_fnc_roundLoop
+			class checkWin {};          // Waldo_fnc_checkWin
+			class endRound {};          // Waldo_fnc_endRound
+			class onKilled {};          // Waldo_fnc_onKilled
+			class reviveAsTraitor {};   // Waldo_fnc_reviveAsTraitor
+		};
+
+		class systems
+		{
+			file = "functions\systems";
+			class spawnAirdrop {};      // Waldo_fnc_spawnAirdrop
+			class applyKarma {};        // Waldo_fnc_applyKarma
+		};
+
+		class ui
+		{
+			file = "functions\ui";
+			class initShops { preInit = 1; }; // defines shop catalogs on every machine
+			class initHud {};           // Waldo_fnc_initHud
+			class drawRoleIcons {};     // Waldo_fnc_drawRoleIcons
+			class openBuyMenu {};       // Waldo_fnc_openBuyMenu
+			class buyItem {};           // Waldo_fnc_buyItem
+			class titleSequence {};     // Waldo_fnc_titleSequence
+			class pregameScreen {};     // Waldo_fnc_pregameScreen
+		};
+
+		class roles
+		{
+			file = "functions\roles";
+			class traitorRadar {};      // Waldo_fnc_traitorRadar
+			class detectiveRadar {};    // Waldo_fnc_detectiveRadar
+			class warpSmoke {};         // Waldo_fnc_warpSmoke
+			class suicideBomb {};       // Waldo_fnc_suicideBomb
+			class flowerPower {};       // Waldo_fnc_flowerPower
+			class tester {};            // Waldo_fnc_tester
+			class makeJester {};        // Waldo_fnc_makeJester
+			class revive {};            // Waldo_fnc_revive
+			class healthStation {};     // Waldo_fnc_healthStation
+			class holster {};           // Waldo_fnc_holster
+		};
 	};
 };
 
@@ -210,7 +296,7 @@ class Params {
 	class JesterPercentagechance {
 		title = "Chance of Jester Appearing";
 		values[] = {20, 30, 40};
-		texts[] = {"20%", "30%", "40%";
+		texts[] = {"20%", "30%", "40%"};
 		default = 30;
 	};
 

@@ -31,6 +31,11 @@ if (_count == 0) exitWith {
 	diag_log "[Waldo][server] assignRoles: no players";
 };
 
+// Traitors & Detectives start with credits that scale with lobby size
+// (base 1, +1 per 8 players). Stored so other systems can reference it.
+private _startCredits = 1 + floor (_count / 8);
+missionNamespace setVariable ["Waldo_startCredits", _startCredits, true];
+
 // --- Traitors ---
 private _lower = missionNamespace getVariable ["TraitorPercentageChanceLowerBound", 0.25];
 private _upper = missionNamespace getVariable ["TraitorPercentageChanceHigherBound", 0.45];
@@ -43,7 +48,7 @@ private _traitors = [];
 for "_i" from 0 to (_traitorCount - 1) do { _traitors pushBack (_pool select _i); };
 {
 	_x setVariable ["role", "Traitor", true];
-	_x setVariable ["points", 1, true];
+	_x setVariable ["points", _startCredits, true];
 } forEach _traitors;
 missionNamespace setVariable ["TraitorList", _traitors, true];
 
@@ -56,7 +61,7 @@ if (_count >= 5) then {
 		// Loadout must be applied where the detective is local.
 		[_det] remoteExec ["Waldo_fnc_applyDetectiveLoadout", _det];
 		_det setVariable ["role", "Detective", true];
-		_det setVariable ["points", 1, true];
+		_det setVariable ["points", _startCredits, true];
 		_detectives pushBack _det;
 		["There Is A Detective This Round"] remoteExec ["systemChat", -2];
 	};

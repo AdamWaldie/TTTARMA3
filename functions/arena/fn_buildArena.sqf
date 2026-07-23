@@ -1,9 +1,14 @@
 //////////////////////////////////////////////////////////////////
 // Waldo_fnc_buildArena
-// SERVER: scans perimeter elevation and builds a circular containment
-// wall ("dome"). Both loops are now bounded so steep/awkward terrain can
-// never wedge the build (which used to leave mapDone unset -> every client
-// stuck on "Setting Up The Arena").
+// SERVER: builds a circular containment wall ("dome") around the arena.
+//
+// Gap-free at any radius: the wall block's real width/height are measured at
+// runtime (boundingBoxReal); horizontal segments are spaced by width with an
+// overlap factor and each block is turned to FACE THE CENTRE so its width
+// runs tangentially (the old fixed 4m estimate + fixed rotation left gaps as
+// the radius grew). Each column is stacked from its own local ground up to a
+// common height above the tallest perimeter point, so terrain rises can't
+// open holes either. All loops are bounded.
 //////////////////////////////////////////////////////////////////
 
 if (!isServer) exitWith {};
@@ -11,71 +16,63 @@ if (!isServer) exitWith {};
 private _pos0 = missionNamespace getVariable ["mapPos", [0,0,0]];
 private _distance = missionNamespace getVariable ["mapRadius", 50];
 
-// Anchor at centre to get a stable world Z.
+// Centre world position (stable Z reference).
 private _centerObj = "groundweaponholder" createVehicle _pos0;
 _centerObj setPos _pos0;
-private _pos = getPosWorld _centerObj;
+private _base = getPosWorld _centerObj;
 deleteVehicle _centerObj;
 
-// --- Elevation scan (bounded) ---
-private _height = 0;
-private _higher = false;
-private _scanIters = 0;
-while { !_higher && _scanIters < 60 } do {
-	_scanIters = _scanIters + 1;
-	_higher = true;
-	for "_i" from 0 to 100 do {
-		private _a = _i * 3.6;
-		private _low = "groundweaponholder" createVehicle _pos0;
-		_low setPos [
-			_distance * cos(_a) + (_pos0 select 0),
-			_distance * sin(_a) + (_pos0 select 1),
-			(_pos0 select 2)
-		];
-		private _wp = getPosWorld _low;
-		if ((_wp select 2) > (_pos select 2) + _height * 9) then {
-			_height = _height + 1;
-			_higher = false;
-		};
-		deleteVehicle _low;
-	};
-};
-_height = _height + 6;
+// Measure the wall block's real dimensions.
+private _sample = "Land_VR_Block_04_F" createVehicle [0, 0, 0];
+private _bb = boundingBoxReal _sample;
+private _ww = (_bb select 1 select 0) - (_bb select 0 select 0);   // width (X)
+private _wh = (_bb select 1 select 2) - (_bb select 0 select 2);   // height (Z)
+deleteVehicle _sample;
+if (_ww < 0.5) then { _ww = 4; };
+if (_wh < 0.5) then { _wh = 9; };
 
-// --- Dome construction ---
-private _wallWidth = 4;                              // approx width of Land_VR_Block_04_F
-private _circumference = 2 * pi * _distance;
-private _segmentCount = ceil (_circumference / _wallWidth);
+// --- Perimeter elevation scan: biggest rise above centre ---
+private _maxDelta = 0;
+for "_i" from 0 to 179 do {
+	private _a = _i * 2;
+	private _probe = "groundweaponholder" createVehicle [
+		_distance * cos(_a) + (_base select 0),
+		_distance * sin(_a) + (_base select 1),
+		0
+	];
+	private _d = (getPosWorld _probe select 2) - (_base select 2);
+	if (_d > _maxDelta) then { _maxDelta = _d; };
+	deleteVehicle _probe;
+};
+
+// Layers so every column clears the tallest point plus a fixed extra wall height.
+private _extra = 6;
+private _layers = (ceil ((_maxDelta + (_extra * _wh)) / _wh)) + 1;
+
+// --- Horizontal segments with overlap ---
+private _overlap = 0.9;
+private _segments = ceil ((2 * pi * _distance) / (_ww * _overlap));
 private _placed = 0;
 
-for "_s" from 0 to (_segmentCount - 1) do {
-	private _a = (_s / _segmentCount) * 360;
-	private _low = "groundweaponholder" createVehicle _pos0;
-	_low setPos [
-		_distance * cos(_a) + (_pos0 select 0),
-		_distance * sin(_a) + (_pos0 select 1),
-		_pos0 select 2
-	];
-	private _wp = getPosWorld _low;
+for "_s" from 0 to (_segments - 1) do {
+	private _a = (_s / _segments) * 360;
+	private _wx = _distance * cos(_a) + (_base select 0);
+	private _wy = _distance * sin(_a) + (_base select 1);
 
-	for "_u" from 0 to _height do {
-		if ((_wp select 2) - 9 < (_pos select 2) + (9 * _u) - 45) then {
-			private _wall = "Land_VR_Block_04_F" createVehicle [
-				_distance * cos(_a) + (_pos select 0),
-				_distance * sin(_a) + (_pos select 1),
-				(_pos select 2)
-			];
-			_wall setPosWorld [
-				_distance * cos(_a) + (_pos select 0),
-				_distance * sin(_a) + (_pos select 1),
-				(_pos select 2) + (9 * _u) - 45
-			];
-			_wall setDir -_a;
-			_placed = _placed + 1;
-		};
+	// local ground Z at this perimeter point
+	private _probe = "groundweaponholder" createVehicle [_wx, _wy, 0];
+	private _gz = getPosWorld _probe select 2;
+	deleteVehicle _probe;
+
+	private _dir = [_wx, _wy] getDir _base;   // face centre -> width runs tangentially
+
+	for "_u" from 0 to (_layers - 1) do {
+		private _wall = "Land_VR_Block_04_F" createVehicle [0, 0, 0];
+		_wall setDir _dir;
+		_wall setPosWorld [_wx, _wy, _gz + (_u * _wh) - (_wh / 2)];   // start half-buried, no bottom gap
+		_placed = _placed + 1;
 	};
-
-	deleteVehicle _low;
 };
 
-diag_log format ["[Waldo][server] buildArena: height=%1 walls=%2", _height, _placed];
+diag_log format ["[Waldo][server] buildArena: blockW=%1 blockH=%2 layers=%3 segments=%4 walls=%5",
+	_ww, _wh, _layers, _segments, _placed];

@@ -112,6 +112,12 @@ removeBackpack player;
 					[] call Waldo_fnc_holster;
 					_handled = true;
 				};
+				case 43: {   // \ - open the dev/test menu (only under Testing Mode)
+					if (missionNamespace getVariable ["TestingFlag", false]) then {
+						[] call Waldo_fnc_debugMenu;
+						_handled = true;
+					};
+				};
 			};
 			_handled
 		}];

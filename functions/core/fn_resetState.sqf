@@ -18,4 +18,7 @@ missionNamespace setVariable ["TraitorList",     [],      true];
 missionNamespace setVariable ["DetectiveList",   [],      true];
 missionNamespace setVariable ["JesterList",      [],      true];
 
+// Dev/test: the warmup-skip request is per-round; always start cleared.
+missionNamespace setVariable ["Waldo_debugSkipWarmup", false, true];
+
 diag_log "[Waldo][server] resetState: done";

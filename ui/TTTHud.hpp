@@ -166,3 +166,72 @@ class WaldoShop {
 		};
 	};
 };
+
+// ============================================================================
+// WaldoDebug - the dev / test menu (opened with '\' when Testing Mode is on).
+// Buttons are generated at runtime from an action list by Waldo_fnc_debugMenu,
+// so this shell never changes when a test tool is added or removed.
+//   idc 3100 = title, 3101 = live game-state readout, 3102 = scrollable grid.
+// ============================================================================
+class WaldoDebug {
+	idd = -1;
+	fadeout = 0.15;
+	fadein = 0.15;
+	movingEnable = true;
+	enableSimulation = true;
+	duration = 99999;
+	onLoad = "with uiNamespace do { WaldoDebug = _this select 0 }";
+
+	class controlsBackground {
+		class dbgBG: RscText {
+			idc = -1;
+			x = (safezoneX + (0.28 * safezoneW));
+			y = (safezoneY + (0.14 * safezoneH));
+			w = 0.44 * safezoneW;
+			h = 0.72 * safezoneH;
+			colorBackground[] = {0.05,0.05,0.05,0.92};
+			colorText[] = {1,1,1,1};
+			style = 0;
+			font = "PuristaMedium";
+			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1);
+		};
+		class dbgTitle: RscText {
+			idc = 3100;
+			text = "Dev / Test Menu";
+			x = (safezoneX + (0.28 * safezoneW));
+			y = (safezoneY + (0.14 * safezoneH));
+			w = 0.44 * safezoneW;
+			h = 0.06 * safezoneH;
+			colorBackground[] = {0,0,0,0};
+			colorText[] = {1,1,1,1};
+			style = ST_CENTER;
+			font = "PuristaBold";
+			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.5);
+		};
+		class dbgStatus: RscStructuredText {
+			idc = 3101;
+			text = "";
+			x = (safezoneX + (0.29 * safezoneW));
+			y = (safezoneY + (0.205 * safezoneH));
+			w = 0.42 * safezoneW;
+			h = 0.14 * safezoneH;
+			size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1);
+			class Attributes {
+				font = "PuristaMedium";
+				color = "#ffffff";
+				align = "left";
+				shadow = 1;
+			};
+		};
+	};
+
+	class Controls {
+		class dbgGroup: RscControlsGroup {
+			idc = 3102;
+			x = (safezoneX + (0.29 * safezoneW));
+			y = (safezoneY + (0.35 * safezoneH));
+			w = 0.42 * safezoneW;
+			h = 0.50 * safezoneH;
+		};
+	};
+};

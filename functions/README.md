@@ -34,6 +34,7 @@ Trouble in Terrorist Town is a hidden-role social-deduction round game:
 | `systems` | `spawnAirdrop`, `applyKarma` | server |
 | `ui` | `initShops` (preInit), `initHud`, `drawRoleIcons`, `openBuyMenu`, `buyItem`, `titleSequence`, `pregameScreen` | client |
 | `roles` | `traitorRadar`, `detectiveRadar`, `warpSmoke`, `suicideBomb`, `flowerPower`, `tester`, `revive`, `healthStation`, `holster` | client |
+| `debug` | `debugMenu` (client panel), `debugAction` (server ops) | client / server |
 
 ## Adding a shop item
 
@@ -56,6 +57,33 @@ runtime, so no `.hpp` changes are needed.
 - **B** — open your buy menu (Traitor / Detective).
 - **Y** — use your most recently bought activation item.
 - **L** — holster / lower weapon.
+- **\\** — open the dev/test menu (**only** when the **Testing Mode** parameter is on).
+
+## Testing / dev mode
+
+Set the **Enable Testing Mode** lobby parameter to *Yes* to unlock a solo-friendly
+test harness. Beyond the original behaviour (phase markers echoed to chat and the
+"Traitors win" auto-end suppressed so a lone tester is never kicked out), pressing
+**\\** in-round opens a data-driven panel (`Waldo_fnc_debugMenu`) that lets one
+person exercise every system:
+
+- **Roles** — become Innocent / Traitor / Detective / Jester on demand (the
+  Detective gets its loadout, the Jester its fire-block, and the authoritative
+  role lists stay consistent so win checks still behave).
+- **Credits & shops** — grant credits and open either shop to buy-test items.
+- **Test dummies** — spawn a captive dummy of any role. Its death is routed
+  through `Waldo_fnc_onKilled`, so kill-credit, the Jester clean-kill and karma
+  can all be verified without a second player.
+- **Systems** — force an airdrop, skip the warmup, and set your own karma high or
+  low to test the low-karma penalty path.
+- **Win conditions** — force any ending (END1–END4) to check each debrief.
+- **Player utilities** — godmode toggle, self-heal, teleport to the arena centre,
+  and a "reveal all roles" 3D overlay.
+
+Everything is gated on `TestingFlag`: the key does nothing and the server ops are
+inert when Testing Mode is off, so normal games are completely unaffected. To add
+a test tool, append one `[label, tooltip, code]` row to `_actions` in
+`fn_debugMenu.sqf` (server-authoritative work goes through `Waldo_fnc_debugAction`).
 
 ## State model & replay safety
 

@@ -56,9 +56,29 @@ This version (2.5.0 RC) includes a major refactor for stability, scalability, an
 | `Round Length`           | Base + per player + per traitor             |
 | `Airdrops Enabled`       | Enables random supply drops                 |
 | `Rain / Fog`             | Controls chance and density                 |
-| `Developer Mode`         | Disables traitor win for testing            |
+| `Enable Testing Mode`    | Unlocks the solo dev/test harness (see below) |
 
 You can also adjust default values in `config.sqf`.
+
+---
+
+## Testing / Dev Mode
+
+Set **Enable Testing Mode** to *Yes* in the lobby to test the whole game solo
+without breaking normal flow. It echoes init phase markers to chat and stops the
+"Traitors win" ending from kicking out a lone tester. Once in-round, press **`\`**
+to open the **Dev / Test Menu**, which lets one player:
+
+- switch their own role to Innocent / Traitor / Detective / Jester,
+- grant credits and open either shop to buy-test items,
+- spawn captive **test dummies** (deaths run through the real kill handler, so
+  kill-credit, the Jester win and karma can be verified alone),
+- force an airdrop, skip the warmup, and set karma high/low,
+- force any ending (Innocents / Traitors / Time Up / Jester) to check debriefs,
+- toggle godmode, self-heal, teleport to the arena centre, and reveal all roles.
+
+Everything is gated on the parameter, so with Testing Mode off the key and menu
+do nothing and a normal match is unaffected.
 
 ---
 

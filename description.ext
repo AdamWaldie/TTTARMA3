@@ -152,6 +152,13 @@ class CfgFunctions
 			class pregameScreen {};     // Waldo_fnc_pregameScreen
 		};
 
+		class debug
+		{
+			file = "functions\debug";
+			class debugMenu {};         // Waldo_fnc_debugMenu   (client: dev/test panel)
+			class debugAction {};       // Waldo_fnc_debugAction (server: authoritative test ops)
+		};
+
 		class roles
 		{
 			file = "functions\roles";

@@ -54,6 +54,8 @@ while { true } do {
 missionNamespace setVariable ["mapDone", true, true];
 private _warmup = missionNamespace getVariable ["roundWarmupLength", 20];
 for "_i" from 0 to (_warmup - 1) do {
+	// Dev/test menu can end the warmup early (Waldo_fnc_debugAction "skipWarmup").
+	if (missionNamespace getVariable ["Waldo_debugSkipWarmup", false]) exitWith {};
 	private _remaining = _warmup - _i;
 	private _text = format [
 		"<t align='center' size='1.5'><t color='#ffbb00' shadow='1'>Selecting Roles:</t><br />%1</t>",

@@ -1,13 +1,17 @@
-if(isServer) then {
-	execVM "config.sqf";
-	sleep 0.1;
-	execVM "systems\ttt.sqf";
-};
+//////////////////////////////////////////////////////////////////
+// Trouble In Armaville — mission entry point
+// All logic lives in the Waldo_fnc_* library (see functions/ and
+// the CfgFunctions block in description.ext). This file only wires
+// the engine's init hook to that library.
+//////////////////////////////////////////////////////////////////
 
-Say3dMP = {
-	_speaker = _this select 0;
-	_sound 	= _this select 1;
-	//if (isDedicated) exitWith {};
-	//if ((player distance _speaker) > 100) exitWith {}; //you probably don't need this, not sure
-	_speaker say3d _sound;
+if (isServer) then {
+	// config.sqf is the user-facing knob (which equipment modpack to use).
+	call compile preprocessFileLineNumbers "config.sqf";
+
+	// Load params + modpack synchronously, then flag Waldo_configReady.
+	[] call Waldo_fnc_loadParams;
+
+	// Orchestrate the round (scheduled: contains waits/sleeps).
+	[] spawn Waldo_fnc_initServer;
 };

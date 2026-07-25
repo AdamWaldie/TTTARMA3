@@ -66,3 +66,12 @@ traitorRifleOptics = "optic_LRPS";
 missionNamespace setVariable ["TraitorRifle",traitorRifle,true];
 missionNamespace setVariable ["TraitorRifleMag",traitorRifleMagazine,true];
 missionNamespace setVariable ["TraitorRifleOptics",traitorRifleOptics,true];
+
+// -- Testing / dev mode (optional) -- //
+// The dev/test menu spawns its dummies and simulated players from base-game
+// unit classes by default, and dresses them in the uniforms above, so testing
+// works with no config. If your modpack replaces the base classes, point these
+// at your own man/soldier classes (they are validated and fall back to the
+// base-game defaults if the class does not exist).
+//missionNamespace setVariable ["Waldo_debugCivUnit","C_man_1",true];      // dummies + sim players
+//missionNamespace setVariable ["Waldo_debugEnemyUnit","O_Soldier_F",true]; // hostile combat dummy

@@ -156,6 +156,38 @@ Waldo_debugSetRole = {
 	diag_log format ["[Waldo][server] debug: %1 -> role %2", name _unit, _role];
 };
 
+// Create one AI test unit at _pos on _side, MODPACK-INDEPENDENTLY. The unit
+// class is read from a modpack-overridable variable (Waldo_debugCivUnit /
+// Waldo_debugEnemyUnit) and validated, falling back to a base-game class that
+// exists in every Arma 3 install — so testing works under Vanilla, WW2, Custom
+// or any future modpack. Civilian-side units are dressed in the active modpack's
+// published uniform/headgear/vest so dummies and sims look like its real
+// players. Returns the unit, or objNull on failure.
+Waldo_debugMakeUnit = {
+	params ["_pos", "_side"];
+	private _enemy = (_side isEqualTo east);
+	private _default = ["C_man_1", "O_Soldier_F"] select _enemy;
+	private _var     = ["Waldo_debugCivUnit", "Waldo_debugEnemyUnit"] select _enemy;
+	private _cls = missionNamespace getVariable [_var, _default];
+	if (!isClass (configFile >> "CfgVehicles" >> _cls)) then { _cls = _default; };
+
+	private _grp = createGroup [_side, true];
+	_grp createUnit [_cls, _pos, [], 0, "NONE"];
+	private _u = (units _grp) select 0;
+	if (isNull _u) exitWith { objNull };
+
+	// Dress non-enemy test units to match the current modpack's players.
+	if (!_enemy) then {
+		private _uni  = missionNamespace getVariable ["uniformsConfig", []];
+		private _head = missionNamespace getVariable ["headgearsConfig", []];
+		private _vest = missionNamespace getVariable ["vestsConfig", []];
+		if (count _uni  > 0) then { _u forceAddUniform (selectRandom _uni); };
+		if (count _vest > 0) then { _u addVest (selectRandom _vest); };
+		if (count _head > 0) then { _u addHeadgear (selectRandom _head); };
+	};
+	_u
+};
+
 // Spawn a test dummy in front of the caller. Role dummies are captive/idle and
 // route their death through the normal kill handler (so kill-credit, the Jester
 // clean-kill and karma can be exercised solo). "Hostile" is an armed enemy for
@@ -165,9 +197,7 @@ Waldo_debugSpawnDummy = {
 	if (isNull _caller) exitWith {};
 	private _hostile = (_role == "Hostile");
 	private _pos = _caller getPos [5, getDir _caller];
-	private _grp = createGroup [[civilian, east] select _hostile, true];
-	_grp createUnit [["C_man_1", "O_Soldier_F"] select _hostile, _pos, [], 0, "NONE"];
-	private _unit = (units _grp) select 0;
+	private _unit = [_pos, [civilian, east] select _hostile] call Waldo_debugMakeUnit;
 	if (isNull _unit) exitWith { diag_log "[Waldo][server] debug: dummy spawn failed"; };
 
 	_unit setDir ((getDir _caller) + 180);
@@ -208,9 +238,7 @@ Waldo_debugSpawnSim = {
 	private _made = 0;
 	for "_i" from 1 to _n do {
 		private _pos = _caller getPos [4 + random 4, random 360];
-		private _grp = createGroup [civilian, true];
-		_grp createUnit ["C_man_1", _pos, [], 0, "NONE"];
-		private _u = (units _grp) select 0;
+		private _u = [_pos, civilian] call Waldo_debugMakeUnit;
 		if (!isNull _u) then {
 			_u setVariable ["role", _role, true];
 			_u setVariable ["tested", false, true];
@@ -318,7 +346,7 @@ Waldo_debugDump = {
 ["Roles", "Become Traitor",   "Switch your role to Traitor",               "server", { [_this, "Traitor"]   call Waldo_debugSetRole }] call Waldo_debugRegister;
 ["Roles", "Become Detective", "Switch role + apply the detective loadout", "server", { [_this, "Detective"] call Waldo_debugSetRole }] call Waldo_debugRegister;
 ["Roles", "Become Jester",    "Switch to Jester (bullets deal no damage)", "server", { [_this, "Jester"]    call Waldo_debugSetRole }] call Waldo_debugRegister;
-["Roles", "Reassign All Roles", "Re-run role assignment for the lobby",    "server", { [] call Waldo_fnc_assignRoles }] call Waldo_debugRegister;
+["Roles", "Reassign All Roles", "Clear sims, then re-run role assignment for the lobby", "server", { [_this] call Waldo_debugClearSims; [] call Waldo_fnc_assignRoles }] call Waldo_debugRegister;
 ["Roles", "Reveal All Roles",   "Toggle a 3D overlay of every unit's role","local",  { call Waldo_debugToggleReveal }] call Waldo_debugRegister;
 
 // Loadout & Shops

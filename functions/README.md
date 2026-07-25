@@ -129,6 +129,24 @@ or a future module's own preInit):
   matches. `Waldo_fnc_effectivePlayerCount` is the shared hook that lets size
   logic honour the simulated lobby size.
 
+### Modpack independence
+
+The framework carries no modpack-specific classnames. Weapon/loadout tools run
+the shop's own `_onBuy` effects, which already read modpack globals with vanilla
+fallbacks, so they follow whichever modpack is loaded. Spawned test units
+(dummies, simulated players, hostile) go through one helper, `Waldo_debugMakeUnit`,
+which:
+
+- reads its unit class from `Waldo_debugCivUnit` / `Waldo_debugEnemyUnit`,
+  **validating** it and falling back to a base-game class (`C_man_1` /
+  `O_Soldier_F`) that exists in every install, and
+- dresses non-enemy units from the active modpack's `uniformsConfig` /
+  `headgearsConfig` / `vestsConfig`, so they look like that modpack's players.
+
+A modpack that replaces the base man classes can point those two variables at its
+own units (see the commented example in `modpacks/Custom.sqf`); with no config,
+testing works out of the box under any modpack.
+
 ## State model & replay safety
 
 Each round ends via `BIS_fnc_endMissionServer`, i.e. a full mission restart, so

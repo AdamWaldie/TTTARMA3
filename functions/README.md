@@ -26,7 +26,7 @@ Trouble in Terrorist Town is a hidden-role social-deduction round game:
 
 | Group | Functions | Runs on |
 |-------|-----------|---------|
-| `config` | `loadParams` | server |
+| `config` | `loadParams`, `buildArsenal` | server |
 | `core` | `resetState`, `initServer`, `initClient` | server / client |
 | `arena` | `selectArena`, `buildArena`, `populateLoot`, `confineToArena` | server (confine: client) |
 | `env` | `setupWeather` | server |
@@ -35,6 +35,46 @@ Trouble in Terrorist Town is a hidden-role social-deduction round game:
 | `ui` | `initShops` (preInit), `initHud`, `drawRoleIcons`, `openBuyMenu`, `buyItem`, `titleSequence`, `pregameScreen` | client |
 | `roles` | `traitorRadar`, `detectiveRadar`, `warpSmoke`, `suicideBomb`, `flowerPower`, `tester`, `revive`, `healthStation`, `holster` | client |
 | `debug` | `debugInit` (preInit registry + API), `debugMenu` (client renderer), `debugExec` (server dispatch), `effectivePlayerCount` | every machine / client / server |
+
+## Equipment — dynamic, intent-aware arsenal
+
+Equipment is discovered at runtime, not hand-listed per modpack.
+`Waldo_fnc_buildArsenal` runs once in `loadParams` (server), scans the loaded
+`CfgWeapons` a single time, and classifies what is actually available:
+
+- weapons are bucketed by **config inheritance** (`isKindOf` on `Rifle` /
+  `Pistol` / `Launcher`, so mods that inherit from the base classes are picked
+  up) and then by **power** — a primary's default-magazine ammo `hit` and round
+  count sort it into low / standard / sniper / LMG;
+- clothing is bucketed by `ItemInfo` type (uniform / vest / headgear);
+- thermal optics are auto-detected (via `OpticsModes` `visionMode`) and
+  blacklisted from loot.
+
+It then publishes the exact globals the mission already consumes
+(`lootPriWeapons`, `lootSecWeapons`, `lootAttachments`, `airdropLoadouts`,
+`TraitorRifle`/`*Mag`/`*Optics`, `TraitorLauncher`/`*Mag`, `uniformsConfig`,
+`headgearsConfig`, `vestsConfig`, `detectiveConfig`) by **intent**:
+
+| Intent | Pool |
+|--------|------|
+| Ground loot | low-powered primaries + sidearms (falls back to standard rifles if too few low-powered exist) |
+| Airdrops (reward) | snipers + LMGs + standard rifles |
+| Traitor "Long Rifle" | the highest-`hit` sniper found, with a compatible optic |
+| Traitor "Rocket Launcher" | any launcher found |
+| Spawn / detective clothing | discovered uniforms / vests / headgear |
+
+Every bucket has a **vanilla fallback**, so an empty category never breaks a
+round, and consumers keep their own `isNil`/`getVariable` guards. Because it is a
+drop-in for those globals, `Waldo_fnc_populateLoot`, `Waldo_fnc_spawnAirdrop`,
+the shop and the spawn loadout needed **no changes**.
+
+### Optional override
+
+`config.sqf` is dynamic by default (no modpack set). To pin a hard theme (e.g.
+WW2, so modern vanilla weapons are not mixed in), point `Waldo_modpack` at a file
+in `modpacks/`; `loadParams` loads it **after** the dynamic pass, so it overrides
+whichever globals it sets. The `modpacks/*.sqf` files are now just optional
+override presets, not the primary equipment source.
 
 ## Adding a shop item
 

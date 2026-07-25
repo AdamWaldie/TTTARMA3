@@ -13,10 +13,18 @@ if (!isServer) exitWith {};
 
 diag_log "[Waldo][server] loadParams: begin";
 
-// --- Equipment modpack (synchronous) ---
-private _modpack = if (isNil "Waldo_modpack") then { "modpacks\Vanilla.sqf" } else { Waldo_modpack };
-call compile preprocessFileLineNumbers _modpack;
-diag_log ("[Waldo][server] loadParams: modpack loaded -> " + _modpack);
+// --- Equipment: dynamic, intent-aware discovery (synchronous) ---
+// Scans the loaded configs and publishes appropriate loot/airdrop/shop/clothing
+// gear for whatever mods are running. Replaces the old static modpack lists.
+[] call Waldo_fnc_buildArsenal;
+
+// Optional override layer: if config.sqf pins a modpack file, load it AFTER
+// discovery so it can force specific gear for a hard theme (e.g. WW2). Left
+// unset by default, so the mission is fully dynamic out of the box.
+if (!isNil "Waldo_modpack" && {(Waldo_modpack isEqualType "") && {Waldo_modpack != ""}}) then {
+	call compile preprocessFileLineNumbers Waldo_modpack;
+	diag_log ("[Waldo][server] loadParams: modpack override -> " + Waldo_modpack);
+};
 
 // --- Round options ---
 missionNamespace setVariable ["roundBaseLength",    param [0, 180], true];

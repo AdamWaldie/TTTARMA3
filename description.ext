@@ -94,7 +94,8 @@ class CfgFunctions
 		class config
 		{
 			file = "functions\config";
-			class loadParams {};        // Waldo_fnc_loadParams  (server: params + modpack)
+			class loadParams {};        // Waldo_fnc_loadParams   (server: params + equipment)
+			class buildArsenal {};      // Waldo_fnc_buildArsenal (server: dynamic intent-aware gear)
 		};
 
 		class core

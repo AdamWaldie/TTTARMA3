@@ -58,7 +58,18 @@ This version (2.5.0 RC) includes a major refactor for stability, scalability, an
 | `Rain / Fog`             | Controls chance and density                 |
 | `Enable Testing Mode`    | Unlocks the solo dev/test harness (see below) |
 
-You can also adjust default values in `config.sqf`.
+### Equipment (dynamic)
+
+Weapons, loot, airdrops and clothing are **discovered dynamically** from whatever
+mods are loaded — no hand-curated per-modpack lists. `Waldo_fnc_buildArsenal`
+scans the config once and picks gear by intent: **low-powered weapons** for
+ground loot, stronger weapons for airdrops, the strongest sniper and a launcher
+for the traitor shop, and available clothing for spawns. It works out of the box
+on any modpack, with vanilla fallbacks so nothing can break.
+
+`config.sqf` is left fully dynamic by default. To force a specific hand-picked
+theme (e.g. strict WW2), uncomment a `Waldo_modpack` line there — the chosen
+`modpacks/*.sqf` preset loads after discovery and overrides it.
 
 ---
 

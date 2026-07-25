@@ -1,20 +1,25 @@
 //////////////////////////////////////////////////////////////////
 // Game Config — USER-FACING KNOBS
 //
-// The heavy lifting (reading mission parameters, loading the modpack,
-// publishing everything) is done by Waldo_fnc_loadParams. This file just
-// picks which equipment modpack to use so it is easy to change.
+// Equipment is now DYNAMIC: Waldo_fnc_buildArsenal scans whatever mods are
+// loaded and picks appropriate gear by intent (low-powered weapons for ground
+// loot, snipers/launchers for the traitor shop, clothing for spawns, etc.), so
+// the mission works on any modpack with no hand-curated lists.
+//
+// You normally leave this file alone. The only knob is an OPTIONAL override:
+// if you want to force a specific, hand-picked equipment theme (e.g. a strict
+// WW2 loadout), point Waldo_modpack at a file in the modpacks\ folder. It is
+// loaded AFTER the dynamic pass and overrides whatever it sets.
 //////////////////////////////////////////////////////////////////
 
-// -- Equipment Options -- //
-// Choose ONE modpack below. Custom.sqf is for your own personal changes.
-// Modpack files live in the modpacks\ folder.
+// -- Optional equipment override (leave commented for fully dynamic gear) -- //
 
-// Vanilla + DLC (NO CDLC)
-Waldo_modpack = "modpacks\Vanilla.sqf";
+// Vanilla + DLC hand-picked list:
+//Waldo_modpack = "modpacks\Vanilla.sqf";
 
-// WW2 - Northern Fronts + JMs Second Assault
+// WW2 - Northern Fronts + JMs Second Assault (recommended when running WW2 mods,
+// so modern vanilla weapons are not mixed into the dynamic pool):
 //Waldo_modpack = "modpacks\WW2.sqf";
 
-// Custom (your edits, by default a copy of Vanilla)
+// Custom (your own edits):
 //Waldo_modpack = "modpacks\Custom.sqf";

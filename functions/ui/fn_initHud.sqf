@@ -13,16 +13,12 @@ private _display = uiNamespace getVariable "TTTHud";
 private _role = player getVariable ["role", "Innocent"];
 private _color = [_role] call Waldo_roleColor;
 
-// Badge icon tint + single-letter crest.
+// GMod-style role crest: tint the circular badge and centre the role's letter
+// (T / D / I / J) in it.
 (_display displayCtrl 1000) ctrlSetTextColor _color;
 private _badge = _display displayCtrl 1001;
 _badge ctrlSetTextColor _color;
-_badge ctrlSetStructuredText parseText (_role select [0, 1]);
-
-// Full role name label (shown for every role, tinted to the role colour).
-private _nameCtrl = _display displayCtrl 1003;
-_nameCtrl ctrlSetText (toUpper _role);
-_nameCtrl ctrlSetTextColor _color;
+_badge ctrlSetStructuredText parseText (toUpper (_role select [0, 1]));
 
 // Live credits readout for shop roles (blank for the others).
 private _creditsCtrl = _display displayCtrl 1002;

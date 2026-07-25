@@ -15,37 +15,42 @@ class RscTitles
 		duration = 99999;
 		onLoad = "with uiNamespace do {TTTHud = _this select 0}";
 
+		// GMod-TTT style role crest: a circular badge with the role's letter
+		// (T / D / I / J) centred in it, tinted to the role colour. The badge is
+		// SQUARE (w == h, both in safezoneH units) so ui\role.paa renders as a
+		// true circle and stays fully on-screen — the old height used safezoneW,
+		// which stretched it into an off-screen ellipse on widescreen.
 		class controlsBackground {
 			class roleTextBGBG: RscPicture
 			{
 				idc = 999;
 				text = "ui\rolebg.paa";
-				x = (safezoneW + safezoneX) - (0.160 * safezoneH);
-				y = (safezoneH + safezoneY) - (0.20 * safezoneH);
+				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
+				y = (safezoneH + safezoneY) - (0.185 * safezoneH);
 				w = 0.15 * safezoneH;
-				h = 0.15 * safezoneW;
+				h = 0.15 * safezoneH;
 				color = [1,1,1,0.5];
 			};
 			class roleTextBG: RscPicture
 			{
 				idc = 1000;
 				text = "ui\role.paa";
-				x = (safezoneW + safezoneX) - (0.160 * safezoneH);
-				y = (safezoneH + safezoneY) - (0.20 * safezoneH);
+				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
+				y = (safezoneH + safezoneY) - (0.185 * safezoneH);
 				w = 0.15 * safezoneH;
-				h = 0.15 * safezoneW;
+				h = 0.15 * safezoneH;
 			};
 			class roleText: RscStructuredText
 			{
 				idc = 1001;
 				text = "";
-				x = (safezoneW + safezoneX) - (0.160 * safezoneH);
-				y = (safezoneH + safezoneY) - (0.20 * safezoneH) + (0.01000 * safezoneW);
+				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
+				y = (safezoneH + safezoneY) - (0.185 * safezoneH);
 				w = 0.15 * safezoneH;
-				h = 0.15 * safezoneW;
-				size = 0.12 * safezoneW;
+				h = 0.15 * safezoneH;
+				size = 0.095 * safezoneH;
 				type = CT_STRUCTURED_TEXT;
-				style = ST_RIGHT;
+				style = ST_CENTER;
 				shadow = false;
 				class Attributes{
 					font = "PuristaBold";
@@ -53,27 +58,12 @@ class RscTitles
 					valign = "middle";
 				};
 			};
-			class roleName: RscText
-			{
-				idc = 1003;
-				text = "";
-				x = (safezoneW + safezoneX) - (0.25 * safezoneH);
-				y = (safezoneH + safezoneY) - (0.278 * safezoneH);
-				w = 0.24 * safezoneH;
-				h = 0.035 * safezoneH;
-				colorBackground[] = {0,0,0,0};
-				colorText[] = {1,1,1,1};
-				style = ST_CENTER;
-				font = "PuristaBold";
-				sizeEx = 0.033 * safezoneH;
-				shadow = 2;
-			};
 			class roleCredits: RscText
 			{
 				idc = 1002;
 				text = "";
-				x = (safezoneW + safezoneX) - (0.25 * safezoneH);
-				y = (safezoneH + safezoneY) - (0.238 * safezoneH);
+				x = (safezoneW + safezoneX) - (0.22 * safezoneH);
+				y = (safezoneH + safezoneY) - (0.225 * safezoneH);
 				w = 0.24 * safezoneH;
 				h = 0.03 * safezoneH;
 				colorBackground[] = {0,0,0,0};

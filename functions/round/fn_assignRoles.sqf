@@ -17,7 +17,11 @@
 if (!isServer) exitWith {};
 
 private _players = allPlayers;
-private _count = count _players;
+private _realCount = count _players;
+// Size-dependent maths (traitor count, starting credits, thresholds) scale to
+// the effective count, which Testing Mode can override to simulate a big lobby
+// solo. Actual role assignment is still clamped to the real players present.
+private _count = ([] call Waldo_fnc_effectivePlayerCount) max _realCount;
 
 // --- Reset per-round role state / player vars ---
 missionNamespace setVariable ["JESTERCLEANKILL", false, true];
@@ -27,7 +31,7 @@ missionNamespace setVariable ["JESTERCLEANKILL", false, true];
 	_x setVariable ["tested", false, true];
 } forEach _players;
 
-if (_count == 0) exitWith {
+if (_realCount == 0) exitWith {
 	diag_log "[Waldo][server] assignRoles: no players";
 };
 
@@ -41,11 +45,14 @@ private _lower = missionNamespace getVariable ["TraitorPercentageChanceLowerBoun
 private _upper = missionNamespace getVariable ["TraitorPercentageChanceHigherBound", 0.45];
 private _chance = random [_lower, (_lower + _upper) / 2, _upper];
 private _traitorCount = (round (_count * _chance)) max 1;
-_traitorCount = _traitorCount min _count;
+// Never assign more traitors than there are real players to assign them to.
+_traitorCount = _traitorCount min _realCount;
 
 private _pool = (+_players) call BIS_fnc_arrayShuffle;
 private _traitors = [];
-for "_i" from 0 to (_traitorCount - 1) do { _traitors pushBack (_pool select _i); };
+for "_i" from 0 to (_traitorCount - 1) do {
+	if (_i < count _pool) then { _traitors pushBack (_pool select _i); };
+};
 {
 	_x setVariable ["role", "Traitor", true];
 	_x setVariable ["points", _startCredits, true];

@@ -67,18 +67,26 @@ You can also adjust default values in `config.sqf`.
 Set **Enable Testing Mode** to *Yes* in the lobby to test the whole game solo
 without breaking normal flow. It echoes init phase markers to chat and stops the
 "Traitors win" ending from kicking out a lone tester. Once in-round, press **`\`**
-to open the **Dev / Test Menu**, which lets one player:
+to open the **Dev / Test Menu** — an extensible, category-grouped console that
+lets one player:
 
-- switch their own role to Innocent / Traitor / Detective / Jester,
-- grant credits and open either shop to buy-test items,
+- switch their own role or re-run role assignment,
+- grant credits, open either shop, or apply every shop item at once,
+- fire each role ability (radars, warp smoke, flower power, health station,
+  suicide bomb, holster) directly,
 - spawn captive **test dummies** (deaths run through the real kill handler, so
-  kill-credit, the Jester win and karma can be verified alone),
-- force an airdrop, skip the warmup, and set karma high/low,
-- force any ending (Innocents / Traitors / Time Up / Jester) to check debriefs,
-- toggle godmode, self-heal, teleport to the arena centre, and reveal all roles.
+  kill-credit, the Jester win and karma can be verified alone) or an armed hostile,
+- skip warmup, freeze the clock, add/subtract time, or force any ending,
+- rebuild/reselect the arena, repopulate loot, and set weather / time of day,
+- **simulate a lobby size** to test arena scaling, traitor counts and credit
+  scaling solo,
+- godmode, heal, refill ammo, infinite stamina, teleport, kill self, and dump
+  game state to chat / clipboard.
 
-Everything is gated on the parameter, so with Testing Mode off the key and menu
-do nothing and a normal match is unaffected.
+Everything is gated on the parameter, so with Testing Mode off the key, the
+server dispatch and the simulated player count all do nothing and a normal match
+is unaffected. The menu is driven by a **registry**, so new tools are added with a
+single `Waldo_debugRegister` call (see `functions/README.md`) — no UI edits.
 
 ---
 

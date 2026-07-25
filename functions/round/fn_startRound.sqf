@@ -7,7 +7,7 @@
 
 if (!isServer) exitWith {};
 
-private _count = (count allPlayers) max 1;
+private _count = ([] call Waldo_fnc_effectivePlayerCount) max 1;
 private _base = missionNamespace getVariable ["roundBaseLength", 180];
 private _perPlayer = missionNamespace getVariable ["roundPlayerLength", 30];
 private _traitorBonus = missionNamespace getVariable ["roundTraitorLength", 45];

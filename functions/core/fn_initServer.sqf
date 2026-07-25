@@ -54,7 +54,7 @@ while { true } do {
 missionNamespace setVariable ["mapDone", true, true];
 private _warmup = missionNamespace getVariable ["roundWarmupLength", 20];
 for "_i" from 0 to (_warmup - 1) do {
-	// Dev/test menu can end the warmup early (Waldo_fnc_debugAction "skipWarmup").
+	// Dev/test menu can end the warmup early (the "Skip Warmup" test action).
 	if (missionNamespace getVariable ["Waldo_debugSkipWarmup", false]) exitWith {};
 	private _remaining = _warmup - _i;
 	private _text = format [

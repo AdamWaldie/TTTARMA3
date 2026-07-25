@@ -9,7 +9,7 @@
 
 if (!isServer) exitWith {};
 
-private _playerCount = (count allPlayers) max 1;
+private _playerCount = ([] call Waldo_fnc_effectivePlayerCount) max 1;
 private _radius = 50 + (_playerCount * 7.5);
 missionNamespace setVariable ["mapRadius", _radius, true];
 

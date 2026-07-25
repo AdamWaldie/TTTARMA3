@@ -155,8 +155,10 @@ class CfgFunctions
 		class debug
 		{
 			file = "functions\debug";
-			class debugMenu {};         // Waldo_fnc_debugMenu   (client: dev/test panel)
-			class debugAction {};       // Waldo_fnc_debugAction (server: authoritative test ops)
+			class debugInit { preInit = 1; };  // builds the extensible test-action registry + API
+			class debugMenu {};                // Waldo_fnc_debugMenu (client: renders the registry)
+			class debugExec {};                // Waldo_fnc_debugExec (server: runs a server action by index)
+			class effectivePlayerCount {};     // Waldo_fnc_effectivePlayerCount (size scaling + sim override)
 		};
 
 		class roles

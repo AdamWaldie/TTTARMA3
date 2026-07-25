@@ -27,7 +27,7 @@ if (isNil "Waldo_debugRegistry") then { Waldo_debugRegistry = []; };
 
 // Category render order (unlisted categories appended after these).
 Waldo_debugCatOrder = [
-	"Roles", "Loadout & Shops", "Abilities", "Test Dummies",
+	"Roles", "Loadout & Shops", "Abilities", "Test Dummies", "Simulated Players",
 	"Round Flow", "Arena & World", "Karma & Sim", "Player", "Diagnostics", "Menu"
 ];
 
@@ -85,7 +85,7 @@ Waldo_debugStatus = {
 	private _txt = format [
 		"<t color='#ffbb00'>Role: </t>%1     <t color='#ffbb00'>Credits: </t>%2     <t color='#ffbb00'>Godmode: </t>%3<br/>"
 		+ "<t color='#ffbb00'>Round live: </t>%4     <t color='#ffbb00'>Frozen: </t>%5     <t color='#ffbb00'>Reveal: </t>%6<br/>"
-		+ "<t color='#ffbb00'>Players: </t>%7 (sim %8)     T:%9  D:%10  J:%11",
+		+ "<t color='#ffbb00'>Players: </t>%7 (sim-size %8, sim-players %9)     T:%10  D:%11  J:%12",
 		player getVariable ["role", "Innocent"],
 		player getVariable ["points", 0],
 		["off", "ON"] select (player getVariable ["Waldo_debugGod", false]),
@@ -94,6 +94,7 @@ Waldo_debugStatus = {
 		["off", "ON"] select (!isNil "Waldo_debugRevealEH"),
 		count allPlayers,
 		[_sim, "off"] select (_sim <= 0),
+		count (missionNamespace getVariable ["Waldo_debugSimPlayers", []]),
 		count (missionNamespace getVariable ["TraitorList", []]),
 		count (missionNamespace getVariable ["DetectiveList", []]),
 		count (missionNamespace getVariable ["JesterList", []])
@@ -196,6 +197,80 @@ Waldo_debugClearDummies = {
 	["[Waldo][debug] cleared test dummies"] remoteExec ["systemChat", _caller];
 };
 
+// Spawn _n simulated players of a role. Unlike test dummies, these are wired
+// into the win-condition roster: traitor sims join TraitorList (so END1 needs
+// them dead), non-traitor sims flag that non-Traitors exist (so END2 becomes
+// reachable). Each routes its death through the normal kill handler. Captive +
+// idle so they never fight or wander — they exist purely to resolve endings.
+Waldo_debugSpawnSim = {
+	params ["_caller", "_role", ["_n", 1]];
+	if (isNull _caller) exitWith {};
+	private _made = 0;
+	for "_i" from 1 to _n do {
+		private _pos = _caller getPos [4 + random 4, random 360];
+		private _grp = createGroup [civilian, true];
+		_grp createUnit ["C_man_1", _pos, [], 0, "NONE"];
+		private _u = (units _grp) select 0;
+		if (!isNull _u) then {
+			_u setVariable ["role", _role, true];
+			_u setVariable ["tested", false, true];
+			_u setVariable ["Waldo_sim", true, true];
+			_u setCaptive true;
+			_u disableAI "ALL";
+			_u allowDamage true;
+			_u addMPEventHandler ["MPKilled", { _this call Waldo_fnc_onKilled }];
+
+			private _sims = missionNamespace getVariable ["Waldo_debugSimPlayers", []];
+			_sims pushBackUnique _u;
+			missionNamespace setVariable ["Waldo_debugSimPlayers", _sims, true];
+
+			if (_role == "Traitor") then {
+				private _tl = missionNamespace getVariable ["TraitorList", []];
+				_tl pushBackUnique _u;
+				missionNamespace setVariable ["TraitorList", _tl, true];
+			} else {
+				missionNamespace setVariable ["Waldo_hadNonTraitors", true, true];
+			};
+			_made = _made + 1;
+		};
+	};
+	[format ["[Waldo][debug] added %1 simulated %2 player(s)", _made, _role]] remoteExec ["systemChat", _caller];
+};
+
+// Kill simulated players of one side so an ending can be watched resolving.
+// _which is "Traitor" (-> END1) or "NonTraitor" (-> END2). Deaths flow through
+// the kill handler, then the 1 Hz round loop's win check ends the round.
+Waldo_debugKillSims = {
+	params ["_caller", "_which"];
+	private _traitors = missionNamespace getVariable ["TraitorList", []];
+	private _killed = 0;
+	{
+		if (!isNull _x && {alive _x}) then {
+			private _isT = _x in _traitors;
+			if ((_which == "Traitor" && _isT) || {_which == "NonTraitor" && !_isT}) then {
+				_x setDamage 1;
+				_killed = _killed + 1;
+			};
+		};
+	} forEach (missionNamespace getVariable ["Waldo_debugSimPlayers", []]);
+	[format ["[Waldo][debug] killed %1 sim %2 player(s)", _killed, _which]] remoteExec ["systemChat", _caller];
+};
+
+// Remove every simulated player and repair the win lists so a torn-down
+// scenario can't leave a stale ending armed. Recomputes Waldo_hadNonTraitors
+// from the REAL players so a solo dev is never insta-ended after a clear.
+Waldo_debugClearSims = {
+	params ["_caller"];
+	private _sims = missionNamespace getVariable ["Waldo_debugSimPlayers", []];
+	private _traitors = (missionNamespace getVariable ["TraitorList", []]) - _sims;
+	missionNamespace setVariable ["TraitorList", _traitors, true];
+	{ if (!isNull _x) then { deleteVehicle _x }; } forEach _sims;
+	missionNamespace setVariable ["Waldo_debugSimPlayers", [], true];
+	private _realNon = allPlayers findIf { !isNull _x && {alive _x} && {!(_x in _traitors)} };
+	missionNamespace setVariable ["Waldo_hadNonTraitors", (_realNon != -1), true];
+	["[Waldo][debug] cleared simulated players"] remoteExec ["systemChat", _caller];
+};
+
 // ── Shared client-side helpers ───────────────────────────────────────────────
 
 // Toggle the "reveal every unit's role in 3D" dev overlay.
@@ -270,6 +345,16 @@ Waldo_debugDump = {
 ["Test Dummies", "Spawn Jester Dummy",    "Kill as non-traitor to test the Jester win", "server", { [_this, "Jester"]    call Waldo_debugSpawnDummy }] call Waldo_debugRegister;
 ["Test Dummies", "Spawn Hostile AI",      "An armed enemy for combat testing",          "server", { [_this, "Hostile"]   call Waldo_debugSpawnDummy }] call Waldo_debugRegister;
 ["Test Dummies", "Clear All Dummies",     "Delete every spawned test unit",             "server", { [_this] call Waldo_debugClearDummies }] call Waldo_debugRegister;
+
+// Simulated Players (count toward win conditions — use these to test endings)
+["Simulated Players", "Add Innocent",  "Spawn a simulated Innocent (counts for endings)",  "server", { [_this, "Innocent"]  call Waldo_debugSpawnSim }] call Waldo_debugRegister;
+["Simulated Players", "Add Traitor",   "Spawn a simulated Traitor (joins TraitorList)",    "server", { [_this, "Traitor"]   call Waldo_debugSpawnSim }] call Waldo_debugRegister;
+["Simulated Players", "Add Detective", "Spawn a simulated Detective (counts as innocent)", "server", { [_this, "Detective"] call Waldo_debugSpawnSim }] call Waldo_debugRegister;
+["Simulated Players", "Add Jester",    "Spawn a simulated Jester",                         "server", { [_this, "Jester"]    call Waldo_debugSpawnSim }] call Waldo_debugRegister;
+["Simulated Players", "Simulate Round (3 Inn + 1 Tra)", "Quick roster for testing endings", "server", { [_this, "Innocent", 3] call Waldo_debugSpawnSim; [_this, "Traitor", 1] call Waldo_debugSpawnSim }] call Waldo_debugRegister;
+["Simulated Players", "Kill Sim Traitors (test END1)",  "Innocents win when all traitors die - be a NON-traitor yourself", "server", { [_this, "Traitor"]    call Waldo_debugKillSims }] call Waldo_debugRegister;
+["Simulated Players", "Kill Sim Innocents (test END2)", "Traitors win when all non-traitors die - be a TRAITOR yourself", "server", { [_this, "NonTraitor"] call Waldo_debugKillSims }] call Waldo_debugRegister;
+["Simulated Players", "Clear Sim Players", "Remove sims + repair the win lists",            "server", { [_this] call Waldo_debugClearSims }] call Waldo_debugRegister;
 
 // Round Flow
 ["Round Flow", "Skip Warmup",    "End the role-selection warmup early", "server", { missionNamespace setVariable ["Waldo_debugSkipWarmup", true, true] }] call Waldo_debugRegister;

@@ -84,7 +84,14 @@ Built-in tools cover every area of the game:
   power, health station, suicide bomb, holster) directly.
 - **Test dummies** — spawn captive role dummies (deaths routed through
   `Waldo_fnc_onKilled`, so kill-credit / Jester clean-kill / karma work solo) or
-  an armed hostile for combat testing; clear them all in one click.
+  an armed hostile for combat testing; clear them all in one click. These do
+  **not** count toward win conditions.
+- **Simulated players** — spawn AI that genuinely participate in the win check:
+  traitor sims join `TraitorList` (so END1 needs them dead), non-traitor sims
+  mark that a non-traitor side exists (so END2 becomes reachable). Build a roster,
+  then "Kill Sim Traitors" (be a non-traitor → **END1**) or "Kill Sim Innocents"
+  (be a traitor → **END2**) and watch the ending resolve. "Clear Sim Players"
+  tears the scenario down and repairs the lists.
 - **Round flow** — skip warmup, freeze the clock, add/subtract time, or force any
   ending (END1–END4).
 - **Arena & world** — rebuild/reselect the arena, repopulate loot, and set
@@ -93,6 +100,14 @@ Built-in tools cover every area of the game:
   scaling, traitor counts and credit scaling can be tested solo.
 - **Player** — godmode, heal, refill ammo, infinite stamina, teleport, kill self.
 - **Diagnostics** — dump game state to chat/`.rpt` or the clipboard.
+
+Testing the endings also hardened `Waldo_fnc_checkWin` for **live** games: every
+roster test is null-safe, and both team-win endings now require a Traitor side to
+have existed — with the Traitors-win ending additionally requiring that
+non-Traitors existed this round (`Waldo_hadNonTraitors`, set in `assignRoles`).
+That closes the degenerate all-Traitor lobby that used to insta-win. The
+simulated-player roster is only mixed in under Testing Mode, so a normal game's
+win check is otherwise unchanged.
 
 ### Extending it
 

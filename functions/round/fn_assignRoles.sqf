@@ -59,6 +59,12 @@ for "_i" from 0 to (_traitorCount - 1) do {
 } forEach _traitors;
 missionNamespace setVariable ["TraitorList", _traitors, true];
 
+// Record whether a non-Traitor side existed at all this round. checkWin gates
+// the Traitors-win ending on this, so an all-Traitor lobby can never insta-win
+// and a lone tester never ends themselves. Uses REAL players (sim players added
+// later from the dev menu set this true themselves).
+missionNamespace setVariable ["Waldo_hadNonTraitors", (_realCount - (count _traitors)) > 0, true];
+
 // --- Detective (needs >= 5 players, not a Traitor) ---
 private _detectives = [];
 if (_count >= 5) then {

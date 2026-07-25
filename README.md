@@ -78,6 +78,8 @@ lets one player:
   suicide bomb, holster) directly,
 - spawn captive **test dummies** (deaths run through the real kill handler, so
   kill-credit, the Jester win and karma can be verified alone) or an armed hostile,
+- spawn **simulated players** that count toward the win conditions, so every
+  ending (Innocents / Traitors / Jester / Time Up) can be built and verified solo,
 - skip warmup, freeze the clock, add/subtract time, or force any ending,
 - rebuild/reselect the arena, repopulate loot, and set weather / time of day,
 - **simulate a lobby size** to test arena scaling, traitor counts and credit

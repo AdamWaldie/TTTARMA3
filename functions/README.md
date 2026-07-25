@@ -58,6 +58,7 @@ runtime, so no `.hpp` changes are needed.
 - **Y** — use your most recently bought activation item.
 - **L** — holster / lower weapon.
 - **\\** — open the dev/test menu (**only** when the **Testing Mode** parameter is on).
+- **]** — instantly cycle your own role Innocent → Traitor → Detective → Jester (Testing Mode only).
 
 ## Testing / dev mode
 
@@ -72,8 +73,11 @@ completely unaffected.
 
 Built-in tools cover every area of the game:
 
-- **Roles** — become any role, or re-run role assignment. Lists, loadouts and the
-  Jester fire-block stay consistent so win checks keep behaving.
+- **Roles** — become any role (or press **]** to cycle instantly, no menu), or
+  re-run role assignment. Every switch is complete and reversible: role lists,
+  detective loadout, shop access and the Jester fire-block are all reconciled, so
+  you can hop between roles on the fly and each one behaves exactly as in a real
+  game. Shop roles are handed a usable test balance on switch.
 - **Loadout & shops** — grant credits, open either shop, or run every shop
   purchase effect at once.
 - **Abilities** — fire each Traitor/Detective power (radars, warp smoke, flower

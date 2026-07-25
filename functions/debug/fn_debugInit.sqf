@@ -64,6 +64,19 @@ Waldo_debug = {
 	true
 };
 
+// Instant role switch without opening the menu — bound to a hotkey (see
+// Waldo_fnc_initClient) and reusing the registry's "Become X" server action so
+// the role change stays authoritative. Cycles Innocent -> Traitor -> Detective
+// -> Jester -> Innocent.
+Waldo_debugCycleRole = {
+	private _roles = ["Innocent", "Traitor", "Detective", "Jester"];
+	private _cur = player getVariable ["role", "Innocent"];
+	private _next = _roles select ((((_roles find _cur) max 0) + 1) mod (count _roles));
+	hintSilent parseText format ["<t align='center' size='1.4' color='#ffbb00'>Role -> %1</t>", _next];
+	("Become " + _next) call Waldo_debug;
+	call Waldo_debugStatus;
+};
+
 // Live status line shown at the top of the menu; also handy from the console.
 Waldo_debugStatus = {
 	private _disp = uiNamespace getVariable ["WaldoDebug", displayNull];
@@ -110,22 +123,30 @@ Waldo_debugSetRole = {
 			private _l = missionNamespace getVariable ["TraitorList", []];
 			_l pushBackUnique _unit;
 			missionNamespace setVariable ["TraitorList", _l, true];
-			_unit setVariable ["points", (_unit getVariable ["points", 0]) max 1, true];
+			// Give a usable test balance so the shop is immediately buyable.
+			_unit setVariable ["points", (_unit getVariable ["points", 0]) max 10, true];
 		};
 		case "Detective": {
 			private _l = missionNamespace getVariable ["DetectiveList", []];
 			_l pushBackUnique _unit;
 			missionNamespace setVariable ["DetectiveList", _l, true];
-			_unit setVariable ["points", (_unit getVariable ["points", 0]) max 1, true];
+			_unit setVariable ["points", (_unit getVariable ["points", 0]) max 10, true];
 			[_unit] remoteExec ["Waldo_fnc_applyDetectiveLoadout", _unit];
 		};
 		case "Jester": {
 			private _l = missionNamespace getVariable ["JesterList", []];
 			_l pushBackUnique _unit;
 			missionNamespace setVariable ["JesterList", _l, true];
-			[] remoteExec ["Waldo_fnc_makeJester", _unit];
 		};
 		default { /* Innocent: belongs to no list */ };
+	};
+
+	// Reconcile the Jester "deals no damage" fire-block on EVERY switch, so
+	// cycling in and out of Jester on the fly never leaves you firing blanks.
+	if (_role == "Jester") then {
+		[] remoteExec ["Waldo_fnc_makeJester", _unit];
+	} else {
+		[] remoteExec ["Waldo_fnc_unmakeJester", _unit];
 	};
 
 	[] remoteExec ["Waldo_fnc_initHud", _unit];

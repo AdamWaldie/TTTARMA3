@@ -118,6 +118,12 @@ removeBackpack player;
 						_handled = true;
 					};
 				};
+				case 27: {   // right-bracket key - instant role cycle (Testing Mode only)
+					if (missionNamespace getVariable ["TestingFlag", false]) then {
+						call Waldo_debugCycleRole;
+						_handled = true;
+					};
+				};
 			};
 			_handled
 		}];

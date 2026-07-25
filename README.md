@@ -70,7 +70,9 @@ without breaking normal flow. It echoes init phase markers to chat and stops the
 to open the **Dev / Test Menu** — an extensible, category-grouped console that
 lets one player:
 
-- switch their own role or re-run role assignment,
+- switch their own role on the fly — via the menu or by pressing **`]`** to cycle
+  Innocent → Traitor → Detective → Jester instantly (each switch is complete and
+  reversible: loadout, shop access and the Jester fire-block all reconcile),
 - grant credits, open either shop, or apply every shop item at once,
 - fire each role ability (radars, warp smoke, flower power, health station,
   suicide bomb, holster) directly,

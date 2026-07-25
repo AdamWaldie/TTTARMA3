@@ -171,6 +171,7 @@ class CfgFunctions
 			class flowerPower {};       // Waldo_fnc_flowerPower
 			class tester {};            // Waldo_fnc_tester
 			class makeJester {};        // Waldo_fnc_makeJester
+			class unmakeJester {};      // Waldo_fnc_unmakeJester (removes the fire-block on role switch)
 			class revive {};            // Waldo_fnc_revive
 			class healthStation {};     // Waldo_fnc_healthStation
 			class holster {};           // Waldo_fnc_holster

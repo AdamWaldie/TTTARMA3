@@ -176,6 +176,7 @@ class CfgFunctions
 			class revive {};            // Waldo_fnc_revive
 			class healthStation {};     // Waldo_fnc_healthStation
 			class holster {};           // Waldo_fnc_holster
+			class removeBody {};        // Waldo_fnc_removeBody (traitor: destroy a corpse)
 		};
 	};
 };

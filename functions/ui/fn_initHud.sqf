@@ -13,19 +13,27 @@ private _display = uiNamespace getVariable "TTTHud";
 private _role = player getVariable ["role", "Innocent"];
 private _color = [_role] call Waldo_roleColor;
 
+// Badge icon tint + single-letter crest.
 (_display displayCtrl 1000) ctrlSetTextColor _color;
 private _badge = _display displayCtrl 1001;
 _badge ctrlSetTextColor _color;
 _badge ctrlSetStructuredText parseText (_role select [0, 1]);
 
-// Live credits readout for shop roles.
+// Full role name label (shown for every role, tinted to the role colour).
+private _nameCtrl = _display displayCtrl 1003;
+_nameCtrl ctrlSetText (toUpper _role);
+_nameCtrl ctrlSetTextColor _color;
+
+// Live credits readout for shop roles (blank for the others).
+private _creditsCtrl = _display displayCtrl 1002;
+_creditsCtrl ctrlSetText "";
 if (_role in ["Traitor", "Detective"]) then {
-	private _credits = _display displayCtrl 1002;
+	private _credits = _creditsCtrl;
 	_credits ctrlSetTextColor _color;
 	[_credits] spawn {
 		params ["_credits"];
 		while { !isNull ctrlParent _credits && {alive player} } do {
-			_credits ctrlSetText format ["Credits: %1", player getVariable ["points", 0]];
+			_credits ctrlSetText format ["%1 credits", player getVariable ["points", 0]];
 			sleep 0.5;
 		};
 	};

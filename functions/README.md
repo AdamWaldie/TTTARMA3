@@ -89,8 +89,18 @@ Edit the catalog in `ui/fn_initShops.sqf`. Each entry is:
 - `_onActivate`: for activation items, runs when the player presses **Y**;
   return `true` to consume the item, `false` to keep it queued (e.g. no target).
 
-The buy menu (`Waldo_fnc_openBuyMenu`) builds its buttons from the catalog at
-runtime, so no `.hpp` changes are needed.
+The buy menu (`Waldo_fnc_openBuyMenu`) builds its cards from the catalog at
+runtime, so no `.hpp` changes are needed. The dialog is a centred panel with a
+role-tinted header, a scrollable card grid coloured by affordability, and a
+footer that shows the hovered item's name, cost, type and `_tooltip` (so write
+`_tooltip` as the item's description). Buying refreshes credits + affordability
+in place and leaves the shop open (`Waldo_fnc_buyItem`); Esc or **Close** exits.
+
+The traitor and detective catalogs each carry ~12 items — offence (silenced
+sidearm, frags, launcher, long rifle), utility (radar, stamina, night vision,
+body armor), and role tools (defibrillator, tester, health station, body
+remover). The silenced sidearm is sourced from the dynamic arsenal
+(`ShopPistol*`), so it follows the loaded modpack.
 
 ## Keys
 

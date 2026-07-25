@@ -53,13 +53,28 @@ class RscTitles
 					valign = "middle";
 				};
 			};
+			class roleName: RscText
+			{
+				idc = 1003;
+				text = "";
+				x = (safezoneW + safezoneX) - (0.25 * safezoneH);
+				y = (safezoneH + safezoneY) - (0.278 * safezoneH);
+				w = 0.24 * safezoneH;
+				h = 0.035 * safezoneH;
+				colorBackground[] = {0,0,0,0};
+				colorText[] = {1,1,1,1};
+				style = ST_CENTER;
+				font = "PuristaBold";
+				sizeEx = 0.033 * safezoneH;
+				shadow = 2;
+			};
 			class roleCredits: RscText
 			{
 				idc = 1002;
 				text = "";
-				x = (safezoneW + safezoneX) - (0.24 * safezoneH);
-				y = (safezoneH + safezoneY) - (0.235 * safezoneH);
-				w = 0.23 * safezoneH;
+				x = (safezoneW + safezoneX) - (0.25 * safezoneH);
+				y = (safezoneH + safezoneY) - (0.238 * safezoneH);
+				w = 0.24 * safezoneH;
 				h = 0.03 * safezoneH;
 				colorBackground[] = {0,0,0,0};
 				colorText[] = {1,1,1,1};
@@ -101,16 +116,18 @@ class RscTitles
 };
 
 // ============================================================================
-// WaldoShop - shared buy menu dialog. Buttons are generated at runtime from
-// the role's catalog by Waldo_fnc_openBuyMenu, so this shell never changes
-// when shop items are added or removed.
-//   idc 1100 = title, 1101 = credits, 1102 = scrollable button group.
+// WaldoShop - shared buy menu dialog. A centred panel with a role-coloured
+// header, a scrollable grid of item cards, and a description footer that updates
+// as you hover. Cards are generated at runtime from the role's catalog by
+// Waldo_fnc_openBuyMenu, so this shell never changes when items are added.
+//   1100 title, 1101 credits, 1102 item grid, 1103 hover description,
+//   1104 header bar (tinted to the role colour at runtime), idc 2 close.
 // ============================================================================
 class WaldoShop {
 	idd = -1;
-	fadeout = 0.25;
-	fadein = 0.25;
-	movingEnable = true;
+	fadeout = 0.2;
+	fadein = 0.2;
+	movingEnable = false;
 	enableSimulation = true;
 	duration = 99999;
 	onLoad = "with uiNamespace do { WaldoShop = _this select 0 }";
@@ -118,51 +135,95 @@ class WaldoShop {
 	class controlsBackground {
 		class shopBG: RscText {
 			idc = -1;
-			x = ((safezoneW + safezoneX) - (0.6 * safezoneW));
-			y = ((safezoneH + safezoneY) - (0.75 * safezoneH));
-			w = 0.22 * safezoneW;
-			h = 0.55 * safezoneH;
-			colorBackground[] = {0.10196,0.10196,0.10196,1};
-			colorText[] = {1,1,1,1};
+			x = safezoneX + (0.28 * safezoneW);
+			y = safezoneY + (0.18 * safezoneH);
+			w = 0.44 * safezoneW;
+			h = 0.64 * safezoneH;
+			colorBackground[] = {0.055,0.055,0.06,0.94};
 			style = 0;
-			font = "PuristaMedium";
-			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1);
+		};
+		class shopHeader: RscText {
+			idc = 1104;
+			x = safezoneX + (0.28 * safezoneW);
+			y = safezoneY + (0.18 * safezoneH);
+			w = 0.44 * safezoneW;
+			h = 0.062 * safezoneH;
+			colorBackground[] = {0.2,0.2,0.2,1};   // tinted to the role colour at runtime
+			style = 0;
 		};
 		class shopTitle: RscText {
 			idc = 1100;
 			text = "Shop";
-			x = ((safezoneW + safezoneX) - (0.6 * safezoneW));
-			y = ((safezoneH + safezoneY) - (0.75 * safezoneH));
-			w = 0.22 * safezoneW;
-			h = 0.06 * safezoneH;
+			x = safezoneX + (0.295 * safezoneW);
+			y = safezoneY + (0.18 * safezoneH);
+			w = 0.26 * safezoneW;
+			h = 0.062 * safezoneH;
 			colorBackground[] = {0,0,0,0};
 			colorText[] = {1,1,1,1};
-			style = ST_CENTER;
+			style = ST_LEFT + ST_VCENTER;
 			font = "PuristaBold";
 			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.5);
+			shadow = 1;
 		};
 		class shopCredits: RscText {
 			idc = 1101;
-			text = "Credits: 0";
-			x = ((safezoneW + safezoneX) - (0.6 * safezoneW));
-			y = ((safezoneH + safezoneY) - (0.685 * safezoneH));
-			w = 0.22 * safezoneW;
-			h = 0.05 * safezoneH;
+			text = "0 credits";
+			x = safezoneX + (0.44 * safezoneW);
+			y = safezoneY + (0.18 * safezoneH);
+			w = 0.265 * safezoneW;
+			h = 0.062 * safezoneH;
 			colorBackground[] = {0,0,0,0};
 			colorText[] = {1,1,1,1};
-			style = ST_CENTER;
-			font = "PuristaMedium";
+			style = ST_RIGHT + ST_VCENTER;
+			font = "PuristaBold";
 			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.25);
+			shadow = 1;
+		};
+		class shopDescBG: RscText {
+			idc = -1;
+			x = safezoneX + (0.29 * safezoneW);
+			y = safezoneY + (0.665 * safezoneH);
+			w = 0.42 * safezoneW;
+			h = 0.10 * safezoneH;
+			colorBackground[] = {0.1,0.1,0.11,0.95};
+			style = 0;
+		};
+		class shopDesc: RscStructuredText {
+			idc = 1103;
+			text = "";
+			x = safezoneX + (0.30 * safezoneW);
+			y = safezoneY + (0.672 * safezoneH);
+			w = 0.40 * safezoneW;
+			h = 0.088 * safezoneH;
+			size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1);
+			class Attributes {
+				font = "PuristaMedium";
+				color = "#dcdcdc";
+				align = "left";
+				shadow = 1;
+			};
 		};
 	};
 
 	class Controls {
 		class shopGroup: RscControlsGroup {
 			idc = 1102;
-			x = ((safezoneW + safezoneX) - (0.595 * safezoneW));
-			y = ((safezoneH + safezoneY) - (0.62 * safezoneH));
-			w = 0.21 * safezoneW;
-			h = 0.42 * safezoneH;
+			x = safezoneX + (0.29 * safezoneW);
+			y = safezoneY + (0.26 * safezoneH);
+			w = 0.42 * safezoneW;
+			h = 0.395 * safezoneH;
+		};
+		class shopClose: RscButton {
+			idc = 2;
+			text = "Close  [Esc]";
+			x = safezoneX + (0.60 * safezoneW);
+			y = safezoneY + (0.775 * safezoneH);
+			w = 0.10 * safezoneW;
+			h = 0.04 * safezoneH;
+			colorBackground[] = {0.18,0.18,0.2,1};
+			colorBackgroundActive[] = {0.3,0.3,0.34,1};
+			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1);
+			action = "closeDialog 1";
 		};
 	};
 };

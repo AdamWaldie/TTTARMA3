@@ -157,6 +157,24 @@ if !(_launchers isEqualTo []) then {
 missionNamespace setVariable ["TraitorLauncher", _launcher, true];
 missionNamespace setVariable ["TraitorLauncherMag", _launcherMag, true];
 
+// ---- publish: a silenced sidearm for the shop (discovered pistol + suppressor) ----
+private _sp = "hgun_P07_F";
+private _spMag = "16Rnd_9x21_Mag";
+private _spSup = "muzzle_snds_L";
+if !(_pistols isEqualTo []) then {
+	private _p = selectRandom _pistols;
+	private _m = [_p] call _magOf;
+	if (_m != "") then {
+		_sp = _p;
+		_spMag = _m;
+		private _muz = getArray (configFile >> "CfgWeapons" >> _p >> "WeaponSlotsInfo" >> "MuzzleSlot" >> "compatibleItems");
+		_spSup = if (_muz isEqualTo []) then { "" } else { selectRandom _muz };
+	};
+};
+missionNamespace setVariable ["ShopPistol", _sp, true];
+missionNamespace setVariable ["ShopPistolMag", _spMag, true];
+missionNamespace setVariable ["ShopPistolSuppressor", _spSup, true];
+
 // ---- publish: airdrops (the reward pool: snipers + LMGs + standard rifles) ----
 private _airPool = (_snipers apply { _x select 0 }) + _lmgs + _std;
 if (_airPool isEqualTo []) then { _airPool = ["arifle_MXM_Black_F", "srifle_EBR_F", "LMG_Mk200_F"]; };

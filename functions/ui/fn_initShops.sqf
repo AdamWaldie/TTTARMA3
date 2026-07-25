@@ -68,7 +68,37 @@ Waldo_traitorShop = [
 	["Defibrillator", 2, "activation",
 		{},
 		{ [] call Waldo_fnc_revive },
-		"Aim at a body and press Y to revive them as a Traitor"]
+		"Aim at a body and press Y to revive them as a Traitor"],
+
+	["Silenced Pistol", 1, "weapon",
+		{
+			player addWeaponGlobal (missionNamespace getVariable ["ShopPistol", "hgun_P07_F"]);
+			private _s = missionNamespace getVariable ["ShopPistolSuppressor", ""];
+			if (_s != "") then { player addHandgunItem _s; };
+			player addMagazines [(missionNamespace getVariable ["ShopPistolMag", "16Rnd_9x21_Mag"]), 3];
+		},
+		{},
+		"A suppressed sidearm - quiet kills leave no gunshot to give you away"],
+
+	["Frag Grenades", 1, "weapon",
+		{ player addMagazines ["HandGrenade", 2]; },
+		{},
+		"Two fragmentation grenades"],
+
+	["Body Armor", 2, "passive",
+		{ player addVest "V_PlateCarrier2_rgr"; },
+		{},
+		"A heavy plate carrier - soak an extra hit or two"],
+
+	["Body Remover", 1, "activation",
+		{},
+		{ [] call Waldo_fnc_removeBody },
+		"Aim at a corpse and press Y to destroy it, denying the Detective a body to test"],
+
+	["Night Vision", 1, "weapon",
+		{ player addWeapon "NVGoggles"; },
+		{},
+		"Night-vision goggles - own the dark rounds"]
 ];
 
 // --- Detective shop ---
@@ -106,7 +136,32 @@ Waldo_detectiveShop = [
 	["Defibrillator", 2, "activation",
 		{},
 		{ [] call Waldo_fnc_revive },
-		"Aim at a body and press Y to bring them back"]
+		"Aim at a body and press Y to bring them back"],
+
+	["Frag Grenades", 1, "weapon",
+		{ player addMagazines ["HandGrenade", 2]; },
+		{},
+		"Two fragmentation grenades"],
+
+	["Body Armor", 2, "passive",
+		{ player addVest "V_PlateCarrier2_rgr"; },
+		{},
+		"A heavy plate carrier - stay standing long enough to catch the traitor"],
+
+	["Medical Kit", 1, "weapon",
+		{ player addItem "Medikit"; player addItem "FirstAidKit"; },
+		{},
+		"A medikit + first aid kit to patch yourself up"],
+
+	["Binoculars", 1, "weapon",
+		{ player addWeapon "Binocular"; },
+		{},
+		"Binoculars for watching suspects from range"],
+
+	["Night Vision", 1, "weapon",
+		{ player addWeapon "NVGoggles"; },
+		{},
+		"Night-vision goggles - keep watch in the dark"]
 ];
 
 diag_log "[Waldo] initShops: catalogs ready";

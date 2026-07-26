@@ -140,6 +140,7 @@ class CfgFunctions
 			class spawnAirdrop {};      // Waldo_fnc_spawnAirdrop
 			class applyKarma {};        // Waldo_fnc_applyKarma
 			class c4Charge {};          // Waldo_fnc_c4Charge (server: traitor timed charge)
+			class identifyBody {};      // Waldo_fnc_identifyBody (server: call in a corpse)
 		};
 
 		class ui
@@ -181,6 +182,8 @@ class CfgFunctions
 			class removeBody {};        // Waldo_fnc_removeBody (traitor: destroy a corpse)
 			class dnaScanner {};        // Waldo_fnc_dnaScanner (detective: track a killer)
 			class placeC4 {};           // Waldo_fnc_placeC4 (traitor: place a timed charge)
+			class traitorPing {};       // Waldo_fnc_traitorPing (traitor: silent coordination ping)
+			class pingShow {};          // Waldo_fnc_pingShow (client: render a traitor ping)
 		};
 	};
 };

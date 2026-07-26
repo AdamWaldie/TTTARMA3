@@ -125,6 +125,12 @@ removeBackpack player;
 					[] call Waldo_fnc_scoreboard;
 					_handled = true;
 				};
+				case 20: {   // T - traitor coordination ping (traitors only)
+					if ((player getVariable ["role", ""]) == "Traitor") then {
+						[] call Waldo_fnc_traitorPing;
+						_handled = true;
+					};
+				};
 				case 43: {   // \ - open the dev/test menu (only under Testing Mode)
 					if (missionNamespace getVariable ["TestingFlag", false]) then {
 						[] call Waldo_fnc_debugMenu;

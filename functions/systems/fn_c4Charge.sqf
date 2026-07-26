@@ -14,6 +14,10 @@ params ["_owner", "_pos"];
 private _charge = createVehicle ["Land_Suitcase_F", _pos, [], 0, "CAN_COLLIDE"];
 _charge setVariable ["Waldo_c4Owner",   _owner, true];
 _charge setVariable ["Waldo_c4Defused", false,  true];
+// The charge carries the planter's DNA - a detective can scan it (before it
+// blows, or during the window after it is defused) to track the traitor.
+_charge setVariable ["Waldo_killerDNA",     _owner, true];
+_charge setVariable ["Waldo_killerDNATime", time,   true];
 _charge allowDamage false;
 
 // Defuse action, broadcast to everyone. Condition: the actor is not the planter
@@ -36,7 +40,8 @@ _charge allowDamage false;
 
 	if (_charge getVariable ["Waldo_c4Defused", false]) exitWith {
 		["A charge was defused."] remoteExec ["systemChat", 0];
-		deleteVehicle _charge;
+		// Leave the defused charge (with its DNA) around briefly for forensics.
+		[_charge] spawn { params ["_c"]; sleep 30; if (!isNull _c) then { deleteVehicle _c }; };
 	};
 
 	private _p = getPosATL _charge;

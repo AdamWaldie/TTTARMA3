@@ -31,10 +31,23 @@ private _culpritRole = if (isNull _culprit) then { "" } else { _culprit getVaria
 // this kill toward the culprit's in-round tally for the scoreboard.
 if (!isNull _culprit && {_culprit != _unit}) then {
 	_unit setVariable ["Waldo_killerDNA", _culprit, true];
+	_unit setVariable ["Waldo_killerDNATime", time, true];
 	if (isPlayer _culprit) then {
 		_culprit setVariable ["Waldo_roundKills", (_culprit getVariable ["Waldo_roundKills", 0]) + 1, true];
 	};
 };
+
+// "Identify Body" scroll action on the corpse - calling it in announces the
+// victim's role to everyone (the core TTT deduction feedback). Added on every
+// machine (JIP-safe); the condition hides it once the body has been called in.
+_unit setVariable ["Waldo_identified", false, true];
+[_unit, [
+	"<t color='#ffd23f'>Identify Body</t>",
+	{ [_target, _this] remoteExec ["Waldo_fnc_identifyBody", 2]; },
+	nil, 4, true, true, "",
+	"!(_target getVariable ['Waldo_identified', false])",
+	2.5
+]] remoteExec ["addAction", 0, _unit];
 
 private _guilty = true;   // did the culprit kill someone they shouldn't have?
 

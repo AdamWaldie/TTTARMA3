@@ -19,6 +19,8 @@ Each round, players are assigned one of four roles and dropped into a town-sized
 
 The round ends when the Innocents wipe out the Traitors, the Traitors wipe out everyone else, time runs out, or the Jester gets themselves killed by the wrong person. A body has to be identified before its role becomes public knowledge, which is where the investigation side of the game actually lives.
 
+For mechanics in more depth than fits here, see the [wiki](https://github.com/AdamWaldie/TTTARMA3/wiki): win-condition priority, the full shop catalogs, DNA contamination math, the dynamic arsenal, every lobby parameter, and the dev/test framework.
+
 ---
 
 ## What's in it

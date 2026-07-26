@@ -50,26 +50,31 @@ This version (2.5.0 RC) includes a major refactor for stability, scalability, an
 
 | Parameter                | Description                                 |
 |--------------------------|---------------------------------------------|
+| `Equipment Source`       | Dynamic / Vanilla / WW2 / Custom (see below) |
 | `Traitor % Range`        | Min/Max traitor percentage                  |
-| `Detective Enabled`      | Toggle for detective role                   |
+| `Enable Detective Role`  | Toggle for the detective role               |
 | `Jester Enabled`         | Chance and toggle for jester chaos          |
 | `Round Length`           | Base + per player + per traitor             |
 | `Airdrops Enabled`       | Enables random supply drops                 |
 | `Rain / Fog`             | Controls chance and density                 |
 | `Enable Testing Mode`    | Unlocks the solo dev/test harness (see below) |
 
-### Equipment (dynamic)
+### Equipment source (switch modpacks from the lobby)
 
-Weapons, loot, airdrops and clothing are **discovered dynamically** from whatever
-mods are loaded — no hand-curated per-modpack lists. `Waldo_fnc_buildArsenal`
-scans the config once and picks gear by intent: **low-powered weapons** for
-ground loot, stronger weapons for airdrops, the strongest sniper and a launcher
-for the traitor shop, and available clothing for spawns. It works out of the box
-on any modpack, with vanilla fallbacks so nothing can break.
+Weapons, loot, airdrops and clothing come from one of four sources, chosen with
+the **Equipment Source** lobby parameter — no file editing needed:
 
-`config.sqf` is left fully dynamic by default. To force a specific hand-picked
-theme (e.g. strict WW2), uncomment a `Waldo_modpack` line there — the chosen
-`modpacks/*.sqf` preset loads after discovery and overrides it.
+| Choice | What it does |
+|--------|--------------|
+| **Dynamic** (default) | `Waldo_fnc_buildArsenal` scans whatever mods are loaded and picks gear by intent: low-powered weapons for ground loot, stronger weapons for airdrops, the strongest sniper + a launcher for the traitor shop, and available clothing. Works on any modpack, no curation. |
+| **Vanilla** | The hand-picked `modpacks/Vanilla.sqf` preset. |
+| **WW2** | The `modpacks/WW2.sqf` preset (use with WW2 mods so modern weapons aren't mixed in). |
+| **Custom** | The `modpacks/Custom.sqf` preset — your own edits. |
+
+Dynamic discovery always runs first as a baseline, so even a partial preset can
+never leave anything unset. For an automated/dedicated server that must always
+run one loadout, uncomment a `Waldo_modpack` line in `config.sqf` — that pins a
+preset in code and overrides the lobby choice.
 
 ---
 

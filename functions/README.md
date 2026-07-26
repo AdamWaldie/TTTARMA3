@@ -68,13 +68,20 @@ round, and consumers keep their own `isNil`/`getVariable` guards. Because it is 
 drop-in for those globals, `Waldo_fnc_populateLoot`, `Waldo_fnc_spawnAirdrop`,
 the shop and the spawn loadout needed **no changes**.
 
-### Optional override
+### Selecting the source (lobby + optional override)
 
-`config.sqf` is dynamic by default (no modpack set). To pin a hard theme (e.g.
-WW2, so modern vanilla weapons are not mixed in), point `Waldo_modpack` at a file
-in `modpacks/`; `loadParams` loads it **after** the dynamic pass, so it overrides
-whichever globals it sets. The `modpacks/*.sqf` files are now just optional
-override presets, not the primary equipment source.
+The equipment source is a **lobby parameter**, `equipmentMode` (param index 21):
+`0` Dynamic (default), `1` Vanilla, `2` WW2, `3` Custom. `loadParams` always runs
+the dynamic pass first as a baseline, then — for a non-Dynamic choice — loads the
+matching `modpacks/*.sqf` preset **after**, so it overrides only the globals it
+sets and nothing is ever left unset.
+
+For automated/dedicated setups, a code-level `Waldo_modpack` in `config.sqf`
+takes precedence over the lobby choice and pins that preset file.
+
+> Params are read by index in `loadParams`, so `equipmentMode` (21) and
+> `DetectiveEnabled` (22) are kept **last** in `description.ext`'s `class Params`;
+> append any new param after them so existing indices never shift.
 
 ## Adding a shop item
 

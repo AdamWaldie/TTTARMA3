@@ -65,9 +65,9 @@ missionNamespace setVariable ["TraitorList", _traitors, true];
 // later from the dev menu set this true themselves).
 missionNamespace setVariable ["Waldo_hadNonTraitors", (_realCount - (count _traitors)) > 0, true];
 
-// --- Detective (needs >= 5 players, not a Traitor) ---
+// --- Detective (lobby-toggleable; needs >= 5 players, not a Traitor) ---
 private _detectives = [];
-if (_count >= 5) then {
+if ((missionNamespace getVariable ["DetectiveEnabled", true]) && {_count >= 5}) then {
 	private _candidates = _players select { !(_x in _traitors) };
 	if (count _candidates > 0) then {
 		private _det = selectRandom _candidates;

@@ -66,13 +66,17 @@ if (!isNull _culprit && {_culprit != _unit}) then {
 };
 
 // "Identify Body" scroll action on the corpse - calling it in confirms the death
-// to everyone (and, if a Detective calls it, the victim's role). Added on every
-// machine (JIP-safe); the condition hides it once the body has been called in.
+// to everyone (and, if a Detective calls it, the victim's role). hideOnUse is
+// FALSE and the condition checks Waldo_roleRevealed (not Waldo_identified): a
+// non-Detective finding the body first must NOT consume/hide the action, or a
+// Detective arriving later could never get the role reveal. It only actually
+// disappears once a Detective has identified it. Added on every machine
+// (JIP-safe).
 [_unit, [
 	"<t color='#ffd23f'>Identify Body</t>",
 	{ [_target, _this] remoteExec ["Waldo_fnc_identifyBody", 2]; },
-	nil, 4, true, true, "",
-	"!(_target getVariable ['Waldo_identified', false])",
+	nil, 4, true, false, "",
+	"!(_target getVariable ['Waldo_roleRevealed', false])",
 	2.5
 ]] remoteExec ["addAction", 0, _unit];
 

@@ -28,11 +28,14 @@ _decoy setVariable ["Waldo_deathTime", time, true];
 _decoy setVariable ["Waldo_identified", false, true];
 _decoy setDamage 1;   // instantly a corpse
 
+// Same two-tier reveal as a real body (see Waldo_fnc_identifyBody): hideOnUse
+// false + gated on Waldo_roleRevealed, so a non-Detective finding it first can't
+// consume the action before a Detective gets to it.
 [_decoy, [
 	"<t color='#ffd23f'>Identify Body</t>",
 	{ [_target, _this] remoteExec ["Waldo_fnc_identifyBody", 2]; },
-	nil, 4, true, true, "",
-	"!(_target getVariable ['Waldo_identified', false])",
+	nil, 4, true, false, "",
+	"!(_target getVariable ['Waldo_roleRevealed', false])",
 	2.5
 ]] remoteExec ["addAction", 0, _decoy];
 

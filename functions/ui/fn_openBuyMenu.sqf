@@ -56,12 +56,17 @@ private _credits = player getVariable ["points", 0];
 [_display] call Waldo_shopRenderPurchased;
 
 // --- Item cards ---
+// Catalogs run ~14 items (7 rows of 2): sized so all 7 rows fit inside the
+// group's declared height (0.395 * safezoneH) with margin to spare, rather than
+// relying on RscControlsGroup to auto-scroll runtime-created (ctrlCreate)
+// children - that scroll-extent behaviour isn't guaranteed the way it is for a
+// single oversized declared child (as used by the Purchased panel/Scoreboard).
 private _group = _display displayCtrl 1102;
 private _cols = 2;
 private _bw   = 0.202 * safezoneW;
-private _bh   = 0.072 * safezoneH;
+private _bh   = 0.048 * safezoneH;
 private _gapX = 0.012 * safezoneW;
-private _gapY = 0.012 * safezoneH;
+private _gapY = 0.008 * safezoneH;
 
 {
 	_x params ["_name", "_cost", "_type", "_onBuy", "_onAct", "_tip"];

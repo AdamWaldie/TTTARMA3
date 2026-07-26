@@ -166,9 +166,9 @@ player addMPEventHandler ["MPKilled", {
 	_this call Waldo_fnc_onKilled;
 }];
 
-// Dead Ringer guard: while armed (Waldo_debugSetRole / Waldo_fnc_deadRinger sets
-// Waldo_deadRingerArmed), a hit that would be fatal is capped instead of killing,
-// and Waldo_fnc_deadRingerTrigger sells the fake death. Installed once per client.
+// Dead Ringer guard: while armed (Waldo_fnc_deadRinger sets Waldo_deadRingerArmed),
+// a hit that would be fatal is capped instead of killing, and
+// Waldo_fnc_deadRingerTrigger sells the fake death. Installed once per client.
 player addEventHandler ["HandleDamage", {
 	params ["_unit", "_selection", "_damage"];
 	if ((_unit getVariable ["Waldo_deadRingerArmed", false]) && {((damage _unit) + _damage) >= 1}) then {
@@ -179,9 +179,13 @@ player addEventHandler ["HandleDamage", {
 	}
 }];
 
-// ACE unconscious -> death, EXCEPT for the Jester (source-less setDamage
-// would wipe the "who killed me" attribution the Jester win depends on).
+// ACE unconscious -> death, EXCEPT for the Jester (source-less setDamage would
+// wipe the "who killed me" attribution the Jester win depends on) and a unit
+// currently faking its death via Dead Ringer (which uses vanilla setUnconscious
+// to sell the ragdoll - if ACE treats that as its own unconscious state, this
+// force-kill must not undo the fake death).
 ["ace_unconscious", {
 	params ["_unit", "_state"];
-	if ((_unit getVariable ["role", ""]) != "Jester") then { _unit setDamage 1; };
+	private _protected = ((_unit getVariable ["role", ""]) == "Jester") || (_unit getVariable ["Waldo_deadRingerTriggered", false]);
+	if (!_protected) then { _unit setDamage 1; };
 }] call CBA_fnc_addEventHandler;

@@ -74,7 +74,13 @@ if (_enhanced) then {
 	params ["_suspect", "_dur", "_forensics"];
 	private _endAt = time + _dur;
 	private _dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
-	while { time < _endAt && {!isNull _suspect} && {alive _suspect} && {alive player} } do {
+	// Also stop the moment the round ends, so this doesn't keep overwriting
+	// hintSilent against the round-end MVP celebration banner.
+	while {
+		time < _endAt
+		&& {!isNull _suspect} && {alive _suspect} && {alive player}
+		&& {missionNamespace getVariable ["gameOn", true]}
+	} do {
 		private _d = round (player distance _suspect);
 		private _c = _dirs select (floor ((((player getDir _suspect) + 22.5) % 360) / 45));
 		hintSilent parseText format [

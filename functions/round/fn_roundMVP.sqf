@@ -9,12 +9,15 @@
 if (!isServer) exitWith {};
 
 private _candidates = allPlayers select { (_x getVariable ["Waldo_roundKills", 0]) > 0 };
-private _mvp = objNull;
 private _best = 0;
 {
 	private _k = _x getVariable ["Waldo_roundKills", 0];
-	if (_k > _best) then { _best = _k; _mvp = _x; };
+	if (_k > _best) then { _best = _k; };
 } forEach _candidates;
+// Pick randomly among anyone tied for the top score, rather than always
+// favouring whoever happens to come first in allPlayers' (arbitrary) order.
+private _topScorers = _candidates select { (_x getVariable ["Waldo_roundKills", 0]) == _best };
+private _mvp = if (count _topScorers > 0) then { selectRandom _topScorers } else { objNull };
 
 private _name = if (isNull _mvp) then { "" } else { name _mvp };
 private _role = if (isNull _mvp) then { "" } else { _mvp getVariable ["role", "Innocent"] };

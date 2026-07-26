@@ -27,6 +27,15 @@ private _culprit = _instigator;
 if (isNull _culprit) then { _culprit = _killer; };
 private _culpritRole = if (isNull _culprit) then { "" } else { _culprit getVariable ["role", ""] };
 
+// Leave the killer's DNA on the body for the detective's DNA scanner, and count
+// this kill toward the culprit's in-round tally for the scoreboard.
+if (!isNull _culprit && {_culprit != _unit}) then {
+	_unit setVariable ["Waldo_killerDNA", _culprit, true];
+	if (isPlayer _culprit) then {
+		_culprit setVariable ["Waldo_roundKills", (_culprit getVariable ["Waldo_roundKills", 0]) + 1, true];
+	};
+};
+
 private _guilty = true;   // did the culprit kill someone they shouldn't have?
 
 // Credit awards (amount per kill is the lobby "Kill Reward Credits" setting;

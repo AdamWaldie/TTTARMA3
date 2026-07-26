@@ -139,6 +139,7 @@ class CfgFunctions
 			file = "functions\systems";
 			class spawnAirdrop {};      // Waldo_fnc_spawnAirdrop
 			class applyKarma {};        // Waldo_fnc_applyKarma
+			class c4Charge {};          // Waldo_fnc_c4Charge (server: traitor timed charge)
 		};
 
 		class ui
@@ -151,6 +152,7 @@ class CfgFunctions
 			class buyItem {};           // Waldo_fnc_buyItem
 			class titleSequence {};     // Waldo_fnc_titleSequence
 			class pregameScreen {};     // Waldo_fnc_pregameScreen
+			class scoreboard {};        // Waldo_fnc_scoreboard (in-round scoreboard, K)
 		};
 
 		class debug
@@ -177,6 +179,8 @@ class CfgFunctions
 			class healthStation {};     // Waldo_fnc_healthStation
 			class holster {};           // Waldo_fnc_holster
 			class removeBody {};        // Waldo_fnc_removeBody (traitor: destroy a corpse)
+			class dnaScanner {};        // Waldo_fnc_dnaScanner (detective: track a killer)
+			class placeC4 {};           // Waldo_fnc_placeC4 (traitor: place a timed charge)
 		};
 	};
 };

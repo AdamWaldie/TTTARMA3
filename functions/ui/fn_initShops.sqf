@@ -96,6 +96,11 @@ Waldo_traitorShop = [
 		{ [] call Waldo_fnc_removeBody },
 		"Aim at a corpse and press Y to destroy it, denying the Detective a body to test"],
 
+	["C4 Charge", 2, "activation",
+		{},
+		{ [] call Waldo_fnc_placeC4 },
+		"Drop a timed explosive at your feet - it blows in 15s unless someone defuses it"],
+
 	["Night Vision", 1, "weapon",
 		{ player addWeapon (missionNamespace getVariable ["ShopNVG", "NVGoggles"]); },
 		{},
@@ -108,6 +113,11 @@ Waldo_detectiveShop = [
 		{},
 		{ [] call Waldo_fnc_tester },
 		"Aim at a player or body within 3m and press Y to reveal their role"],
+
+	["DNA Scanner", 2, "activation",
+		{},
+		{ [] call Waldo_fnc_dnaScanner },
+		"Aim at a body and press Y to sample the killer's DNA, then track them down"],
 
 	["Radar", 1, "passive",
 		{ [] call Waldo_fnc_detectiveRadar; },

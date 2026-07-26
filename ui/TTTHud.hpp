@@ -286,3 +286,92 @@ class WaldoDebug {
 		};
 	};
 };
+
+// ============================================================================
+// WaldoScore - in-round scoreboard (toggled with K). A centred panel with a
+// title and a scrollable list; rows are generated at runtime by
+// Waldo_fnc_scoreboard.  3301 title, 3302 scroll group, 3300 list text.
+// ============================================================================
+class WaldoScore {
+	idd = -1;
+	fadeout = 0.15;
+	fadein = 0.15;
+	movingEnable = false;
+	enableSimulation = true;
+	duration = 99999;
+	onLoad = "with uiNamespace do { WaldoScore = _this select 0 }";
+
+	class controlsBackground {
+		class scBG: RscText {
+			idc = -1;
+			x = safezoneX + (0.25 * safezoneW);
+			y = safezoneY + (0.17 * safezoneH);
+			w = 0.50 * safezoneW;
+			h = 0.66 * safezoneH;
+			colorBackground[] = {0.055,0.055,0.06,0.94};
+			style = 0;
+		};
+		class scTitleBar: RscText {
+			idc = -1;
+			x = safezoneX + (0.25 * safezoneW);
+			y = safezoneY + (0.17 * safezoneH);
+			w = 0.50 * safezoneW;
+			h = 0.062 * safezoneH;
+			colorBackground[] = {0.12,0.12,0.14,1};
+			style = 0;
+		};
+		class scTitle: RscText {
+			idc = 3301;
+			text = "Round Scoreboard";
+			x = safezoneX + (0.25 * safezoneW);
+			y = safezoneY + (0.17 * safezoneH);
+			w = 0.50 * safezoneW;
+			h = 0.062 * safezoneH;
+			colorText[] = {1,1,1,1};
+			style = ST_CENTER + ST_VCENTER;
+			font = "PuristaBold";
+			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.4);
+			shadow = 1;
+		};
+	};
+
+	class Controls {
+		class scGroup: RscControlsGroup {
+			idc = 3302;
+			x = safezoneX + (0.26 * safezoneW);
+			y = safezoneY + (0.245 * safezoneH);
+			w = 0.48 * safezoneW;
+			h = 0.52 * safezoneH;
+
+			class Controls {
+				class scList: RscStructuredText {
+					idc = 3300;
+					text = "";
+					x = 0;
+					y = 0;
+					w = 0.46 * safezoneW;
+					h = 3.0 * safezoneH;   // tall so the group scrolls for big lobbies
+					size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1);
+					class Attributes {
+						font = "PuristaMedium";
+						color = "#e6e6e6";
+						align = "left";
+						shadow = 1;
+					};
+				};
+			};
+		};
+		class scClose: RscButton {
+			idc = 2;
+			text = "Close  [K]";
+			x = safezoneX + (0.64 * safezoneW);
+			y = safezoneY + (0.785 * safezoneH);
+			w = 0.10 * safezoneW;
+			h = 0.038 * safezoneH;
+			colorBackground[] = {0.18,0.18,0.2,1};
+			colorBackgroundActive[] = {0.3,0.3,0.34,1};
+			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1);
+			action = "closeDialog 1";
+		};
+	};
+};

@@ -124,9 +124,16 @@ private _blacklist = [];    // overpowered optics excluded from loot
 	};
 } forEach ("true" configClasses (configFile >> "CfgWeapons"));
 
-// ---- publish: ground loot (low-powered, with a fallback to standard) ----
-private _lootPri = _low;
-if (count _lootPri < 3) then { _lootPri = _lootPri + _std; };            // "low powered, or similar"
+// ---- publish: ground loot (driven by the Loot Power lobby setting) ----
+//   0 Low: SMG / pistol-calibre only   1 Balanced: low, + standard if sparse
+//   2 Anything: low + standard rifles
+private _lootPri = +_low;
+switch (missionNamespace getVariable ["Waldo_lootPower", 1]) do {
+	case 0: { /* low only */ };
+	case 2: { _lootPri = _lootPri + _std; };
+	default { if (count _lootPri < 3) then { _lootPri = _lootPri + _std; }; };
+};
+if (_lootPri isEqualTo []) then { _lootPri = _std; };                    // Low with no SMGs found -> rifles
 if (_lootPri isEqualTo []) then { _lootPri = ["SMG_02_F", "arifle_TRG20_F", "SMG_05_F"]; };
 missionNamespace setVariable ["lootPriWeapons", ([_lootPri, 16] call _cap), true];
 

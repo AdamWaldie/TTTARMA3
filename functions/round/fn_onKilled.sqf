@@ -47,7 +47,7 @@ if (_victimRole == "Jester" && {!isNull _culprit} && {_culprit != _unit} && {_cu
 if (_culpritRole == "Traitor") then { _guilty = false; };
 
 // Karma: a non-Traitor killed a teammate (innocent/detective/jester) -> RDM.
-if (_guilty && {!isNull _culprit} && {_culprit != _unit} && {isPlayer _culprit}) then {
+if ((missionNamespace getVariable ["KarmaEnabled", true]) && {_guilty} && {!isNull _culprit} && {_culprit != _unit} && {isPlayer _culprit}) then {
 	private _uid = getPlayerUID _culprit;
 	if (_uid != "") then {
 		private _key = "Waldo_karma_" + _uid;

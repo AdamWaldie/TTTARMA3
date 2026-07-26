@@ -36,8 +36,8 @@ if (_realCount == 0) exitWith {
 };
 
 // Traitors & Detectives start with credits that scale with lobby size
-// (base 1, +1 per 8 players). Stored so other systems can reference it.
-private _startCredits = 1 + floor (_count / 8);
+// (configurable base, +1 per 8 players). Stored so other systems can reference it.
+private _startCredits = (missionNamespace getVariable ["Waldo_startCreditsBase", 1]) + floor (_count / 8);
 missionNamespace setVariable ["Waldo_startCredits", _startCredits, true];
 
 // --- Traitors ---
@@ -45,7 +45,11 @@ private _lower = missionNamespace getVariable ["TraitorPercentageChanceLowerBoun
 private _upper = missionNamespace getVariable ["TraitorPercentageChanceHigherBound", 0.45];
 private _chance = random [_lower, (_lower + _upper) / 2, _upper];
 private _traitorCount = (round (_count * _chance)) max 1;
-// Never assign more traitors than there are real players to assign them to.
+// Apply the lobby Minimum / Maximum Traitors clamps (max 0 = unlimited)...
+_traitorCount = _traitorCount max (missionNamespace getVariable ["Waldo_minTraitors", 1]);
+private _maxT = missionNamespace getVariable ["Waldo_maxTraitors", 0];
+if (_maxT > 0) then { _traitorCount = _traitorCount min _maxT; };
+// ...but never more traitors than there are real players to assign them to.
 _traitorCount = _traitorCount min _realCount;
 
 private _pool = (+_players) call BIS_fnc_arrayShuffle;
@@ -65,9 +69,10 @@ missionNamespace setVariable ["TraitorList", _traitors, true];
 // later from the dev menu set this true themselves).
 missionNamespace setVariable ["Waldo_hadNonTraitors", (_realCount - (count _traitors)) > 0, true];
 
-// --- Detective (lobby-toggleable; needs >= 5 players, not a Traitor) ---
+// --- Detective (lobby-toggleable; needs the min-players count, not a Traitor) ---
+private _detMin = missionNamespace getVariable ["DetectiveMinPlayers", 5];
 private _detectives = [];
-if ((missionNamespace getVariable ["DetectiveEnabled", true]) && {_count >= 5}) then {
+if ((missionNamespace getVariable ["DetectiveEnabled", true]) && {_count >= _detMin}) then {
 	private _candidates = _players select { !(_x in _traitors) };
 	if (count _candidates > 0) then {
 		private _det = selectRandom _candidates;
@@ -85,9 +90,11 @@ missionNamespace setVariable ["DetectiveList", _detectives, true];
 // The old chance check compared a 0..100 roll to a 0..1 fraction, so the
 // Jester almost never appeared. Compare against the fraction directly.
 private _jesters = [];
-if ((missionNamespace getVariable ["JesterEnabled", false]) && _count >= 5) then {
+if ((missionNamespace getVariable ["JesterEnabled", false]) && {_count >= _detMin}) then {
+	// "Jester: Always Appears" skips the chance roll.
 	private _jchance = missionNamespace getVariable ["JesterPercentagechance", 0.3];
-	if (random 1 <= _jchance) then {
+	private _jRoll = (missionNamespace getVariable ["JesterAlways", false]) || {random 1 <= _jchance};
+	if (_jRoll) then {
 		private _candidates = _players select { !(_x in _traitors) && !(_x in _detectives) };
 		if (count _candidates > 0) then {
 			private _jester = selectRandom _candidates;
@@ -103,7 +110,7 @@ if ((missionNamespace getVariable ["JesterEnabled", false]) && _count >= 5) then
 missionNamespace setVariable ["JesterList", _jesters, true];
 
 // --- Karma: apply carry-over penalties now that starting points are set ---
-[] call Waldo_fnc_applyKarma;
+if (missionNamespace getVariable ["KarmaEnabled", true]) then { [] call Waldo_fnc_applyKarma; };
 
 diag_log format ["[Waldo][server] assignRoles: players=%1 traitors=%2 detectives=%3 jesters=%4",
 	_count, count _traitors, count _detectives, count _jesters];

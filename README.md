@@ -48,15 +48,19 @@ This version (2.5.0 RC) includes a major refactor for stability, scalability, an
 
 ### Editable Parameters (via Lobby Menu):
 
-| Parameter                | Description                                 |
-|--------------------------|---------------------------------------------|
-| `Traitor % Range`        | Min/Max traitor percentage                  |
-| `Enable Detective Role`  | Toggle for the detective role               |
-| `Jester Enabled`         | Chance and toggle for jester chaos          |
-| `Round Length`           | Base + per player + per traitor             |
-| `Airdrops Enabled`       | Enables random supply drops                 |
-| `Rain / Fog`             | Controls chance and density                 |
-| `Enable Testing Mode`    | Unlocks the solo dev/test harness (see below) |
+| Group | Parameters |
+|-------|-----------|
+| **Round** | Base length, bonus per player, traitor bonus, time per death, warmup |
+| **Roles** | Traitor % lower/upper bound, **min / max traitors**, detective on/off, **detective min players**, jester on/off, **jester always**, jester chance |
+| **Gameplay** | **Karma system on/off**, **starting shop credits (base)** |
+| **Airdrop / Loot** | Airdrops on/off, base + random timer, loadouts per drop, max mag ammo, **loot power** (low / balanced / anything) |
+| **Environment** | Allow rain + chance, allow fog + chance, **Time of Day** (Random / Dawn / Day / Dusk / Night) |
+| **Arena** | **Arena size** (small / normal / large) |
+| **Testing** | Enable Testing Mode (unlocks the solo dev/test harness) |
+
+Boolean toggles use a `{0,1}` value read numerically, so they actually respond to
+the lobby (a `{False,True}` value with a boolean default is silently ignored by
+the engine — that bug is fixed here).
 
 ### Equipment (fully dynamic — no modpacks)
 

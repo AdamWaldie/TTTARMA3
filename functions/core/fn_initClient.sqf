@@ -40,8 +40,17 @@ player allowDamage false;
 
 waitUntil { !isNull player && time > 0 };
 
-// Intro music
-playMusic ["TTTIntroMusic", 20];
+// Intro music. Started in a guarded thread so it is not swallowed while the
+// client is still on the loading screen (the cause of it not playing for
+// everyone): wait until the main game display exists, then play - unless the
+// round already went live (a JIP mid-round shouldn't restart the intro).
+[] spawn {
+	waitUntil { !isNull (findDisplay 46) && {time > 0} };
+	sleep 0.5;
+	if !(missionNamespace getVariable ["gameOn", false]) then {
+		playMusic ["TTTIntroMusic", 20];
+	};
+};
 
 // --- Pregame: wait until the arena is built ---
 [] call Waldo_fnc_pregameScreen;

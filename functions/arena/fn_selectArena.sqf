@@ -10,7 +10,9 @@
 if (!isServer) exitWith {};
 
 private _playerCount = ([] call Waldo_fnc_effectivePlayerCount) max 1;
-private _radius = 50 + (_playerCount * 7.5);
+// Arena Size lobby setting scales the radius (75 / 100 / 150 -> 0.75x / 1x / 1.5x).
+private _scale = (missionNamespace getVariable ["Waldo_arenaScale", 100]) / 100;
+private _radius = (50 + (_playerCount * 7.5)) * _scale;
 missionNamespace setVariable ["mapRadius", _radius, true];
 
 // Count buildings within the radius that actually have interior loot positions.

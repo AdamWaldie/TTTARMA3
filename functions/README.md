@@ -6,7 +6,9 @@ A file `functions/<group>/fn_<name>.sqf` becomes `Waldo_fnc_<name>`.
 
 The engine entry points are thin: `init.sqf` (server) calls
 `Waldo_fnc_loadParams` then spawns `Waldo_fnc_initServer`; `initPlayerLocal.sqf`
-spawns `Waldo_fnc_initClient`; `config.sqf` holds optional dynamic-arsenal tuning.
+spawns `Waldo_fnc_initClient`; `config.sqf` holds optional dynamic-arsenal tuning;
+`onPlayerRespawn.sqf` (mission root) is the engine's per-respawn hook, used to
+re-home a revived player's state onto their new unit (see below).
 
 ## The game mode (intent)
 
@@ -27,10 +29,10 @@ Trouble in Terrorist Town is a hidden-role social-deduction round game:
 | Group | Functions | Runs on |
 |-------|-----------|---------|
 | `config` | `loadParams`, `buildArsenal` | server |
-| `core` | `resetState`, `initServer`, `initClient` | server / client |
+| `core` | `resetState`, `initServer`, `initClient`, `applySpawnLoadout` | server / client |
 | `arena` | `selectArena`, `buildArena`, `populateLoot`, `confineToArena` | server (confine: client) |
 | `env` | `setupWeather` | server |
-| `round` | `assignRoles`, `applyDetectiveLoadout`, `startRound`, `roundLoop`, `checkWin`, `endRound`, `onKilled`, `reviveAsTraitor`, `roundMVP` | server |
+| `round` | `assignRoles`, `applyDetectiveLoadout`, `startRound`, `roundLoop`, `checkWin`, `endRound`, `onKilled`, `reviveRelink`, `roundMVP` | server |
 | `systems` | `spawnAirdrop`, `applyKarma`, `c4Charge`, `identifyBody`, `dnaContaminate`, `spawnDecoyCorpse` | server |
 | `ui` | `initShops` (preInit), `initHud`, `drawRoleIcons`, `openBuyMenu`, `buyItem`, `titleSequence`, `pregameScreen`, `scoreboard`, `mvpCelebrate` | client |
 | `roles` | `traitorRadar`, `detectiveRadar`, `warpSmoke`, `suicideBomb`, `flowerPower`, `tester`, `revive`, `healthStation`, `holster`, `removeBody`, `dnaScanner`, `placeC4`, `traitorPing`, `pingShow`, `deadRinger`, `deadRingerTrigger` | client |
@@ -284,3 +286,18 @@ and prunes it so it can never accumulate unbounded.
 Init progress is logged as `[Waldo][server]` / `[Waldo][client]` phase markers
 in the `.rpt` (and on-screen when the **Testing Mode** parameter is on) to make
 replay stalls easy to trace.
+
+### Respawn is a NEW unit, not the old one restored
+
+A truly dead unit (`damage` 1, `Killed` fired) can never be revived in place -
+Arma's respawn always creates a brand-new object. `Waldo_fnc_revive` forces an
+early respawn (`setPlayerRespawnTime 0`) and stashes the intent on the corpse;
+`onPlayerRespawn.sqf` (the engine's per-respawn hook, which hands back the new
+unit directly) then re-homes everything onto it: role via `Waldo_fnc_reviveRelink`
+(also repoints `TraitorList`/`DetectiveList`/`JesterList` off the dead reference),
+credits/kills/purchases, the per-life `MPKilled`/`HandleDamage` handlers
+`Waldo_fnc_initClient` bound to the old unit object (they don't follow the
+`player` command across a respawn), the Jester fire-block, and a basic loadout
+via `Waldo_fnc_applySpawnLoadout`. Anything that reaches for `player` at call
+time (not a captured object reference) - like the `ace_unconscious` handler in
+`initClient` - already tracks a respawn on its own and needs no re-homing.

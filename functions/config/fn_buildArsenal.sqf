@@ -206,15 +206,19 @@ if !(_vests isEqualTo []) then {
 missionNamespace setVariable ["ShopArmorVest", _armorVest, true];
 
 // Frag grenade: first explosive throwable found on the "Throw" weapon's muzzles.
+// (exitWith inside a forEach only ends that one iteration, not the loop, so the
+// "stop at the first match" guard has to be an explicit _frag == "" check -
+// otherwise a later muzzle with its own match would silently overwrite it.)
 private _frag = "";
 {
-	private _muzzle = _x;
-	private _tMags = getArray (configFile >> "CfgWeapons" >> "Throw" >> _muzzle >> "magazines");
-	private _i = _tMags findIf {
-		private _ammo = getText (configFile >> "CfgMagazines" >> _x >> "ammo");
-		(getNumber (configFile >> "CfgAmmo" >> _ammo >> "explosive") > 0) && {getNumber (configFile >> "CfgAmmo" >> _ammo >> "indirectHit") >= 15}
+	if (_frag == "") then {
+		private _tMags = getArray (configFile >> "CfgWeapons" >> "Throw" >> _x >> "magazines");
+		private _i = _tMags findIf {
+			private _ammo = getText (configFile >> "CfgMagazines" >> _x >> "ammo");
+			(getNumber (configFile >> "CfgAmmo" >> _ammo >> "explosive") > 0) && {getNumber (configFile >> "CfgAmmo" >> _ammo >> "indirectHit") >= 15}
+		};
+		if (_i >= 0) then { _frag = _tMags select _i; };
 	};
-	if (_i >= 0) exitWith { _frag = _tMags select _i; };
 } forEach (getArray (configFile >> "CfgWeapons" >> "Throw" >> "muzzles"));
 if (_frag == "") then { _frag = "HandGrenade"; };
 missionNamespace setVariable ["ShopFrag", _frag, true];

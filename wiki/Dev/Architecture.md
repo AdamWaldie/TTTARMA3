@@ -38,3 +38,17 @@ Arma has no "undo death." A unit that's actually died (`damage` 1, `Killed` fire
 - **Loadout** - a freshly respawned unit is otherwise bare. `Waldo_fnc_applySpawnLoadout` (shared with the initial spawn) gives it a random uniform/vest/headgear from the discovered pools.
 
 Anything that reads the `player` command directly at call time, rather than holding onto a captured object reference, already tracks a respawn on its own and needs none of this. The `ace_unconscious` watchdog installed in `initClient` is the clearest example: it re-evaluates `player` on every loop tick, so it automatically follows whichever unit is currently controlled.
+
+## Terrain independence
+
+The mission runs on Altis, Tanoa, Stratis, Livonia, or any other terrain, but this is solved at two different levels, and it matters which one:
+
+**At runtime**, `Waldo_fnc_selectArena` scores candidate positions live rather than reading a fixed spot, and `Waldo_fnc_selectHoldingPos` does the same for the brief window before the real arena exists: a fast, `surfaceIsWater`-checked position every player is moved to the instant they join. `Waldo_fnc_initClient` also disables damage as its very first line, before either of those waits, so nothing about the gap between actually spawning and being relocated can hurt anyone. This is a safety net, not the fix, it can't stop someone from visibly spawning outside the map for a moment.
+
+**At the file/workflow level**, the actual fix: `mission.sqm`'s 128 placed player-start positions are raw world coordinates baked in when the mission was saved in Eden, real only for the one terrain it was authored on (Altis). Reusing them unmodified on a smaller terrain isn't a "might be in water" risk, it can be flatly out of bounds (Stratis and Livonia are both smaller than Altis's coordinate range). `.github/workflows/release.yml` resolves this per terrain, in order:
+
+1. `terrains/<Terrain>/mission.sqm`, if it exists - a real file someone built and verified in Eden directly on that terrain. Always preferred when present.
+2. Otherwise, `.github/terrains.json`'s entry for that terrain - an anchor point (a named, spacious, dry landmark, e.g. an airfield apron) that `.github/scripts/patch_mission_positions.py` recenters the existing 128-position grid onto, preserving its layout, with height set well above plausible ground so an imprecise anchor still drops players safely rather than into the terrain.
+3. Otherwise (Altis) - `mission.sqm` ships exactly as authored.
+
+`terrains/README.md` documents how to move a terrain from step 2 to step 1. The release workflow packages the result once per terrain (`TroubleInArmaville_<version>.<Terrain>`), since Arma keys a mission's terrain off its folder name, not off anything inside `mission.sqm`.

@@ -111,6 +111,7 @@ class CfgFunctions
 		{
 			file = "functions\arena";
 			class selectArena {};       // Waldo_fnc_selectArena
+			class selectHoldingPos {};  // Waldo_fnc_selectHoldingPos (server: fast safe pre-arena spot, any terrain)
 			class buildArena {};        // Waldo_fnc_buildArena
 			class populateLoot {};      // Waldo_fnc_populateLoot
 			class confineToArena {};    // Waldo_fnc_confineToArena

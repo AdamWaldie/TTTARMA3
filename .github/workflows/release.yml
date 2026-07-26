@@ -1,11 +1,34 @@
 name: Release
 
-# Packages the mission itself, not the whole repo. A tag push (or a manual
-# run against an existing tag) zips everything except .git, .github, the
-# wiki/ source folder, and any build output, then attaches that zip to a
-# GitHub release. GitHub's own "Source code" zip on a release would include
-# all of that dev-tooling cruft, which isn't part of the mission and isn't
-# something a host should be dropping into their Arma missions folder.
+# Packages the mission itself, not the whole repo, once per supported
+# terrain. The mission is terrain-agnostic at RUNTIME (the arena, loot, and
+# the pre-arena holding spot are all picked dynamically, see
+# Waldo_fnc_selectArena and Waldo_fnc_selectHoldingPos), but mission.sqm's
+# 128 placed player-start positions are raw world coordinates baked in when
+# the mission was saved in Eden, and those are only ever real for the one
+# terrain it was authored on (Altis). Shipping them unmodified for a
+# differently-shaped terrain risks landing outside the map entirely, not
+# just in water. Arma also requires a mission folder to be named
+# "MissionName.TerrainName" to show up for that terrain at all.
+#
+# For each terrain this resolves player-start positions in priority order:
+#   1. terrains/<Terrain>/mission.sqm, if present - a real, in-editor
+#      verified mission.sqm for that terrain. This is the eventual, correct
+#      source once one exists; drop a file there and the workflow prefers
+#      it automatically, no workflow change needed.
+#   2. Otherwise, .github/terrains.json's entry for that terrain - an
+#      interim best-effort anchor (a researched, named, spacious landmark
+#      guaranteed to be in-bounds and dry, e.g. an airfield apron) that
+#      .github/scripts/patch_mission_positions.py recenters the existing
+#      128-position grid onto, preserving its layout. The height is set
+#      well above plausible ground so an imprecise anchor still drops
+#      players safely onto real terrain (Waldo_fnc_initClient disables
+#      damage before anything else runs, so a short fall is cosmetic).
+#   3. Otherwise (Altis) - mission.sqm ships exactly as authored.
+#
+# A tag push (or a manual run against an existing tag) stages the mission
+# once, explicitly excluding .git, .github, terrains/, and the wiki/ source
+# folder, then builds each terrain's folder/zip from that staged copy.
 
 on:
   push:
@@ -14,11 +37,19 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing tag to build and attach the mission zip to"
+        description: "Existing tag to build and attach mission zips to"
         required: true
 
 permissions:
   contents: write
+
+env:
+  # Terrains this mission is packaged for. All base-game Arma 3 terrains;
+  # Tanoa needs Apex and Livonia needs Contact on the host's end, the
+  # mission itself doesn't care which one is loaded. Add a name here (and,
+  # ideally, a terrains/<Terrain>/mission.sqm or a .github/terrains.json
+  # entry) to ship another terrain.
+  TERRAINS: "Altis Tanoa Stratis Livonia"
 
 jobs:
   package:
@@ -26,28 +57,55 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Resolve tag
+      - name: Resolve tag and version
         id: tag
-        run: echo "tag=${{ inputs.tag || github.ref_name }}" >> "$GITHUB_OUTPUT"
+        run: |
+          TAG="${{ inputs.tag || github.ref_name }}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v4
         with:
           ref: ${{ steps.tag.outputs.tag }}
 
-      - name: Stage mission files only
+      - name: Stage the mission once
         run: |
-          mkdir -p stage/TroubleInArmaville dist
+          mkdir -p stage/_mission dist
           rsync -a \
             --exclude=".git" \
             --exclude=".github" \
             --exclude="wiki" \
+            --exclude="terrains" \
             --exclude="stage" \
             --exclude="dist" \
-            ./ stage/TroubleInArmaville/
+            ./ stage/_mission/
 
-      - name: Zip the mission
-        working-directory: stage
-        run: zip -r "../dist/TroubleInArmaville-${{ steps.tag.outputs.tag }}.zip" TroubleInArmaville
+      - name: Build one folder and zip per terrain
+        run: |
+          VERSION="${{ steps.tag.outputs.version }}"
+          cd stage
+          for TERRAIN in ${{ env.TERRAINS }}; do
+            NAME="TroubleInArmaville_${VERSION}.${TERRAIN}"
+            rm -rf "$NAME"
+            cp -r _mission "$NAME"
+
+            OVERRIDE="../terrains/${TERRAIN}/mission.sqm"
+            ANCHOR=$(python3 ../.github/scripts/terrain_anchor.py "$TERRAIN" ../.github/terrains.json)
+
+            if [ -f "$OVERRIDE" ]; then
+              echo "$TERRAIN: using the supplied, in-editor-verified mission.sqm"
+              cp "$OVERRIDE" "$NAME/mission.sqm"
+            elif [ -n "$ANCHOR" ]; then
+              echo "$TERRAIN: recentring player positions onto researched anchor ($ANCHOR)"
+              python3 ../.github/scripts/patch_mission_positions.py "$NAME/mission.sqm" $ANCHOR
+            else
+              echo "$TERRAIN: shipping mission.sqm as authored (only known-correct for Altis)"
+            fi
+
+            zip -rq "../dist/${NAME}.zip" "$NAME"
+            rm -rf "$NAME"
+          done
 
       - name: Create or update the release
         run: |

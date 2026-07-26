@@ -170,7 +170,7 @@ player addMPEventHandler ["MPKilled", {
 // Waldo_deadRingerArmed), a hit that would be fatal is capped instead of killing,
 // and Waldo_fnc_deadRingerTrigger sells the fake death. Installed once per client.
 player addEventHandler ["HandleDamage", {
-	params ["_unit", "", "_damage"];
+	params ["_unit", "_selection", "_damage"];
 	if ((_unit getVariable ["Waldo_deadRingerArmed", false]) && {((damage _unit) + _damage) >= 1}) then {
 		[_unit] call Waldo_fnc_deadRingerTrigger;
 		0.9

@@ -26,12 +26,17 @@ This version (2.5.0 RC) includes a major refactor for stability, scalability, an
 
 ## Features
 
-- 🔀 **Dynamic Role System** – configurable traitor %, detective, jester inclusion  
-- 🌆 **Arena Generator** – auto-finds towns and builds circular, scalable play zones  
-- 🎯 **Custom Buy Menus** – traitors and detectives get access to powerful tools  
-- ☁️ **Dynamic Weather** – fog, rain, time of day, all configurable  
-- 🚁 **Airdrops** – periodic random supply drops to spice up gameplay  
-- 🎵 **Intro Music** – loading screen music (configurable in `description.ext`)  
+- 🔀 **Dynamic Role System** – configurable traitor %/count, detective, jester inclusion
+- 🌆 **Arena Generator** – auto-finds towns and builds circular, scalable play zones
+- 🎯 **Custom Buy Menus** – ~14 items per role, with a "Purchased" panel showing how to use what you've bought
+- 🧬 **DNA Forensics** – trace kills to a suspect from bodies *or* dropped gear, with decay and scene contamination so it's never risk-free; an Enhanced Scanner upgrade for detectives
+- 🎭 **Counter-investigation** – traitors can fake their own death (Dead Ringer) or frame an innocent (False Flag)
+- 🤫 **Silent traitor coordination** – a location/target ping only fellow traitors see
+- 📋 **In-round scoreboard** – kills, alive/dead, and confirmed-dead roles at a glance
+- 🏆 **Round MVP** – a music-and-fireworks celebration for the round's top scorer
+- ☁️ **Dynamic Weather & Time of Day** – fog, rain, a single Time of Day selector, all configurable
+- 🚁 **Airdrops** – periodic drops, including rare golden variants (weapons/medical/ammo)
+- 🎵 **Intro Music** – loading screen music (configurable in `description.ext`)
 - 🧠 **Full parameter integration** – round length, role chance, game modifiers
 
 ---

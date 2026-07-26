@@ -30,10 +30,10 @@ Trouble in Terrorist Town is a hidden-role social-deduction round game:
 | `core` | `resetState`, `initServer`, `initClient` | server / client |
 | `arena` | `selectArena`, `buildArena`, `populateLoot`, `confineToArena` | server (confine: client) |
 | `env` | `setupWeather` | server |
-| `round` | `assignRoles`, `applyDetectiveLoadout`, `startRound`, `roundLoop`, `checkWin`, `endRound`, `onKilled`, `reviveAsTraitor` | server |
-| `systems` | `spawnAirdrop`, `applyKarma` | server |
-| `ui` | `initShops` (preInit), `initHud`, `drawRoleIcons`, `openBuyMenu`, `buyItem`, `titleSequence`, `pregameScreen` | client |
-| `roles` | `traitorRadar`, `detectiveRadar`, `warpSmoke`, `suicideBomb`, `flowerPower`, `tester`, `revive`, `healthStation`, `holster` | client |
+| `round` | `assignRoles`, `applyDetectiveLoadout`, `startRound`, `roundLoop`, `checkWin`, `endRound`, `onKilled`, `reviveAsTraitor`, `roundMVP` | server |
+| `systems` | `spawnAirdrop`, `applyKarma`, `c4Charge`, `identifyBody`, `dnaContaminate`, `spawnDecoyCorpse` | server |
+| `ui` | `initShops` (preInit), `initHud`, `drawRoleIcons`, `openBuyMenu`, `buyItem`, `titleSequence`, `pregameScreen`, `scoreboard`, `mvpCelebrate` | client |
+| `roles` | `traitorRadar`, `detectiveRadar`, `warpSmoke`, `suicideBomb`, `flowerPower`, `tester`, `revive`, `healthStation`, `holster`, `removeBody`, `dnaScanner`, `placeC4`, `traitorPing`, `pingShow`, `deadRinger`, `deadRingerTrigger` | client |
 | `debug` | `debugInit` (preInit registry + API), `debugMenu` (client renderer), `debugExec` (server dispatch), `effectivePlayerCount` | every machine / client / server |
 
 ## Equipment — dynamic, intent-aware arsenal
@@ -108,19 +108,81 @@ role-tinted header, a scrollable card grid coloured by affordability, and a
 footer that shows the hovered item's name, cost, type and `_tooltip` (so write
 `_tooltip` as the item's description). Buying refreshes credits + affordability
 in place and leaves the shop open (`Waldo_fnc_buyItem`); Esc or **Close** exits.
+A second panel, **Purchased**, lists everything bought this round with its
+`_tooltip` as a how-to-use reminder (`Waldo_purchases`, reset each round in
+`assignRoles`; rendered by the shared `Waldo_shopRenderPurchased` helper) — so
+you're never stuck remembering what an item does after you've bought it.
 
-The traitor and detective catalogs each carry ~12 items — offence (silenced
+The traitor and detective catalogs each carry ~14 items — offence (silenced
 sidearm, frags, launcher, long rifle), utility (radar, stamina, night vision,
-body armor), and role tools (defibrillator, tester, health station, body
-remover). The silenced sidearm, body armor, frag, night vision and binoculars
-are all sourced from the dynamic arsenal (`ShopPistol*`, `ShopArmorVest`,
-`ShopFrag`, `ShopNVG`, `ShopBinocular`), so they follow the loaded mods.
+body armor), investigation/counter-investigation (tester, DNA scanner +
+Enhanced Scanner, body remover, dead ringer, false flag), and role tools
+(defibrillator, health station, C4 charge). The silenced sidearm, body armor,
+frag, night vision and binoculars are all sourced from the dynamic arsenal
+(`ShopPistol*`, `ShopArmorVest`, `ShopFrag`, `ShopNVG`, `ShopBinocular`), so they
+follow the loaded mods.
+
+## Investigation & counter-investigation mechanics
+
+Beyond the original role-reveal tester, there's now a full forensics loop with
+real risk on both sides:
+
+- **DNA scanner** (Detective) reads DNA left by `Waldo_fnc_onKilled` on bodies
+  **and** on dropped gear (weapon holders near a corpse), and by placed traitor
+  equipment (a C4 charge carries its planter's DNA, even after being defused).
+  Sampling starts a track (distance + bearing) on the suspect. Traces **decay**
+  — an old sample gives a shorter track.
+- **Contamination** (`Waldo_fnc_dnaContaminate`) is the reason this isn't a free
+  "read and shoot": for 90s after a body/item appears, every *different* player
+  who comes within 3m of it counts as a witness, and each one raises a chance
+  the scanner **misdirects** the detective onto an innocent bystander instead of
+  the real suspect. The detective is told the scene is contaminated (so they
+  know to be wary) but never whether *this* reading is the real one.
+- **Enhanced Scanner** (Detective passive) halves the misdirection chance,
+  extends the track's duration/floor, and adds forensic detail — time since
+  death and the murder weapon (`Waldo_deathTime` / `Waldo_deathWeapon`, both
+  recorded by `onKilled`) — when scanning a body.
+- **Identify Body**: any player can call in a corpse to confirm the death to
+  everyone, but only a **Detective** identification reveals the victim's role
+  (`Waldo_fnc_identifyBody`, `Waldo_roleRevealed`). This also drives the
+  scoreboard's "confirmed dead" count.
+- **False Flag** (Traitor passive): arms your next kill to leave a random living
+  innocent's DNA at the scene instead of yours.
+- **Dead Ringer** (Traitor activation): arms a 25s window where a lethal hit is
+  faked instead of killing you. A `HandleDamage` guard (installed once in
+  `initClient`) caps the damage and calls `Waldo_fnc_deadRingerTrigger`, which
+  ragdolls you (`setUnconscious`, `allowDamage false` — a scripted
+  approximation of "faking it," not true invisibility) and spawns a decoy corpse
+  nearby (`Waldo_fnc_spawnDecoyCorpse`, tagged role Innocent so investigating it
+  is misleading). You recover after 20s.
+- **Body Remover** (Traitor activation): destroys a corpse outright, denying any
+  of the above entirely.
+
+## Traitor coordination
+
+**T** sends a silent ping to every fellow Traitor (`Waldo_fnc_traitorPing` /
+`Waldo_fnc_pingShow`) — no audio or text an innocent could overhear. The type is
+auto-detected from what you're aiming at: a living player gives a **Target**
+ping (orange, tracks them live); anything else gives a **Location** ping (red,
+static point).
+
+## Round MVP
+
+At round end, `Waldo_fnc_roundMVP` (called from `endRound`, before
+`BIS_fnc_endMissionServer`) finds whoever has the most kills this round
+(`Waldo_roundKills`) and broadcasts `Waldo_fnc_mvpCelebrate` to everyone: the
+intro music replays, a short coloured-smoke "fireworks" burst pops over the
+arena, and a banner names the MVP (or "Round Complete" if nobody scored a kill).
+`endRound` sleeps 6s afterward so it has time to play before the mission
+restarts.
 
 ## Keys
 
 - **B** — open your buy menu (Traitor / Detective).
 - **Y** — use your most recently bought activation item.
 - **L** — holster / lower weapon.
+- **K** — toggle the in-round scoreboard.
+- **T** — traitor coordination ping (Traitors only).
 - **\\** — open the dev/test menu (**only** when the **Testing Mode** parameter is on).
 - **]** — instantly cycle your own role Innocent → Traitor → Detective → Jester (Testing Mode only).
 

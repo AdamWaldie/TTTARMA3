@@ -32,4 +32,4 @@ The menu is a registry, not a hardcoded list. Anything that runs at preInit on e
 
 ## Mod independence
 
-The framework carries no mod-specific classnames of its own. Anything that gives gear runs the shop's actual purchase effects, which already read the dynamic arsenal's globals with vanilla fallbacks (see [Equipment System](Dev/Equipment-System)). Spawned test units (dummies, sims, the hostile combat dummy) go through one shared helper that validates a configurable unit class and falls back to a base-game class if it's missing, and dresses non-enemy units from the discovered clothing pools so they look like the current players.
+The framework carries no mod-specific classnames of its own. Anything that gives gear runs the shop's actual purchase effects, which already read the dynamic arsenal's globals with vanilla fallbacks (see [Equipment System](Dev-Equipment-System)). Spawned test units (dummies, sims, the hostile combat dummy) go through one shared helper that validates a configurable unit class and falls back to a base-game class if it's missing, and dresses non-enemy units from the discovered clothing pools so they look like the current players.

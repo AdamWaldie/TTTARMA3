@@ -74,7 +74,7 @@ Skipping this doesn't crash anything, it just leaks a duplicate handler that run
 
 ## A unit's identity doesn't survive a respawn
 
-If you're writing anything that captures a unit object and expects to still be able to act on it later (a delayed `spawn`, a stored reference, anything not re-read at call time), read [Architecture](Dev/Architecture) first. Arma's respawn always creates a new object; a captured reference to the pre-respawn unit is a corpse forever afterward, and code that keeps acting on it fails silently rather than erroring.
+If you're writing anything that captures a unit object and expects to still be able to act on it later (a delayed `spawn`, a stored reference, anything not re-read at call time), read [Architecture](Dev-Architecture) first. Arma's respawn always creates a new object; a captured reference to the pre-respawn unit is a corpse forever afterward, and code that keeps acting on it fails silently rather than erroring.
 
 ## Equipment: no hardcoded classnames outside the arsenal
 
@@ -88,7 +88,7 @@ Never edit `WaldoDebug`'s `.hpp` or hand-add a case to `fn_debugMenu.sqf`. Regis
 ["Category", "Label", "Tooltip", "local"|"server", { /* _this = the acting unit */ }] call Waldo_debugRegister;
 ```
 
-See [Dev and Test Mode](Dev/Dev-and-Test-Mode) for the full contract (what `"local"` vs `"server"` context means, and why the code itself never crosses the network).
+See [Dev and Test Mode](Dev-Test-Mode) for the full contract (what `"local"` vs `"server"` context means, and why the code itself never crosses the network).
 
 ## Comments explain why, not what
 

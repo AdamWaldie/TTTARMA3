@@ -166,6 +166,19 @@ player addMPEventHandler ["MPKilled", {
 	_this call Waldo_fnc_onKilled;
 }];
 
+// Dead Ringer guard: while armed (Waldo_debugSetRole / Waldo_fnc_deadRinger sets
+// Waldo_deadRingerArmed), a hit that would be fatal is capped instead of killing,
+// and Waldo_fnc_deadRingerTrigger sells the fake death. Installed once per client.
+player addEventHandler ["HandleDamage", {
+	params ["_unit", "", "_damage"];
+	if ((_unit getVariable ["Waldo_deadRingerArmed", false]) && {((damage _unit) + _damage) >= 1}) then {
+		[_unit] call Waldo_fnc_deadRingerTrigger;
+		0.9
+	} else {
+		_damage
+	}
+}];
+
 // ACE unconscious -> death, EXCEPT for the Jester (source-less setDamage
 // would wipe the "who killed me" attribution the Jester win depends on).
 ["ace_unconscious", {

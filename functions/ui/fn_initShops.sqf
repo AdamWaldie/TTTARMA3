@@ -104,7 +104,17 @@ Waldo_traitorShop = [
 	["Night Vision", 1, "weapon",
 		{ player addWeapon (missionNamespace getVariable ["ShopNVG", "NVGoggles"]); },
 		{},
-		"Night-vision goggles - own the dark rounds"]
+		"Night-vision goggles - own the dark rounds"],
+
+	["Dead Ringer", 3, "activation",
+		{},
+		{ [] call Waldo_fnc_deadRinger },
+		"Arms a 25s window: your next lethal hit is faked - you ragdoll like a kill and a decoy body appears, but you're not really dead"],
+
+	["False Flag", 2, "passive",
+		{ player setVariable ["Waldo_falseFlag", true, true]; hint "False Flag armed - your next kill will frame someone else."; },
+		{},
+		"Your next kill leaves an innocent bystander's DNA at the scene instead of yours"]
 ];
 
 // --- Detective shop ---

@@ -142,6 +142,7 @@ class CfgFunctions
 			class c4Charge {};          // Waldo_fnc_c4Charge (server: traitor timed charge)
 			class identifyBody {};      // Waldo_fnc_identifyBody (server: call in a corpse)
 			class dnaContaminate {};    // Waldo_fnc_dnaContaminate (server: witness/contamination tracking)
+			class spawnDecoyCorpse {};  // Waldo_fnc_spawnDecoyCorpse (server: Dead Ringer decoy)
 		};
 
 		class ui
@@ -185,6 +186,8 @@ class CfgFunctions
 			class placeC4 {};           // Waldo_fnc_placeC4 (traitor: place a timed charge)
 			class traitorPing {};       // Waldo_fnc_traitorPing (traitor: silent coordination ping)
 			class pingShow {};          // Waldo_fnc_pingShow (client: render a traitor ping)
+			class deadRinger {};        // Waldo_fnc_deadRinger (traitor: arm a faked death)
+			class deadRingerTrigger {}; // Waldo_fnc_deadRingerTrigger (client: sell the fake death)
 		};
 	};
 };

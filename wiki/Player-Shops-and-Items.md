@@ -20,7 +20,7 @@ Suicide Bomb, Radar (pulses everyone's position, recharges), Rocket Launcher, St
 
 Portable Tester (reveals a role at close range), DNA Scanner, Enhanced Scanner (upgrades the DNA Scanner), Radar, Smoke Grenades, Stamina, Flower Power (a novelty round-turns-into-flowers effect), Health Station, Defibrillator (revives a body as whatever it was), Frag Grenades, Body Armor, Medical Kit, Binoculars, Night Vision.
 
-Weapon and gear classnames in both catalogs are read from `missionNamespace` at click time (`TraitorRifle`, `ShopArmorVest`, `ShopFrag`, and so on), which is what makes the shop follow whatever mods the dynamic arsenal discovered rather than hardcoding classnames. See [Equipment System](Dev/Equipment-System).
+Weapon and gear classnames in both catalogs are read from `missionNamespace` at click time (`TraitorRifle`, `ShopArmorVest`, `ShopFrag`, and so on), which is what makes the shop follow whatever mods the dynamic arsenal discovered rather than hardcoding classnames. See [Equipment System](Dev-Equipment-System).
 
 ## The Purchased panel
 

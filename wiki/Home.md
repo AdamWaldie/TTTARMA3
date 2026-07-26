@@ -8,19 +8,19 @@ This wiki is split by audience. Pick the section that matches what you're trying
 
 Everything here is written from the player's or host's chair, no code required.
 
-- **[Roles and Win Conditions](Player/Roles-and-Win-Conditions)** - the four roles, how a round ends, and the priority order endings resolve in.
-- **[Shops and Items](Player/Shops-and-Items)** - the Traitor and Detective catalogs, how buying and activation items work.
-- **[Investigation Mechanics](Player/Investigation-Mechanics)** - DNA forensics, contamination, Identify Body, Dead Ringer, False Flag.
-- **[Lobby Parameters](Player/Lobby-Parameters)** - every host-configurable setting, grouped and explained.
+- **[Roles and Win Conditions](Player-Roles-and-Win-Conditions)** - the four roles, how a round ends, and the priority order endings resolve in.
+- **[Shops and Items](Player-Shops-and-Items)** - the Traitor and Detective catalogs, how buying and activation items work.
+- **[Investigation Mechanics](Player-Investigation-Mechanics)** - DNA forensics, contamination, Identify Body, Dead Ringer, False Flag.
+- **[Lobby Parameters](Player-Lobby-Parameters)** - every host-configurable setting, grouped and explained.
 
 ## Contributing
 
 Everything here is for anyone reading or changing the SQF itself.
 
-- **[Architecture](Dev/Architecture)** - the function library layout, the per-round state model, and why respawn needs special handling.
-- **[Equipment System](Dev/Equipment-System)** - the dynamic, mod-independent arsenal discovery that replaces hand-curated modpacks.
-- **[Dev and Test Mode](Dev/Dev-and-Test-Mode)** - the solo testing framework: the registry-driven menu, simulated players, and how to exercise every ending alone.
-- **[Code Standards](Dev/Code-Standards)** - naming, structure, and the patterns a pull request against this repo is expected to follow.
+- **[Architecture](Dev-Architecture)** - the function library layout, the per-round state model, and why respawn needs special handling.
+- **[Equipment System](Dev-Equipment-System)** - the dynamic, mod-independent arsenal discovery that replaces hand-curated modpacks.
+- **[Dev and Test Mode](Dev-Test-Mode)** - the solo testing framework: the registry-driven menu, simulated players, and how to exercise every ending alone.
+- **[Code Standards](Dev-Code-Standards)** - naming, structure, and the patterns a pull request against this repo is expected to follow.
 
 ## Quick facts
 

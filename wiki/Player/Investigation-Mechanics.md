@@ -17,7 +17,7 @@ Calling in a corpse (a scroll action added to every body) always confirms the de
 
 ## Dead Ringer (Traitor)
 
-Arms a 25-second window where the next lethal hit you take is faked instead of killing you. A `HandleDamage` guard installed once per life (see [Architecture](Architecture) for why this needs reinstalling after a revive) caps the actual damage, then `Waldo_fnc_deadRingerTrigger` sells it: you ragdoll (`setUnconscious`, `allowDamage false`) and a decoy corpse spawns nearby, dressed from the spawn loadout pool and tagged role Innocent so anyone investigating it is misled. You're down and vulnerable for 20 seconds, not invisible, before getting back up.
+Arms a 25-second window where the next lethal hit you take is faked instead of killing you. A `HandleDamage` guard installed once per life (see [Architecture](Dev/Architecture) for why this needs reinstalling after a revive) caps the actual damage, then `Waldo_fnc_deadRingerTrigger` sells it: you ragdoll (`setUnconscious`, `allowDamage false`) and a decoy corpse spawns nearby, dressed from the spawn loadout pool and tagged role Innocent so anyone investigating it is misled. You're down and vulnerable for 20 seconds, not invisible, before getting back up.
 
 ## False Flag (Traitor)
 

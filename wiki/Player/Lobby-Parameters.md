@@ -28,7 +28,7 @@ All lobby parameters are read by index in `Waldo_fnc_loadParams`, matching the o
 
 | Parameter | What it controls |
 |---|---|
-| Enable Karma System | Toggles the cross-round RDM penalty (see [Architecture](Architecture)). |
+| Enable Karma System | Toggles the cross-round RDM penalty (see [Architecture](Dev/Architecture)). |
 | Starting Shop Credits (base) | Traitor/Detective starting credits, before the +1-per-8-players scaling. |
 
 ## Airdrop / loot
@@ -59,7 +59,7 @@ All lobby parameters are read by index in `Waldo_fnc_loadParams`, matching the o
 
 | Parameter | What it controls |
 |---|---|
-| Enable Testing Mode | Unlocks the dev/test menu (`\`) and the instant role-cycle key (`]`). See [Dev and Test Mode](Dev-and-Test-Mode). Off, none of that exists for a normal game. |
+| Enable Testing Mode | Unlocks the dev/test menu (`\`) and the instant role-cycle key (`]`). See [Dev and Test Mode](Dev/Dev-and-Test-Mode). Off, none of that exists for a normal game. |
 
 ## A fixed lobby bug worth knowing about
 

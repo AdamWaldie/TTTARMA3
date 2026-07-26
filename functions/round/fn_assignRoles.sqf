@@ -30,6 +30,7 @@ missionNamespace setVariable ["JESTERCLEANKILL", false, true];
 	_x setVariable ["points", 0, true];
 	_x setVariable ["tested", false, true];
 	_x setVariable ["Waldo_roundKills", 0, true];   // in-round scoreboard tally
+	_x setVariable ["Waldo_purchases", [], true];   // shop "Purchased" panel log
 } forEach _players;
 
 if (_realCount == 0) exitWith {

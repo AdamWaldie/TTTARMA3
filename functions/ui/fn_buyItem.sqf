@@ -47,9 +47,16 @@ if (_type == "activation") then {
 	player setVariable ["activationQueue", _q];
 };
 
+// Log the purchase (name + how-to-use tip) for the shop's "Purchased" panel.
+private _purchases = player getVariable ["Waldo_purchases", []];
+_purchases pushBack [_name, _tip];
+player setVariable ["Waldo_purchases", _purchases];
+
 if (isNull _disp) exitWith {
 	if (_type == "activation") then { hint format ["%1 ready - press Y to use.", _name]; };
 };
+
+[_disp] call Waldo_shopRenderPurchased;
 
 // --- Refresh the open shop: credits, card affordability, and a confirmation. ---
 (_disp displayCtrl 1101) ctrlSetText (format ["%1 credits", _new]);

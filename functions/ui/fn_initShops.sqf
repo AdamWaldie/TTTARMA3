@@ -16,6 +16,22 @@
 // works on any mod loadout.
 //////////////////////////////////////////////////////////////////
 
+// Renders the "Purchased" list (idc 1106) inside the given shop display, from
+// the player's per-round purchase log (Waldo_purchases: array of [name, tip]).
+// Shared by Waldo_fnc_openBuyMenu (on open) and Waldo_fnc_buyItem (on each buy)
+// so every purchase shows what it does / how to use it without leaving the shop.
+Waldo_shopRenderPurchased = {
+	params ["_display"];
+	private _list = player getVariable ["Waldo_purchases", []];
+	private _body = "";
+	{
+		_x params ["_name", "_tip"];
+		_body = _body + format ["<t size='1.0' color='#ffd23f'>%1</t><br/><t size='0.85' color='#9a9a9a'>%2</t><br/><br/>", _name, _tip];
+	} forEach _list;
+	if (_body == "") then { _body = "<t size='0.9' color='#9a9a9a'>Nothing purchased yet.</t>"; };
+	(_display displayCtrl 1106) ctrlSetStructuredText parseText _body;
+};
+
 // Role -> RGBA colour (shared by HUD, icons, menus).
 Waldo_roleColor = {
 	params ["_role"];

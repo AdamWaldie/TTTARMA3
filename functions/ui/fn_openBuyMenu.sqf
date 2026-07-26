@@ -52,6 +52,9 @@ private _credits = player getVariable ["points", 0];
 	"<t size='1.0' color='#9a9a9a'>Hover an item for details. Click to buy. Press Esc to close.</t>"
 );
 
+// --- Purchased-this-round panel (what you already own + how to use it) ---
+[_display] call Waldo_shopRenderPurchased;
+
 // --- Item cards ---
 private _group = _display displayCtrl 1102;
 private _cols = 2;

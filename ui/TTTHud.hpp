@@ -193,6 +193,40 @@ class WaldoShop {
 				shadow = 1;
 			};
 		};
+
+		// "Purchased" side panel: what you already bought this round + how to use
+		// it (the catalog tooltip). A second panel to the right of the main shop.
+		class shopPurchBG: RscText {
+			idc = -1;
+			x = safezoneX + (0.73 * safezoneW);
+			y = safezoneY + (0.18 * safezoneH);
+			w = 0.20 * safezoneW;
+			h = 0.64 * safezoneH;
+			colorBackground[] = {0.055,0.055,0.06,0.94};
+			style = 0;
+		};
+		class shopPurchHeader: RscText {
+			idc = -1;
+			x = safezoneX + (0.73 * safezoneW);
+			y = safezoneY + (0.18 * safezoneH);
+			w = 0.20 * safezoneW;
+			h = 0.062 * safezoneH;
+			colorBackground[] = {0.2,0.2,0.2,1};
+			style = 0;
+		};
+		class shopPurchTitle: RscText {
+			idc = 1105;
+			text = "Purchased";
+			x = safezoneX + (0.735 * safezoneW);
+			y = safezoneY + (0.18 * safezoneH);
+			w = 0.19 * safezoneW;
+			h = 0.062 * safezoneH;
+			colorText[] = {1,1,1,1};
+			style = ST_LEFT + ST_VCENTER;
+			font = "PuristaBold";
+			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.1);
+			shadow = 1;
+		};
 	};
 
 	class Controls {
@@ -202,6 +236,31 @@ class WaldoShop {
 			y = safezoneY + (0.26 * safezoneH);
 			w = 0.42 * safezoneW;
 			h = 0.395 * safezoneH;
+		};
+		class shopPurchGroup: RscControlsGroup {
+			idc = 1107;
+			x = safezoneX + (0.735 * safezoneW);
+			y = safezoneY + (0.26 * safezoneH);
+			w = 0.185 * safezoneW;
+			h = 0.545 * safezoneH;
+
+			class Controls {
+				class shopPurchList: RscStructuredText {
+					idc = 1106;
+					text = "";
+					x = 0;
+					y = 0;
+					w = 0.18 * safezoneW;
+					h = 2.0 * safezoneH;   // tall so the group scrolls once purchases stack up
+					size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.9);
+					class Attributes {
+						font = "PuristaMedium";
+						color = "#dcdcdc";
+						align = "left";
+						shadow = 1;
+					};
+				};
+			};
 		};
 		class shopClose: RscButton {
 			idc = 2;

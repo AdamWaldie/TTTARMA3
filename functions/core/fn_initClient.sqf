@@ -24,18 +24,11 @@ waitUntil { missionNamespace getVariable ["Waldo_configReady", false] };
 if (missionNamespace getVariable ["gameOn", false]) then { player setDammage 1; };
 
 // --- Spawn loadout ---
-private _uniforms  = missionNamespace getVariable ["uniformsConfig", []];
-private _headgears = missionNamespace getVariable ["headgearsConfig", []];
-private _vests     = missionNamespace getVariable ["vestsConfig", []];
-
 player setVariable ["tested", false, true];
 player setVariable ["player", player, true];
 player setVariable ["activationQueue", []];   // local: holds bought activation items
 
-if (count _uniforms > 0) then { player forceAddUniform (selectRandom _uniforms); };
-if (count _vests > 0)    then { player addVest (selectRandom _vests); };
-removeBackpack player;
-if (count _headgears > 0 && {floor (random 10) < 6}) then { player addHeadgear (selectRandom _headgears); };
+[] call Waldo_fnc_applySpawnLoadout;
 player allowDamage false;
 
 waitUntil { !isNull player && time > 0 };

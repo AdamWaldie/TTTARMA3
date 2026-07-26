@@ -8,10 +8,17 @@
 
 if (!isServer) exitWith {};
 
-private _timeFrom = missionNamespace getVariable ["timeFrom", 5];
-private _timeTo   = missionNamespace getVariable ["timeTo", 19];
+// Time of day from the single lobby selector:
+//   0 Random, 1 Dawn, 2 Day, 3 Dusk, 4 Night.
+private _hour = switch (missionNamespace getVariable ["timeOfDay", 0]) do {
+	case 1: { 5  + floor (random 2) };   // Dawn  05:00-06:xx
+	case 2: { 11 + floor (random 3) };   // Day   11:00-13:xx
+	case 3: { 18 + floor (random 2) };   // Dusk  18:00-19:xx
+	case 4: { 22 + floor (random 3) };   // Night 22:00-00:xx (wraps to 24 -> 0)
+	default { floor (random 24) };       // Random - any hour, day or night
+};
 
-setDate [2022, 9, 18, (random (_timeTo - _timeFrom - 1)) + _timeFrom, floor (random 60)];
+setDate [2035, 7, 6, (_hour % 24), floor (random 60)];
 setWind [0, 0, true];
 0 setOvercast (random 1);
 

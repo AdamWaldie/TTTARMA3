@@ -3,7 +3,7 @@
 // Runs on the DETECTIVE's own machine (remote-executed from assignRoles),
 // because forceAddUniform/addVest/addHeadgear/etc. are local-effect commands
 // and the loadout must exist where the unit is local. Reads the broadcast
-// detectiveConfig (the modpack only defines the raw global on the server).
+// detectiveConfig (published by the dynamic arsenal on the server).
 //
 // detectiveConfig format:
 //   ["Uniform","Vest","Headgear",

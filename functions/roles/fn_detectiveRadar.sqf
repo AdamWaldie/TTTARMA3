@@ -1,12 +1,16 @@
 //////////////////////////////////////////////////////////////////
 // Waldo_fnc_detectiveRadar
 // CLIENT: like the traitor radar but shows all units AND corpses as neutral
-// green pulses (position only, not role), recharging every 45s. Single
-// managed handler + CBA per-frame recharge.
+// green pulses (position only, not role), recharging every 45s. Both the
+// Draw3D handler and its CBA per-frame recharge replace rather than stack
+// if called again (e.g. the shop item is bought more than once).
 //////////////////////////////////////////////////////////////////
 
 private _old = player getVariable ["Waldo_radarEH", -1];
 if (_old >= 0) then { removeMissionEventHandler ["Draw3D", _old]; };
+
+private _oldPfh = player getVariable ["Waldo_radarPFH", -1];
+if (_oldPfh >= 0) then { [_oldPfh] call CBA_fnc_removePerFrameHandler; };
 
 player setVariable ["radar", 1];
 
@@ -22,8 +26,9 @@ private _eh = addMissionEventHandler ["Draw3D", {
 }];
 player setVariable ["Waldo_radarEH", _eh];
 
-[{
+private _pfh = [{
 	params ["_args", "_handle"];
 	if (!alive player) exitWith { [_handle] call CBA_fnc_removePerFrameHandler; };
 	player setVariable ["radar", 1];
 }, 45] call CBA_fnc_addPerFrameHandler;
+player setVariable ["Waldo_radarPFH", _pfh];

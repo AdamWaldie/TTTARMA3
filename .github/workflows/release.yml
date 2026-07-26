@@ -1,0 +1,61 @@
+name: Release
+
+# Packages the mission itself, not the whole repo. A tag push (or a manual
+# run against an existing tag) zips everything except .git, .github, the
+# wiki/ source folder, and any build output, then attaches that zip to a
+# GitHub release. GitHub's own "Source code" zip on a release would include
+# all of that dev-tooling cruft, which isn't part of the mission and isn't
+# something a host should be dropping into their Arma missions folder.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build and attach the mission zip to"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Resolve tag
+        id: tag
+        run: echo "tag=${{ inputs.tag || github.ref_name }}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.tag.outputs.tag }}
+
+      - name: Stage mission files only
+        run: |
+          mkdir -p stage/TroubleInArmaville dist
+          rsync -a \
+            --exclude=".git" \
+            --exclude=".github" \
+            --exclude="wiki" \
+            --exclude="stage" \
+            --exclude="dist" \
+            ./ stage/TroubleInArmaville/
+
+      - name: Zip the mission
+        working-directory: stage
+        run: zip -r "../dist/TroubleInArmaville-${{ steps.tag.outputs.tag }}.zip" TroubleInArmaville
+
+      - name: Create or update the release
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/*.zip --clobber
+          else
+            gh release create "$TAG" dist/*.zip \
+              --title "Trouble In Armaville $TAG" \
+              --generate-notes
+          fi

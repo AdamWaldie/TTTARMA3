@@ -11,9 +11,26 @@
 //                   Must return TRUE when it should be consumed, FALSE to
 //                   stay in the queue (e.g. no valid target).
 //
-// Weapon classnames are read from missionNamespace at click time so the
-// same catalog works for every equipment modpack.
+// Weapon/gear classnames are read from missionNamespace at click time (they are
+// published by the dynamic arsenal, Waldo_fnc_buildArsenal), so the same catalog
+// works on any mod loadout.
 //////////////////////////////////////////////////////////////////
+
+// Renders the "Purchased" list (idc 1106) inside the given shop display, from
+// the player's per-round purchase log (Waldo_purchases: array of [name, tip]).
+// Shared by Waldo_fnc_openBuyMenu (on open) and Waldo_fnc_buyItem (on each buy)
+// so every purchase shows what it does / how to use it without leaving the shop.
+Waldo_shopRenderPurchased = {
+	params ["_display"];
+	private _list = player getVariable ["Waldo_purchases", []];
+	private _body = "";
+	{
+		_x params ["_name", "_tip"];
+		_body = _body + format ["<t size='1.0' color='#F2BE55'>%1</t><br/><t size='0.85' color='#9EA290'>%2</t><br/><br/>", _name, _tip];
+	} forEach _list;
+	if (_body == "") then { _body = "<t size='0.9' color='#9EA290'>Nothing purchased yet.</t>"; };
+	(_display displayCtrl 1106) ctrlSetStructuredText parseText _body;
+};
 
 // Role -> RGBA colour (shared by HUD, icons, menus).
 Waldo_roleColor = {
@@ -68,7 +85,52 @@ Waldo_traitorShop = [
 	["Defibrillator", 2, "activation",
 		{},
 		{ [] call Waldo_fnc_revive },
-		"Aim at a body and press Y to revive them as a Traitor"]
+		"Aim at a body and press Y to revive them as a Traitor"],
+
+	["Silenced Pistol", 1, "weapon",
+		{
+			player addWeaponGlobal (missionNamespace getVariable ["ShopPistol", "hgun_P07_F"]);
+			private _s = missionNamespace getVariable ["ShopPistolSuppressor", ""];
+			if (_s != "") then { player addHandgunItem _s; };
+			player addMagazines [(missionNamespace getVariable ["ShopPistolMag", "16Rnd_9x21_Mag"]), 3];
+		},
+		{},
+		"A suppressed sidearm - quiet kills leave no gunshot to give you away"],
+
+	["Frag Grenades", 1, "weapon",
+		{ player addMagazines [(missionNamespace getVariable ["ShopFrag", "HandGrenade"]), 2]; },
+		{},
+		"Two fragmentation grenades"],
+
+	["Body Armor", 2, "passive",
+		{ player addVest (missionNamespace getVariable ["ShopArmorVest", "V_PlateCarrier2_rgr"]); },
+		{},
+		"A heavy plate carrier - soak an extra hit or two"],
+
+	["Body Remover", 1, "activation",
+		{},
+		{ [] call Waldo_fnc_removeBody },
+		"Aim at a corpse and press Y to destroy it, denying the Detective a body to test"],
+
+	["C4 Charge", 2, "activation",
+		{},
+		{ [] call Waldo_fnc_placeC4 },
+		"Drop a timed explosive at your feet - it blows in 15s unless someone defuses it"],
+
+	["Night Vision", 1, "weapon",
+		{ player addWeapon (missionNamespace getVariable ["ShopNVG", "NVGoggles"]); },
+		{},
+		"Night-vision goggles - own the dark rounds"],
+
+	["Dead Ringer", 3, "activation",
+		{},
+		{ [] call Waldo_fnc_deadRinger },
+		"Arms a 25s window: your next lethal hit is faked - you ragdoll like a kill and a decoy body appears, but you're not really dead"],
+
+	["False Flag", 2, "passive",
+		{ player setVariable ["Waldo_falseFlag", true, true]; hint "False Flag armed - your next kill will frame someone else."; },
+		{},
+		"Your next kill leaves an innocent bystander's DNA at the scene instead of yours"]
 ];
 
 // --- Detective shop ---
@@ -77,6 +139,16 @@ Waldo_detectiveShop = [
 		{},
 		{ [] call Waldo_fnc_tester },
 		"Aim at a player or body within 3m and press Y to reveal their role"],
+
+	["DNA Scanner", 2, "activation",
+		{},
+		{ [] call Waldo_fnc_dnaScanner },
+		"Aim at a body and press Y to sample the killer's DNA, then track them down"],
+
+	["Enhanced Scanner", 3, "passive",
+		{ player setVariable ["Waldo_enhancedScanner", true, true]; },
+		{},
+		"Upgrades the DNA Scanner: longer/steadier tracking, half the contamination risk, and reveals time-of-death + weapon"],
 
 	["Radar", 1, "passive",
 		{ [] call Waldo_fnc_detectiveRadar; },
@@ -106,7 +178,32 @@ Waldo_detectiveShop = [
 	["Defibrillator", 2, "activation",
 		{},
 		{ [] call Waldo_fnc_revive },
-		"Aim at a body and press Y to bring them back"]
+		"Aim at a body and press Y to bring them back"],
+
+	["Frag Grenades", 1, "weapon",
+		{ player addMagazines [(missionNamespace getVariable ["ShopFrag", "HandGrenade"]), 2]; },
+		{},
+		"Two fragmentation grenades"],
+
+	["Body Armor", 2, "passive",
+		{ player addVest (missionNamespace getVariable ["ShopArmorVest", "V_PlateCarrier2_rgr"]); },
+		{},
+		"A heavy plate carrier - stay standing long enough to catch the traitor"],
+
+	["Medical Kit", 1, "weapon",
+		{ player addItem "Medikit"; player addItem "FirstAidKit"; },
+		{},
+		"A medikit + first aid kit to patch yourself up"],
+
+	["Binoculars", 1, "weapon",
+		{ player addWeapon (missionNamespace getVariable ["ShopBinocular", "Binocular"]); },
+		{},
+		"Binoculars for watching suspects from range"],
+
+	["Night Vision", 1, "weapon",
+		{ player addWeapon (missionNamespace getVariable ["ShopNVG", "NVGoggles"]); },
+		{},
+		"Night-vision goggles - keep watch in the dark"]
 ];
 
 diag_log "[Waldo] initShops: catalogs ready";

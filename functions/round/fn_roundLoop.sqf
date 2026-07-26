@@ -46,18 +46,27 @@ while { missionNamespace getVariable ["gameOn", false] } do {
 		(parseText _text) remoteExec ["hintSilent", _x];
 	} forEach allPlayers;
 
+	// Dev/test: a frozen round keeps rendering the HUD but stops the clock,
+	// airdrops and win checks so a system can be inspected mid-round. Always
+	// false in a normal game, so live behaviour is unchanged.
+	private _frozen = (missionNamespace getVariable ["TestingFlag", false])
+		&& {missionNamespace getVariable ["Waldo_debugFreeze", false]};
+
 	// --- Airdrop ---
-	if ((missionNamespace getVariable ["airdrop", true]) && {_airdropTimer + 1 >= _airdropWait}) then {
+	if (!_frozen && {missionNamespace getVariable ["airdrop", true]} && {_airdropTimer + 1 >= _airdropWait}) then {
 		[] call Waldo_fnc_spawnAirdrop;
 		_airdropWait = round ((random (missionNamespace getVariable ["airdropRandomTimer", 75])) + (missionNamespace getVariable ["airdropBaseTimer", 75]));
 		_airdropTimer = 0;
 	};
 
 	// --- Win check ---
-	private _ending = [_timer, _timelimit] call Waldo_fnc_checkWin;
+	private _ending = "";
+	if (!_frozen) then { _ending = [_timer, _timelimit] call Waldo_fnc_checkWin; };
 	if (_ending != "") exitWith { [_ending] call Waldo_fnc_endRound; };
 
 	sleep 1;
-	_timer = _timer + 1;
-	_airdropTimer = _airdropTimer + 1;
+	if (!_frozen) then {
+		_timer = _timer + 1;
+		_airdropTimer = _airdropTimer + 1;
+	};
 };

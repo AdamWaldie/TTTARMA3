@@ -27,15 +27,70 @@ private _culprit = _instigator;
 if (isNull _culprit) then { _culprit = _killer; };
 private _culpritRole = if (isNull _culprit) then { "" } else { _culprit getVariable ["role", ""] };
 
+// --- Forensic state on the body (for the DNA scanner + Identify Body) ---
+_unit setVariable ["Waldo_deathTime", time, true];
+_unit setVariable ["Waldo_deathWeapon", (if (isNull _culprit) then { "" } else { currentWeapon _culprit }), true];
+_unit setVariable ["Waldo_identified", false, true];
+_unit setVariable ["Waldo_roleRevealed", false, true];
+
+if (!isNull _culprit && {_culprit != _unit}) then {
+	// Count the kill toward the culprit's in-round tally (scoreboard / MVP).
+	if (isPlayer _culprit) then {
+		_culprit setVariable ["Waldo_roundKills", (_culprit getVariable ["Waldo_roundKills", 0]) + 1, true];
+	};
+
+	// DNA left at the scene. A traitor's armed "False Flag" frames a random
+	// living innocent instead (and is consumed); otherwise it's the real culprit.
+	private _dnaOn = _culprit;
+	if (_culprit getVariable ["Waldo_falseFlag", false]) then {
+		private _frames = allPlayers select { alive _x && {!(_x in _traitors)} && {_x != _culprit} };
+		if (count _frames > 0) then { _dnaOn = selectRandom _frames; };
+		_culprit setVariable ["Waldo_falseFlag", false, true];
+	};
+	_unit setVariable ["Waldo_killerDNA", _dnaOn, true];
+	_unit setVariable ["Waldo_killerDNATime", time, true];
+	[_unit, _dnaOn] call Waldo_fnc_dnaContaminate;
+
+	// Also leave DNA on the gear the victim drops, so a killer who flees the body
+	// still leaves a second trace nearby (tag the death weapon-holders shortly
+	// after the engine spawns them).
+	[_unit, _dnaOn] spawn {
+		params ["_body", "_dnaOn"];
+		sleep 1;
+		{
+			_x setVariable ["Waldo_killerDNA", _dnaOn, true];
+			_x setVariable ["Waldo_killerDNATime", time, true];
+			[_x, _dnaOn] call Waldo_fnc_dnaContaminate;
+		} forEach (nearestObjects [_body, ["WeaponHolderSimulated", "GroundWeaponHolder"], 4]);
+	};
+};
+
+// "Identify Body" scroll action on the corpse - calling it in confirms the death
+// to everyone (and, if a Detective calls it, the victim's role). hideOnUse is
+// FALSE and the condition checks Waldo_roleRevealed (not Waldo_identified): a
+// non-Detective finding the body first must NOT consume/hide the action, or a
+// Detective arriving later could never get the role reveal. It only actually
+// disappears once a Detective has identified it. Added on every machine
+// (JIP-safe).
+[_unit, [
+	"<t color='#ffd23f'>Identify Body</t>",
+	{ [_target, _this] remoteExec ["Waldo_fnc_identifyBody", 2]; },
+	nil, 4, true, false, "",
+	"!(_target getVariable ['Waldo_roleRevealed', false])",
+	2.5
+]] remoteExec ["addAction", 0, _unit];
+
 private _guilty = true;   // did the culprit kill someone they shouldn't have?
 
-// Credit awards.
+// Credit awards (amount per kill is the lobby "Kill Reward Credits" setting;
+// detectives are paid for traitor kills and traitors for detective kills).
+private _reward = missionNamespace getVariable ["Waldo_killReward", 1];
 if (_victimRole == "Traitor") then {
 	_guilty = false;
-	{ _x setVariable ["points", (_x getVariable ["points", 0]) + 1, true]; } forEach _detectives;
+	if (_reward > 0) then { { _x setVariable ["points", (_x getVariable ["points", 0]) + _reward, true]; } forEach _detectives; };
 };
 if (_victimRole == "Detective") then {
-	{ _x setVariable ["points", (_x getVariable ["points", 0]) + 1, true]; } forEach _traitors;
+	if (_reward > 0) then { { _x setVariable ["points", (_x getVariable ["points", 0]) + _reward, true]; } forEach _traitors; };
 };
 
 // Jester clean kill: a non-Traitor (and not self / environment) killed the Jester.
@@ -47,7 +102,7 @@ if (_victimRole == "Jester" && {!isNull _culprit} && {_culprit != _unit} && {_cu
 if (_culpritRole == "Traitor") then { _guilty = false; };
 
 // Karma: a non-Traitor killed a teammate (innocent/detective/jester) -> RDM.
-if (_guilty && {!isNull _culprit} && {_culprit != _unit} && {isPlayer _culprit}) then {
+if ((missionNamespace getVariable ["KarmaEnabled", true]) && {_guilty} && {!isNull _culprit} && {_culprit != _unit} && {isPlayer _culprit}) then {
 	private _uid = getPlayerUID _culprit;
 	if (_uid != "") then {
 		private _key = "Waldo_karma_" + _uid;

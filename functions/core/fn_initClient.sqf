@@ -24,24 +24,26 @@ waitUntil { missionNamespace getVariable ["Waldo_configReady", false] };
 if (missionNamespace getVariable ["gameOn", false]) then { player setDammage 1; };
 
 // --- Spawn loadout ---
-private _uniforms  = missionNamespace getVariable ["uniformsConfig", []];
-private _headgears = missionNamespace getVariable ["headgearsConfig", []];
-private _vests     = missionNamespace getVariable ["vestsConfig", []];
-
 player setVariable ["tested", false, true];
 player setVariable ["player", player, true];
 player setVariable ["activationQueue", []];   // local: holds bought activation items
 
-if (count _uniforms > 0) then { player forceAddUniform (selectRandom _uniforms); };
-if (count _vests > 0)    then { player addVest (selectRandom _vests); };
-removeBackpack player;
-if (count _headgears > 0 && {floor (random 10) < 6}) then { player addHeadgear (selectRandom _headgears); };
+[] call Waldo_fnc_applySpawnLoadout;
 player allowDamage false;
 
 waitUntil { !isNull player && time > 0 };
 
-// Intro music
-playMusic ["TTTIntroMusic", 20];
+// Intro music. Started in a guarded thread so it is not swallowed while the
+// client is still on the loading screen (the cause of it not playing for
+// everyone): wait until the main game display exists, then play - unless the
+// round already went live (a JIP mid-round shouldn't restart the intro).
+[] spawn {
+	waitUntil { !isNull (findDisplay 46) && {time > 0} };
+	sleep 0.5;
+	if !(missionNamespace getVariable ["gameOn", false]) then {
+		playMusic ["TTTIntroMusic", 20];
+	};
+};
 
 // --- Pregame: wait until the arena is built ---
 [] call Waldo_fnc_pregameScreen;
@@ -112,6 +114,28 @@ removeBackpack player;
 					[] call Waldo_fnc_holster;
 					_handled = true;
 				};
+				case 37: {   // K - toggle the in-round scoreboard
+					[] call Waldo_fnc_scoreboard;
+					_handled = true;
+				};
+				case 20: {   // T - traitor coordination ping (traitors only)
+					if ((player getVariable ["role", ""]) == "Traitor") then {
+						[] call Waldo_fnc_traitorPing;
+						_handled = true;
+					};
+				};
+				case 43: {   // \ - open the dev/test menu (only under Testing Mode)
+					if (missionNamespace getVariable ["TestingFlag", false]) then {
+						[] call Waldo_fnc_debugMenu;
+						_handled = true;
+					};
+				};
+				case 27: {   // right-bracket key - instant role cycle (Testing Mode only)
+					if (missionNamespace getVariable ["TestingFlag", false]) then {
+						call Waldo_debugCycleRole;
+						_handled = true;
+					};
+				};
 			};
 			_handled
 		}];
@@ -135,9 +159,46 @@ player addMPEventHandler ["MPKilled", {
 	_this call Waldo_fnc_onKilled;
 }];
 
-// ACE unconscious -> death, EXCEPT for the Jester (source-less setDamage
-// would wipe the "who killed me" attribution the Jester win depends on).
-["ace_unconscious", {
-	params ["_unit", "_state"];
-	if ((_unit getVariable ["role", ""]) != "Jester") then { _unit setDamage 1; };
-}] call CBA_fnc_addEventHandler;
+// Dead Ringer guard: while armed (Waldo_fnc_deadRinger sets Waldo_deadRingerArmed),
+// a hit that would be fatal is capped instead of killing, and
+// Waldo_fnc_deadRingerTrigger sells the fake death. Installed once per client.
+player addEventHandler ["HandleDamage", {
+	params ["_unit", "_selection", "_damage"];
+	if ((_unit getVariable ["Waldo_deadRingerArmed", false]) && {((damage _unit) + _damage) >= 1}) then {
+		[_unit] call Waldo_fnc_deadRingerTrigger;
+		0.9
+	} else {
+		_damage
+	}
+}];
+
+// ACE unconscious -> death (this TTT ruleset has no downed/incapacitated state
+// - going unconscious always means dead), EXCEPT for the Jester (source-less
+// setDamage would wipe the "who killed me" attribution the Jester win depends
+// on) and a unit currently faking its death via Dead Ringer.
+//
+// TWO redundant triggers, because a single CBA event handler was unreliable:
+//   1. The old handler ignored _state entirely, so it fired identically
+//      whether a unit went UNCONSCIOUS or RECOVERED - it could re-kill someone
+//      the instant they woke back up. Now gated on _state (only the "went
+//      unconscious" edge) and restricted to the unit's OWN machine
+//      (_unit == player) - calling setDamage locally on the affected player's
+//      machine is more reliable than every client reacting to the same
+//      broadcast event and racing to remote-kill the same unit.
+//   2. A local watchdog backstop using the ENGINE's own lifeState (not an
+//      ACE-internal variable name, which risks not matching ACE's actual
+//      implementation) - catches a unit stuck INCAPACITATED if the event is
+//      ever missed, or doesn't fire at all under a given ACE medical setting.
+[] spawn {
+	["ace_unconscious", {
+		params ["_unit", "_state"];
+		private _protected = ((_unit getVariable ["role", ""]) == "Jester") || (_unit getVariable ["Waldo_deadRingerTriggered", false]);
+		if (_state && {_unit == player} && {!_protected}) then { player setDamage 1; };
+	}] call CBA_fnc_addEventHandler;
+
+	while { true } do {
+		private _protected = ((player getVariable ["role", ""]) == "Jester") || (player getVariable ["Waldo_deadRingerTriggered", false]);
+		if (alive player && {lifeState player == "INCAPACITATED"} && {!_protected}) then { player setDamage 1; };
+		sleep 2;
+	};
+};

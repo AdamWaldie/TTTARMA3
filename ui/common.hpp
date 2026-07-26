@@ -1,4 +1,22 @@
 ///////////////////////////////////////////////////////////////////////////
+/// Waldo shared UI palette — a dark "field terminal" look shared by every
+/// Waldo_* dialog (shop, dev menu, scoreboard): a dimmed backdrop + drop
+/// shadow behind the panel, a near-black header with a thin accent stripe,
+/// warm dark casing, and cream/olive-grey text rather than flat white/grey.
+/// Matches the look of Waldo's Mission Pack's Interactions UI so the two
+/// mission packs read as one family. Does NOT apply to the GMod-TTT role
+/// crest (TTTHud), which intentionally keeps its own distinct look.
+///////////////////////////////////////////////////////////////////////////
+#define WALDO_DIM        {0,0,0,0.72}
+#define WALDO_SHADOW     {0,0,0,0.82}
+#define WALDO_CASING     {0.105,0.11,0.095,0.96}
+#define WALDO_HEADERBG   {0.045,0.05,0.045,0.99}
+#define WALDO_CONTENTBG  {0.03,0.032,0.03,0.97}
+#define WALDO_ACCENT     {0.85,0.62,0.20,1}
+#define WALDO_BTN        {0.15,0.16,0.13,0.92}
+#define WALDO_BTNACTIVE  {0.24,0.25,0.20,1}
+
+///////////////////////////////////////////////////////////////////////////
 /// Styles
 ///////////////////////////////////////////////////////////////////////////
 

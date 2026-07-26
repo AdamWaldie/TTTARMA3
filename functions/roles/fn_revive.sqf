@@ -4,6 +4,12 @@
 // press Y. A Detective restores the player with their original allegiance;
 // a Traitor revives them onto the Traitor team ("Defibrillator").
 //
+// A truly dead unit (damage 1, Killed already fired) can never be revived in
+// place - respawn always creates a brand-new unit object. So this can't act
+// on the body directly: it forces an early respawn and stashes the revive
+// intent ON the corpse (broadcast setVariable), for onPlayerRespawn.sqf to
+// read via its direct _oldUnit parameter once the new unit actually exists.
+//
 // Returns true when a revive was performed (consuming the item), false
 // otherwise so the item stays queued.
 //////////////////////////////////////////////////////////////////
@@ -30,18 +36,18 @@ hint "Reviving...";
 sleep 3;
 hint "";
 
+// Stash the revive intent on the corpse - onPlayerRespawn.sqf runs on the
+// revived player's own machine and gets the same object directly as
+// _oldUnit, so a broadcast setVariable here is all that's needed to hand it
+// off (no UID lookup required).
+private _asTraitor = (player getVariable ["role", ""]) == "Traitor";
+_revived setVariable ["Waldo_reviveAsTraitor", _asTraitor, true];
+_revived setVariable ["Waldo_revivePending", true, true];
+
 // Let them respawn now, then restore the long wait for future deaths.
 [0] remoteExec ["setPlayerRespawnTime", _revived];
 sleep 0.5;
 [2400] remoteExec ["setPlayerRespawnTime", _revived];
-
-// Traitor defibrillator converts the revived player (server owns the list).
-if ((player getVariable ["role", ""]) == "Traitor") then {
-	[_revived] remoteExec ["Waldo_fnc_reviveAsTraitor", 2];
-};
-
-// Refresh the revived player's HUD to match their (possibly new) role.
-[] remoteExec ["Waldo_fnc_initHud", _revived];
 
 hint "Revive complete.";
 true

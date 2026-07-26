@@ -39,6 +39,7 @@ missionNamespace setVariable ["JesterPercentagechance", (param [13, 30]) / 100, 
 // --- Gameplay ---
 missionNamespace setVariable ["KarmaEnabled",           (param [14, 1]) != 0, true];
 missionNamespace setVariable ["Waldo_startCreditsBase",  param [15, 1], true];
+missionNamespace setVariable ["Waldo_killReward",        param [29, 1], true];   // appended param
 
 // --- Airdrop / loot ---
 missionNamespace setVariable ["airdrop",               (param [16, 1]) != 0, true];

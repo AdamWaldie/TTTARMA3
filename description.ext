@@ -374,4 +374,12 @@ class Params {
 		texts[]  = {"No", "Yes"};
 		default  = 0;
 	};
+
+	// New params go at the END (file order = param index; see loadParams).
+	class killRewardCredits {               // 29
+		title = "Kill Reward Credits";
+		values[] = {0, 1, 2, 3};
+		texts[]  = {"0 (off)", "1", "2", "3"};
+		default  = 1;
+	};
 };

@@ -29,13 +29,15 @@ private _culpritRole = if (isNull _culprit) then { "" } else { _culprit getVaria
 
 private _guilty = true;   // did the culprit kill someone they shouldn't have?
 
-// Credit awards.
+// Credit awards (amount per kill is the lobby "Kill Reward Credits" setting;
+// detectives are paid for traitor kills and traitors for detective kills).
+private _reward = missionNamespace getVariable ["Waldo_killReward", 1];
 if (_victimRole == "Traitor") then {
 	_guilty = false;
-	{ _x setVariable ["points", (_x getVariable ["points", 0]) + 1, true]; } forEach _detectives;
+	if (_reward > 0) then { { _x setVariable ["points", (_x getVariable ["points", 0]) + _reward, true]; } forEach _detectives; };
 };
 if (_victimRole == "Detective") then {
-	{ _x setVariable ["points", (_x getVariable ["points", 0]) + 1, true]; } forEach _traitors;
+	if (_reward > 0) then { { _x setVariable ["points", (_x getVariable ["points", 0]) + _reward, true]; } forEach _traitors; };
 };
 
 // Jester clean kill: a non-Traitor (and not self / environment) killed the Jester.

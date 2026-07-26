@@ -333,17 +333,9 @@ class Params {
 		default = False;
 	};
 
-	// === EQUIPMENT OPTIONS ===
-	// NOTE: these are read by index in Waldo_fnc_loadParams (equipmentMode = 21,
-	// DetectiveEnabled = 22). Keep them LAST and append new params after them so
-	// the existing indices never shift.
-	class equipmentMode {
-		title = "Equipment Source";
-		values[] = {0, 1, 2, 3};
-		texts[]  = {"Dynamic (auto from loaded mods)", "Vanilla preset", "WW2 preset", "Custom preset"};
-		default  = 0;
-	};
-
+	// === GAME OPTIONS (cont.) ===
+	// NOTE: read by index in Waldo_fnc_loadParams (DetectiveEnabled = 21). Keep
+	// it LAST and append any new param after it so existing indices never shift.
 	class DetectiveEnabled {
 		title = "Enable Detective Role";
 		values[] = {0, 1};

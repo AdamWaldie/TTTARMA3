@@ -156,12 +156,11 @@ Waldo_debugSetRole = {
 	diag_log format ["[Waldo][server] debug: %1 -> role %2", name _unit, _role];
 };
 
-// Create one AI test unit at _pos on _side, MODPACK-INDEPENDENTLY. The unit
-// class is read from a modpack-overridable variable (Waldo_debugCivUnit /
-// Waldo_debugEnemyUnit) and validated, falling back to a base-game class that
-// exists in every Arma 3 install — so testing works under Vanilla, WW2, Custom
-// or any future modpack. Civilian-side units are dressed in the active modpack's
-// published uniform/headgear/vest so dummies and sims look like its real
+// Create one AI test unit at _pos on _side, MOD-INDEPENDENTLY. The unit class is
+// read from an overridable variable (Waldo_debugCivUnit / Waldo_debugEnemyUnit)
+// and validated, falling back to a base-game class that exists in every Arma 3
+// install — so testing works under any mods. Civilian-side units are dressed in
+// the discovered uniform/headgear/vest so dummies and sims look like the current
 // players. Returns the unit, or objNull on failure.
 Waldo_debugMakeUnit = {
 	params ["_pos", "_side"];
@@ -176,7 +175,7 @@ Waldo_debugMakeUnit = {
 	private _u = (units _grp) select 0;
 	if (isNull _u) exitWith { objNull };
 
-	// Dress non-enemy test units to match the current modpack's players.
+	// Dress non-enemy test units to match the current players' look.
 	if (!_enemy) then {
 		private _uni  = missionNamespace getVariable ["uniformsConfig", []];
 		private _head = missionNamespace getVariable ["headgearsConfig", []];

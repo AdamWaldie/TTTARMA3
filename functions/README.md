@@ -6,7 +6,7 @@ A file `functions/<group>/fn_<name>.sqf` becomes `Waldo_fnc_<name>`.
 
 The engine entry points are thin: `init.sqf` (server) calls
 `Waldo_fnc_loadParams` then spawns `Waldo_fnc_initServer`; `initPlayerLocal.sqf`
-spawns `Waldo_fnc_initClient`; `config.sqf` only chooses the equipment modpack.
+spawns `Waldo_fnc_initClient`; `config.sqf` holds optional dynamic-arsenal tuning.
 
 ## The game mode (intent)
 
@@ -50,9 +50,15 @@ Equipment is discovered at runtime, not hand-listed per modpack.
 - thermal optics are auto-detected (via `OpticsModes` `visionMode`) and
   blacklisted from loot.
 
-It then publishes the exact globals the mission already consumes
-(`lootPriWeapons`, `lootSecWeapons`, `lootAttachments`, `airdropLoadouts`,
-`TraitorRifle`/`*Mag`/`*Optics`, `TraitorLauncher`/`*Mag`, `uniformsConfig`,
+- gear is discovered too: NVGs (`ItemInfo` type 617), plain binoculars
+  (`isKindOf Binocular`, so rangefinders/designators are excluded), the
+  highest-`armor` vest, and the first explosive throwable off the `Throw`
+  weapon's muzzles (frag grenade).
+
+It then publishes the exact globals the mission consumes (`lootPriWeapons`,
+`lootSecWeapons`, `lootAttachments`, `airdropLoadouts`, `TraitorRifle`/`*Mag`/
+`*Optics`, `TraitorLauncher`/`*Mag`, `ShopPistol`/`*Mag`/`*Suppressor`,
+`ShopArmorVest`, `ShopFrag`, `ShopNVG`, `ShopBinocular`, `uniformsConfig`,
 `headgearsConfig`, `vestsConfig`, `detectiveConfig`) by **intent**:
 
 | Intent | Pool |
@@ -61,27 +67,27 @@ It then publishes the exact globals the mission already consumes
 | Airdrops (reward) | snipers + LMGs + standard rifles |
 | Traitor "Long Rifle" | the highest-`hit` sniper found, with a compatible optic |
 | Traitor "Rocket Launcher" | any launcher found |
+| Shop gear | silenced sidearm, highest-`armor` vest, frag grenade, NVG, binoculars |
 | Spawn / detective clothing | discovered uniforms / vests / headgear |
 
-Every bucket has a **vanilla fallback**, so an empty category never breaks a
-round, and consumers keep their own `isNil`/`getVariable` guards. Because it is a
-drop-in for those globals, `Waldo_fnc_populateLoot`, `Waldo_fnc_spawnAirdrop`,
-the shop and the spawn loadout needed **no changes**.
+Every bucket has a **built-in vanilla classname fallback**, so an empty category
+(e.g. a total-conversion with no pistols) never breaks a round, and consumers
+keep their own `isNil`/`getVariable` guards. Because it is a drop-in for those
+globals, `Waldo_fnc_populateLoot`, `Waldo_fnc_spawnAirdrop`, the shop and the
+spawn/detective loadouts needed **no changes**.
 
-### Selecting the source (lobby + optional override)
+### There are no modpack presets
 
-The equipment source is a **lobby parameter**, `equipmentMode` (param index 21):
-`0` Dynamic (default), `1` Vanilla, `2` WW2, `3` Custom. `loadParams` always runs
-the dynamic pass first as a baseline, then — for a non-Dynamic choice — loads the
-matching `modpacks/*.sqf` preset **after**, so it overrides only the globals it
-sets and nothing is ever left unset.
+Equipment discovery is the *only* source — there are no `modpacks/*.sqf` files
+and no equipment lobby param. To change the gear pool, change the mods you launch
+Arma with; the mission adapts automatically. The only optional knobs are the
+power thresholds in `config.sqf` (`Waldo_arsenalLowMaxHit` /
+`Waldo_arsenalSniperMinHit` / `Waldo_arsenalLmgMinRounds`), read at the top of
+`buildArsenal` with the defaults shown there.
 
-For automated/dedicated setups, a code-level `Waldo_modpack` in `config.sqf`
-takes precedence over the lobby choice and pins that preset file.
-
-> Params are read by index in `loadParams`, so `equipmentMode` (21) and
-> `DetectiveEnabled` (22) are kept **last** in `description.ext`'s `class Params`;
-> append any new param after them so existing indices never shift.
+> Lobby params are read by index in `loadParams`, so `DetectiveEnabled` (21) is
+> kept **last** in `description.ext`'s `class Params`; append any new param after
+> it so existing indices never shift.
 
 ## Adding a shop item
 
@@ -106,8 +112,9 @@ in place and leaves the shop open (`Waldo_fnc_buyItem`); Esc or **Close** exits.
 The traitor and detective catalogs each carry ~12 items — offence (silenced
 sidearm, frags, launcher, long rifle), utility (radar, stamina, night vision,
 body armor), and role tools (defibrillator, tester, health station, body
-remover). The silenced sidearm is sourced from the dynamic arsenal
-(`ShopPistol*`), so it follows the loaded modpack.
+remover). The silenced sidearm, body armor, frag, night vision and binoculars
+are all sourced from the dynamic arsenal (`ShopPistol*`, `ShopArmorVest`,
+`ShopFrag`, `ShopNVG`, `ShopBinocular`), so they follow the loaded mods.
 
 ## Keys
 
@@ -186,23 +193,22 @@ or a future module's own preInit):
   matches. `Waldo_fnc_effectivePlayerCount` is the shared hook that lets size
   logic honour the simulated lobby size.
 
-### Modpack independence
+### Mod independence
 
-The framework carries no modpack-specific classnames. Weapon/loadout tools run
-the shop's own `_onBuy` effects, which already read modpack globals with vanilla
-fallbacks, so they follow whichever modpack is loaded. Spawned test units
-(dummies, simulated players, hostile) go through one helper, `Waldo_debugMakeUnit`,
-which:
+The framework carries no mod-specific classnames. Weapon/gear tools run the
+shop's own `_onBuy` effects, which read the dynamic-arsenal globals with vanilla
+fallbacks, so they follow whatever mods are loaded. Spawned test units (dummies,
+simulated players, hostile) go through one helper, `Waldo_debugMakeUnit`, which:
 
 - reads its unit class from `Waldo_debugCivUnit` / `Waldo_debugEnemyUnit`,
   **validating** it and falling back to a base-game class (`C_man_1` /
   `O_Soldier_F`) that exists in every install, and
-- dresses non-enemy units from the active modpack's `uniformsConfig` /
-  `headgearsConfig` / `vestsConfig`, so they look like that modpack's players.
+- dresses non-enemy units from the discovered `uniformsConfig` /
+  `headgearsConfig` / `vestsConfig`, so they look like the current players.
 
-A modpack that replaces the base man classes can point those two variables at its
-own units (see the commented example in `modpacks/Custom.sqf`); with no config,
-testing works out of the box under any modpack.
+To point the spawn units at your own classes, set `Waldo_debugCivUnit` /
+`Waldo_debugEnemyUnit` in `config.sqf` (a commented example is there); with no
+config, testing works out of the box under any mods.
 
 ## State model & replay safety
 

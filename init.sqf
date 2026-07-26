@@ -6,10 +6,10 @@
 //////////////////////////////////////////////////////////////////
 
 if (isServer) then {
-	// config.sqf is the user-facing knob (which equipment modpack to use).
+	// config.sqf holds OPTIONAL dynamic-arsenal tuning (compiled before it runs).
 	call compile preprocessFileLineNumbers "config.sqf";
 
-	// Load params + modpack synchronously, then flag Waldo_configReady.
+	// Read params + build the dynamic arsenal synchronously, then flag ready.
 	[] call Waldo_fnc_loadParams;
 
 	// Orchestrate the round (scheduled: contains waits/sleeps).

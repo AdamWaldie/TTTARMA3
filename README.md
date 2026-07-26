@@ -50,7 +50,6 @@ This version (2.5.0 RC) includes a major refactor for stability, scalability, an
 
 | Parameter                | Description                                 |
 |--------------------------|---------------------------------------------|
-| `Equipment Source`       | Dynamic / Vanilla / WW2 / Custom (see below) |
 | `Traitor % Range`        | Min/Max traitor percentage                  |
 | `Enable Detective Role`  | Toggle for the detective role               |
 | `Jester Enabled`         | Chance and toggle for jester chaos          |
@@ -59,22 +58,26 @@ This version (2.5.0 RC) includes a major refactor for stability, scalability, an
 | `Rain / Fog`             | Controls chance and density                 |
 | `Enable Testing Mode`    | Unlocks the solo dev/test harness (see below) |
 
-### Equipment source (switch modpacks from the lobby)
+### Equipment (fully dynamic — no modpacks)
 
-Weapons, loot, airdrops and clothing come from one of four sources, chosen with
-the **Equipment Source** lobby parameter — no file editing needed:
+There are **no modpack files**. Weapons, ammo, gear, loot, airdrops and clothing
+are all discovered at runtime by `Waldo_fnc_buildArsenal`, which scans whatever
+mods are loaded and picks gear **by intent**:
 
-| Choice | What it does |
-|--------|--------------|
-| **Dynamic** (default) | `Waldo_fnc_buildArsenal` scans whatever mods are loaded and picks gear by intent: low-powered weapons for ground loot, stronger weapons for airdrops, the strongest sniper + a launcher for the traitor shop, and available clothing. Works on any modpack, no curation. |
-| **Vanilla** | The hand-picked `modpacks/Vanilla.sqf` preset. |
-| **WW2** | The `modpacks/WW2.sqf` preset (use with WW2 mods so modern weapons aren't mixed in). |
-| **Custom** | The `modpacks/Custom.sqf` preset — your own edits. |
+- **low-powered weapons** for ground loot (close-quarters TTT),
+- stronger weapons for airdrops,
+- the highest-damage sniper and a launcher for the traitor shop,
+- a suppressed sidearm, a heavy vest, a frag grenade, night vision and
+  binoculars for the shop gear,
+- available uniforms / vests / headgear for spawns and the detective.
 
-Dynamic discovery always runs first as a baseline, so even a partial preset can
-never leave anything unset. For an automated/dedicated server that must always
-run one loadout, uncomment a `Waldo_modpack` line in `config.sqf` — that pins a
-preset in code and overrides the lobby choice.
+It works on **any** mod loadout with zero curation. Built-in **vanilla
+classnames are the fallback** for any category a total-conversion happens not to
+provide, so nothing is ever unset. To switch "modpacks", just change the mods you
+launch Arma with — the mission adapts automatically.
+
+Optional tuning (power thresholds) lives in `config.sqf`; you never *need* to
+touch it.
 
 ---
 

@@ -11,8 +11,9 @@
 //                   Must return TRUE when it should be consumed, FALSE to
 //                   stay in the queue (e.g. no valid target).
 //
-// Weapon classnames are read from missionNamespace at click time so the
-// same catalog works for every equipment modpack.
+// Weapon/gear classnames are read from missionNamespace at click time (they are
+// published by the dynamic arsenal, Waldo_fnc_buildArsenal), so the same catalog
+// works on any mod loadout.
 //////////////////////////////////////////////////////////////////
 
 // Role -> RGBA colour (shared by HUD, icons, menus).
@@ -81,12 +82,12 @@ Waldo_traitorShop = [
 		"A suppressed sidearm - quiet kills leave no gunshot to give you away"],
 
 	["Frag Grenades", 1, "weapon",
-		{ player addMagazines ["HandGrenade", 2]; },
+		{ player addMagazines [(missionNamespace getVariable ["ShopFrag", "HandGrenade"]), 2]; },
 		{},
 		"Two fragmentation grenades"],
 
 	["Body Armor", 2, "passive",
-		{ player addVest "V_PlateCarrier2_rgr"; },
+		{ player addVest (missionNamespace getVariable ["ShopArmorVest", "V_PlateCarrier2_rgr"]); },
 		{},
 		"A heavy plate carrier - soak an extra hit or two"],
 
@@ -96,7 +97,7 @@ Waldo_traitorShop = [
 		"Aim at a corpse and press Y to destroy it, denying the Detective a body to test"],
 
 	["Night Vision", 1, "weapon",
-		{ player addWeapon "NVGoggles"; },
+		{ player addWeapon (missionNamespace getVariable ["ShopNVG", "NVGoggles"]); },
 		{},
 		"Night-vision goggles - own the dark rounds"]
 ];
@@ -139,12 +140,12 @@ Waldo_detectiveShop = [
 		"Aim at a body and press Y to bring them back"],
 
 	["Frag Grenades", 1, "weapon",
-		{ player addMagazines ["HandGrenade", 2]; },
+		{ player addMagazines [(missionNamespace getVariable ["ShopFrag", "HandGrenade"]), 2]; },
 		{},
 		"Two fragmentation grenades"],
 
 	["Body Armor", 2, "passive",
-		{ player addVest "V_PlateCarrier2_rgr"; },
+		{ player addVest (missionNamespace getVariable ["ShopArmorVest", "V_PlateCarrier2_rgr"]); },
 		{},
 		"A heavy plate carrier - stay standing long enough to catch the traitor"],
 
@@ -154,12 +155,12 @@ Waldo_detectiveShop = [
 		"A medikit + first aid kit to patch yourself up"],
 
 	["Binoculars", 1, "weapon",
-		{ player addWeapon "Binocular"; },
+		{ player addWeapon (missionNamespace getVariable ["ShopBinocular", "Binocular"]); },
 		{},
 		"Binoculars for watching suspects from range"],
 
 	["Night Vision", 1, "weapon",
-		{ player addWeapon "NVGoggles"; },
+		{ player addWeapon (missionNamespace getVariable ["ShopNVG", "NVGoggles"]); },
 		{},
 		"Night-vision goggles - keep watch in the dark"]
 ];

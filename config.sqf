@@ -1,22 +1,23 @@
 //////////////////////////////////////////////////////////////////
-// Game Config — USER-FACING KNOBS
+// Game Config — OPTIONAL TUNING
 //
-// SWITCHING EQUIPMENT / MODPACKS is done from the LOBBY now: the host picks the
-// "Equipment Source" parameter on the lobby screen —
-//     Dynamic  - auto-detect appropriate gear from whatever mods are loaded
-//     Vanilla  - the modpacks\Vanilla.sqf preset
-//     WW2      - the modpacks\WW2.sqf preset (run with WW2 mods)
-//     Custom   - the modpacks\Custom.sqf preset (your own edits)
-// Dynamic is the default and needs no configuration.
+// Equipment is fully DYNAMIC. Waldo_fnc_buildArsenal scans whatever mods are
+// loaded and picks appropriate weapons, ammo, gear and uniforms by intent, with
+// built-in vanilla classnames as fallbacks. There are no modpack preset files
+// and nothing here needs setting — the mission runs on any mod loadout as-is.
 //
-// This file is only for ADVANCED / automated setups. Uncommenting a line below
-// hard-pins that preset in code and OVERRIDES the lobby choice (useful for a
-// dedicated server that must always run one loadout). Leave it all commented to
-// let the lobby decide.
+// This file only exists for OPTIONAL tuning of the dynamic arsenal. It is
+// compiled before the arsenal is built, so any variable set here is picked up.
+// Everything below is commented out (defaults shown).
 //////////////////////////////////////////////////////////////////
 
-// -- Forced equipment preset (overrides the lobby "Equipment Source") -- //
+// -- Weapon power thresholds (default-magazine ammo `hit`) -- //
+// Raise/lower these if a modpack's damage values classify weapons oddly.
+//Waldo_arsenalLowMaxHit    = 8;    // <= this hit  -> low-powered primary (ground loot)
+//Waldo_arsenalSniperMinHit = 12;   // >= this hit (+ small mag) -> sniper (traitor shop)
+//Waldo_arsenalLmgMinRounds = 100;  // magazine >= this many rounds -> LMG (airdrop only)
 
-//Waldo_modpack = "modpacks\Vanilla.sqf";
-//Waldo_modpack = "modpacks\WW2.sqf";
-//Waldo_modpack = "modpacks\Custom.sqf";
+// -- Dev/test spawn unit classes (used only in Testing Mode) -- //
+// Validated + fall back to base-game classes, so normally leave these alone.
+//Waldo_debugCivUnit   = "C_man_1";      // dummies + simulated players
+//Waldo_debugEnemyUnit = "O_Soldier_F";  // hostile combat dummy

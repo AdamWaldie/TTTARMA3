@@ -1,13 +1,15 @@
 //////////////////////////////////////////////////////////////////
 // Waldo_fnc_buildArsenal
-// SERVER: dynamic, intent-aware equipment discovery. Instead of hand-curated
-// per-modpack classname lists, this scans the LOADED configs ONCE and classifies
-// what is actually available by intent, then publishes the same globals the
-// mission already consumes:
+// SERVER: the SOLE equipment source - fully dynamic, intent-aware discovery.
+// There are no per-modpack preset files. This scans the LOADED configs ONCE and
+// classifies everything available (weapons, ammo/magazines, gear, clothing) by
+// intent, then publishes the globals the mission consumes:
 //
 //   lootPriWeapons / lootSecWeapons / lootAttachments   (Waldo_fnc_populateLoot)
 //   airdropLoadouts                                      (Waldo_fnc_spawnAirdrop)
-//   TraitorRifle / *Mag / *Optics, TraitorLauncher/*Mag  (traitor shop)
+//   TraitorRifle / *Mag / *Optics, TraitorLauncher/*Mag  (traitor shop weapons)
+//   ShopPistol/*Mag/*Suppressor                          (shop silenced sidearm)
+//   ShopArmorVest / ShopFrag / ShopNVG / ShopBinocular   (shop gear)
 //   uniformsConfig / headgearsConfig / vestsConfig       (spawn loadout)
 //   detectiveConfig                                      (detective loadout)
 //
@@ -20,10 +22,9 @@
 //     found, and "Rocket Launcher" to any launcher.
 //   - Overpowered optics (thermal) are auto-blacklisted from loot.
 //
-// Every bucket has a vanilla fallback, so an empty category can never break a
-// round. This replaces the static modpacks\*.sqf lists; a modpack file may still
-// be loaded AFTER this (see loadParams) to pin/override specific gear for a hard
-// theme (e.g. WW2).
+// Every bucket has a built-in VANILLA classname fallback, so an empty category
+// (e.g. a total-conversion with no pistols) can never leave anything unset or
+// break a round. Power thresholds can be tuned from config.sqf (see below).
 //////////////////////////////////////////////////////////////////
 
 if (!isServer) exitWith {};
@@ -32,10 +33,11 @@ private _t0 = diag_tickTime;
 diag_log "[Waldo][server] buildArsenal: begin";
 
 // Power thresholds (default-magazine ammo `hit`). Tuned for vanilla calibres;
-// adjust if a modpack's damage values sit differently.
-private _lowMaxHit    = 8;    // <= this -> low-powered primary (SMG / pistol calibre) -> loot
-private _sniperMinHit = 12;   // >= this (with a small magazine) -> sniper -> traitor shop
-private _lmgMinRounds = 100;  // magazines this large -> belt-fed LMG -> airdrop only
+// override in config.sqf (set before loadParams runs) if a modpack's damage
+// values sit differently.
+private _lowMaxHit    = missionNamespace getVariable ["Waldo_arsenalLowMaxHit",    8];    // <= this -> low-powered primary -> loot
+private _sniperMinHit = missionNamespace getVariable ["Waldo_arsenalSniperMinHit", 12];   // >= this (+ small mag) -> sniper -> shop
+private _lmgMinRounds = missionNamespace getVariable ["Waldo_arsenalLmgMinRounds", 100];  // mags this large -> LMG -> airdrop
 
 // ---- helpers ----
 private _magOf = {
@@ -64,6 +66,8 @@ private _lmgs      = [];
 private _uniforms  = [];
 private _vests     = [];
 private _headgear  = [];
+private _nvgs      = [];    // night-vision goggles (shop gear)
+private _binos     = [];    // plain binoculars (shop gear)
 private _blacklist = [];    // overpowered optics excluded from loot
 
 {
@@ -94,18 +98,25 @@ private _blacklist = [];    // overpowered optics excluded from loot
 				default { /* mag-bearing but not a standard weapon: ignore */ };
 			};
 		} else {
-			// --- no magazines: a wearable / attachment ---
-			switch (getNumber (_cfg >> "ItemInfo" >> "type")) do {
-				case 801: { _uniforms pushBack _cls; };   // TYPE_UNIFORM
-				case 701: { _vests    pushBack _cls; };   // TYPE_VEST
-				case 605: { _headgear pushBack _cls; };   // TYPE_HEADGEAR
-				case 201: {                               // TYPE_OPTICS -> blacklist thermals
-					if (isClass (_cfg >> "ItemInfo" >> "OpticsModes")) then {
-						private _thermal = false;
-						{
-							if ("ti" in ((getArray (_x >> "visionMode")) apply { toLower _x })) then { _thermal = true; };
-						} forEach ("true" configClasses (_cfg >> "ItemInfo" >> "OpticsModes"));
-						if (_thermal) then { _blacklist pushBack _cls; };
+			// --- no magazines: a wearable / attachment / optic / binocular ---
+			if (_cls isKindOf ["Binocular", configFile >> "CfgWeapons"]) then {
+				// Plain binoculars only (rangefinders/designators carry a battery
+				// magazine, so they went through the weapon branch and were ignored).
+				_binos pushBack _cls;
+			} else {
+				switch (getNumber (_cfg >> "ItemInfo" >> "type")) do {
+					case 801: { _uniforms pushBack _cls; };   // TYPE_UNIFORM
+					case 701: { _vests    pushBack _cls; };   // TYPE_VEST
+					case 605: { _headgear pushBack _cls; };   // TYPE_HEADGEAR
+					case 617: { _nvgs     pushBack _cls; };   // TYPE_NVG
+					case 201: {                               // TYPE_OPTICS -> blacklist thermals
+						if (isClass (_cfg >> "ItemInfo" >> "OpticsModes")) then {
+							private _thermal = false;
+							{
+								if ("ti" in ((getArray (_x >> "visionMode")) apply { toLower _x })) then { _thermal = true; };
+							} forEach ("true" configClasses (_cfg >> "ItemInfo" >> "OpticsModes"));
+							if (_thermal) then { _blacklist pushBack _cls; };
+						};
 					};
 				};
 			};
@@ -174,6 +185,36 @@ if !(_pistols isEqualTo []) then {
 missionNamespace setVariable ["ShopPistol", _sp, true];
 missionNamespace setVariable ["ShopPistolMag", _spMag, true];
 missionNamespace setVariable ["ShopPistolSuppressor", _spSup, true];
+
+// ---- publish: shop gear (heavy vest, frag grenade, NVG, binocular) ----
+// Body Armor: the highest-armour discovered vest.
+private _armorVest = "V_PlateCarrier2_rgr";
+if !(_vests isEqualTo []) then {
+	private _bestA = -1;
+	{
+		private _a = getNumber (configFile >> "CfgWeapons" >> _x >> "ItemInfo" >> "armor");
+		if (_a > _bestA) then { _bestA = _a; _armorVest = _x; };
+	} forEach _vests;
+};
+missionNamespace setVariable ["ShopArmorVest", _armorVest, true];
+
+// Frag grenade: first explosive throwable found on the "Throw" weapon's muzzles.
+private _frag = "";
+{
+	private _muzzle = _x;
+	private _tMags = getArray (configFile >> "CfgWeapons" >> "Throw" >> _muzzle >> "magazines");
+	private _i = _tMags findIf {
+		private _ammo = getText (configFile >> "CfgMagazines" >> _x >> "ammo");
+		(getNumber (configFile >> "CfgAmmo" >> _ammo >> "explosive") > 0) && {getNumber (configFile >> "CfgAmmo" >> _ammo >> "indirectHit") >= 15}
+	};
+	if (_i >= 0) exitWith { _frag = _tMags select _i; };
+} forEach (getArray (configFile >> "CfgWeapons" >> "Throw" >> "muzzles"));
+if (_frag == "") then { _frag = "HandGrenade"; };
+missionNamespace setVariable ["ShopFrag", _frag, true];
+
+// Night vision + binoculars: discovered, with vanilla fallbacks.
+missionNamespace setVariable ["ShopNVG",       (if (_nvgs  isEqualTo []) then { "NVGoggles" } else { selectRandom _nvgs }),  true];
+missionNamespace setVariable ["ShopBinocular", (if (_binos isEqualTo []) then { "Binocular" } else { selectRandom _binos }), true];
 
 // ---- publish: airdrops (the reward pool: snipers + LMGs + standard rifles) ----
 private _airPool = (_snipers apply { _x select 0 }) + _lmgs + _std;

@@ -141,6 +141,7 @@ class CfgFunctions
 			class applyKarma {};        // Waldo_fnc_applyKarma
 			class c4Charge {};          // Waldo_fnc_c4Charge (server: traitor timed charge)
 			class identifyBody {};      // Waldo_fnc_identifyBody (server: call in a corpse)
+			class dnaContaminate {};    // Waldo_fnc_dnaContaminate (server: witness/contamination tracking)
 		};
 
 		class ui

@@ -27,20 +27,47 @@ private _culprit = _instigator;
 if (isNull _culprit) then { _culprit = _killer; };
 private _culpritRole = if (isNull _culprit) then { "" } else { _culprit getVariable ["role", ""] };
 
-// Leave the killer's DNA on the body for the detective's DNA scanner, and count
-// this kill toward the culprit's in-round tally for the scoreboard.
+// --- Forensic state on the body (for the DNA scanner + Identify Body) ---
+_unit setVariable ["Waldo_deathTime", time, true];
+_unit setVariable ["Waldo_deathWeapon", (if (isNull _culprit) then { "" } else { currentWeapon _culprit }), true];
+_unit setVariable ["Waldo_identified", false, true];
+_unit setVariable ["Waldo_roleRevealed", false, true];
+
 if (!isNull _culprit && {_culprit != _unit}) then {
-	_unit setVariable ["Waldo_killerDNA", _culprit, true];
-	_unit setVariable ["Waldo_killerDNATime", time, true];
+	// Count the kill toward the culprit's in-round tally (scoreboard / MVP).
 	if (isPlayer _culprit) then {
 		_culprit setVariable ["Waldo_roundKills", (_culprit getVariable ["Waldo_roundKills", 0]) + 1, true];
 	};
+
+	// DNA left at the scene. A traitor's armed "False Flag" frames a random
+	// living innocent instead (and is consumed); otherwise it's the real culprit.
+	private _dnaOn = _culprit;
+	if (_culprit getVariable ["Waldo_falseFlag", false]) then {
+		private _frames = allPlayers select { alive _x && {!(_x in _traitors)} && {_x != _culprit} };
+		if (count _frames > 0) then { _dnaOn = selectRandom _frames; };
+		_culprit setVariable ["Waldo_falseFlag", false, true];
+	};
+	_unit setVariable ["Waldo_killerDNA", _dnaOn, true];
+	_unit setVariable ["Waldo_killerDNATime", time, true];
+	[_unit, _dnaOn] call Waldo_fnc_dnaContaminate;
+
+	// Also leave DNA on the gear the victim drops, so a killer who flees the body
+	// still leaves a second trace nearby (tag the death weapon-holders shortly
+	// after the engine spawns them).
+	[_unit, _dnaOn] spawn {
+		params ["_body", "_dnaOn"];
+		sleep 1;
+		{
+			_x setVariable ["Waldo_killerDNA", _dnaOn, true];
+			_x setVariable ["Waldo_killerDNATime", time, true];
+			[_x, _dnaOn] call Waldo_fnc_dnaContaminate;
+		} forEach (nearestObjects [_body, ["WeaponHolderSimulated", "GroundWeaponHolder"], 4]);
+	};
 };
 
-// "Identify Body" scroll action on the corpse - calling it in announces the
-// victim's role to everyone (the core TTT deduction feedback). Added on every
+// "Identify Body" scroll action on the corpse - calling it in confirms the death
+// to everyone (and, if a Detective calls it, the victim's role). Added on every
 // machine (JIP-safe); the condition hides it once the body has been called in.
-_unit setVariable ["Waldo_identified", false, true];
 [_unit, [
 	"<t color='#ffd23f'>Identify Body</t>",
 	{ [_target, _this] remoteExec ["Waldo_fnc_identifyBody", 2]; },

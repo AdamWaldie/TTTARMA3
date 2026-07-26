@@ -119,6 +119,11 @@ Waldo_detectiveShop = [
 		{ [] call Waldo_fnc_dnaScanner },
 		"Aim at a body and press Y to sample the killer's DNA, then track them down"],
 
+	["Enhanced Scanner", 3, "passive",
+		{ player setVariable ["Waldo_enhancedScanner", true, true]; },
+		{},
+		"Upgrades the DNA Scanner: longer/steadier tracking, half the contamination risk, and reveals time-of-death + weapon"],
+
 	["Radar", 1, "passive",
 		{ [] call Waldo_fnc_detectiveRadar; },
 		{},

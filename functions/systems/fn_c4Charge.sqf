@@ -19,6 +19,7 @@ _charge setVariable ["Waldo_c4Defused", false,  true];
 _charge setVariable ["Waldo_killerDNA",     _owner, true];
 _charge setVariable ["Waldo_killerDNATime", time,   true];
 _charge allowDamage false;
+[_charge, _owner] call Waldo_fnc_dnaContaminate;
 
 // Defuse action, broadcast to everyone. Condition: the actor is not the planter
 // and the charge is still armed. hideOnUse removes it after a successful defuse.

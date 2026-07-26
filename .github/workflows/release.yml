@@ -1,11 +1,16 @@
 name: Release
 
-# Packages the mission itself, not the whole repo. A tag push (or a manual
-# run against an existing tag) zips everything except .git, .github, the
-# wiki/ source folder, and any build output, then attaches that zip to a
-# GitHub release. GitHub's own "Source code" zip on a release would include
-# all of that dev-tooling cruft, which isn't part of the mission and isn't
-# something a host should be dropping into their Arma missions folder.
+# Packages the mission itself, not the whole repo, once per supported
+# terrain. The mission is terrain-agnostic at runtime (the arena, loot, and
+# player placement are all picked dynamically, see Waldo_fnc_selectArena and
+# Waldo_fnc_selectHoldingPos), but Arma requires a mission folder to be
+# named "MissionName.TerrainName" to show up for that terrain, so the same
+# files ship under one folder per terrain rather than one generic zip.
+#
+# A tag push (or a manual run against an existing tag) stages the mission
+# once, explicitly excluding .git, .github, and the wiki/ source folder,
+# then copies that staged folder under TroubleInArmaville_{version}.{Terrain}
+# for each terrain and zips it, attaching every zip to a GitHub release.
 
 on:
   push:
@@ -14,11 +19,18 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing tag to build and attach the mission zip to"
+        description: "Existing tag to build and attach mission zips to"
         required: true
 
 permissions:
   contents: write
+
+env:
+  # Terrains this mission is packaged for. All base-game Arma 3 terrains;
+  # Tanoa needs Apex and Livonia needs Contact on the host's end, the
+  # mission itself doesn't care which one is loaded. Add a name here to
+  # ship another terrain, no other change needed.
+  TERRAINS: "Altis Tanoa Stratis Livonia"
 
 jobs:
   package:
@@ -26,28 +38,40 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Resolve tag
+      - name: Resolve tag and version
         id: tag
-        run: echo "tag=${{ inputs.tag || github.ref_name }}" >> "$GITHUB_OUTPUT"
+        run: |
+          TAG="${{ inputs.tag || github.ref_name }}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v4
         with:
           ref: ${{ steps.tag.outputs.tag }}
 
-      - name: Stage mission files only
+      - name: Stage the mission once
         run: |
-          mkdir -p stage/TroubleInArmaville dist
+          mkdir -p stage/_mission dist
           rsync -a \
             --exclude=".git" \
             --exclude=".github" \
             --exclude="wiki" \
             --exclude="stage" \
             --exclude="dist" \
-            ./ stage/TroubleInArmaville/
+            ./ stage/_mission/
 
-      - name: Zip the mission
-        working-directory: stage
-        run: zip -r "../dist/TroubleInArmaville-${{ steps.tag.outputs.tag }}.zip" TroubleInArmaville
+      - name: Build one folder and zip per terrain
+        run: |
+          VERSION="${{ steps.tag.outputs.version }}"
+          cd stage
+          for TERRAIN in ${{ env.TERRAINS }}; do
+            NAME="TroubleInArmaville_${VERSION}.${TERRAIN}"
+            rm -rf "$NAME"
+            cp -r _mission "$NAME"
+            zip -rq "../dist/${NAME}.zip" "$NAME"
+            rm -rf "$NAME"
+          done
 
       - name: Create or update the release
         run: |

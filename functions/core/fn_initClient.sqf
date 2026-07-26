@@ -20,6 +20,19 @@ waitUntil { !isNull player };
 waitUntil { missionNamespace getVariable ["Waldo_configReady", false] };
 ["config-ready"] call _logPhase;
 
+// Move off whatever mission.sqm happened to place us at - only ever valid on
+// the one terrain a mission was saved on - onto a runtime-picked safe spot
+// (Waldo_fnc_selectHoldingPos), so the same mission works on Altis, Tanoa,
+// Stratis, Livonia, or anywhere else. findEmptyPosition scatters each client
+// around it so up to 128 players don't clip into each other or the terrain
+// while they wait for the real arena.
+waitUntil { !((missionNamespace getVariable ["Waldo_holdingPos", []]) isEqualTo []) };
+private _hold = missionNamespace getVariable ["Waldo_holdingPos", [0,0,0]];
+private _holdSafe = _hold findEmptyPosition [0, 40];
+if (_holdSafe isEqualTo []) then { _holdSafe = _hold; };
+player setPos _holdSafe;
+["holding-pos"] call _logPhase;
+
 // If a round is already live when we arrive (JIP), we don't belong in it.
 if (missionNamespace getVariable ["gameOn", false]) then { player setDammage 1; };
 

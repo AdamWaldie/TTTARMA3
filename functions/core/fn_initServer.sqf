@@ -18,6 +18,13 @@ Waldo_logPhase = {
 
 [] call Waldo_fnc_resetState;
 
+// A fast, terrain-agnostic safe spot for clients to stand at while the real
+// arena is built (which needs the full building/loot scoring pass and can
+// take a few seconds). Runs before anything else here since it depends on
+// nothing but the terrain being loaded.
+[] call Waldo_fnc_selectHoldingPos;
+["holding-pos-ready"] call Waldo_logPhase;
+
 // --- Wait for config (modpack + params) ---
 waitUntil { missionNamespace getVariable ["Waldo_configReady", false] };
 ["config-ready"] call Waldo_logPhase;

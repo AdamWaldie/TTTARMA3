@@ -11,6 +11,7 @@ missionNamespace setVariable ["mapDone",         false,   true];
 missionNamespace setVariable ["gameOn",          false,   true];
 missionNamespace setVariable ["mapPos",          [0,0,0], true];
 missionNamespace setVariable ["mapRadius",       50,      true];
+missionNamespace setVariable ["Waldo_holdingPos", [],     true];
 missionNamespace setVariable ["timelimit",       0,       true];
 missionNamespace setVariable ["Waldo_startTime", 0,       true];
 missionNamespace setVariable ["JESTERCLEANKILL", false,   true];

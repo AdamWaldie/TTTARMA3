@@ -38,3 +38,7 @@ Arma has no "undo death." A unit that's actually died (`damage` 1, `Killed` fire
 - **Loadout** - a freshly respawned unit is otherwise bare. `Waldo_fnc_applySpawnLoadout` (shared with the initial spawn) gives it a random uniform/vest/headgear from the discovered pools.
 
 Anything that reads the `player` command directly at call time, rather than holding onto a captured object reference, already tracks a respawn on its own and needs none of this. The `ace_unconscious` watchdog installed in `initClient` is the clearest example: it re-evaluates `player` on every loop tick, so it automatically follows whichever unit is currently controlled.
+
+## Terrain independence
+
+The mission runs on Altis, Tanoa, Stratis, Livonia, or any other terrain without per-terrain data. `Waldo_fnc_selectArena` scores candidate positions live rather than reading a fixed spot, and `Waldo_fnc_selectHoldingPos` does the same for the brief window before the real arena exists: a fast, `surfaceIsWater`-checked position players are moved to the instant they join, instead of wherever `mission.sqm` happened to place them in Eden. That placement is only ever valid for the terrain the mission was saved on, and `findEmptyPosition` on the client side keeps up to 128 players from clipping into each other or the ground at that shared spot. The release workflow packages the same files once per terrain (`TroubleInArmaville_<version>.<Terrain>`), since Arma keys a mission's terrain off its folder name, not off anything inside `mission.sqm`.

@@ -28,10 +28,10 @@ _body setVariable ["Waldo_identified", true, true];
 if (_finderIsDetective) then {
 	_body setVariable ["Waldo_roleRevealed", true, true];
 	private _role = _body getVariable ["role", "Innocent"];
-	[format ["%1 identified %2's body - they were a %3.", _who, name _body, _role]] remoteExec ["systemChat", 0];
+	[format ["[IDENTIFIED] %1 identified %2's body - they were a %3.", _who, name _body, _role]] remoteExec ["systemChat", 0];
 } else {
 	if (!_alreadyFound) then {
-		[format ["%1 found %2's body.", _who, name _body]] remoteExec ["systemChat", 0];
+		[format ["[FOUND] %1 found %2's body.", _who, name _body]] remoteExec ["systemChat", 0];
 	};
 };
 

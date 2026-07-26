@@ -29,7 +29,7 @@ private _hexOf = {
 		case "Detective": { "#02b3ff" };
 		case "Jester":    { "#9a2ecc" };
 		case "Innocent":  { "#26bf1e" };
-		default           { "#9a9a9a" };
+		default           { "#9EA290" };
 	};
 };
 
@@ -48,16 +48,16 @@ private _rowFor = {
 		|| {_myRole == "Traitor" && {(_p in _traitors) || {_role == "Jester"}}}
 		|| {_myRole == "Jester"  && {_p in _traitors}};
 
-	private _roleTxt = if (_reveal) then { _role + (["", " (confirmed)"] select _revealed) } else { "Unknown" };
-	private _hex     = if (_reveal) then { [_role] call _hexOf } else { "#9a9a9a" };
+	private _roleTxt = if (_reveal) then { toUpper (_role + (["", " (confirmed)"] select _revealed)) } else { "UNKNOWN" };
+	private _hex     = if (_reveal) then { [_role] call _hexOf } else { "#9EA290" };
 	private _status  = if (_alive) then {
-		"<t color='#7ddb6f'>ALIVE</t>"
+		"<t color='#6FCB74'>ALIVE</t>"
 	} else {
-		if (_found) then { "<t color='#ffd23f'>FOUND</t>" } else { "<t color='#9a9a9a'>MISSING</t>" };
+		if (_found) then { "<t color='#F2BE55'>FOUND</t>" } else { "<t color='#9EA290'>MISSING</t>" };
 	};
 
 	format [
-		"<t size='1.05'>%1</t>    %2    <t color='%3'>%4</t>    <t color='#ffd23f'>%5</t> kills<br/>",
+		"<t size='1.05' color='#F2EFE3'>%1</t>    %2    <t color='%3'>%4</t>    <t color='#F2BE55'>%5</t> kills<br/>",
 		name _p, _status, _hex, _roleTxt, _kills
 	]
 };
@@ -67,7 +67,7 @@ private _live = allPlayers select { alive _x };
 private _dead = allPlayers select { !alive _x };
 private _body = "";
 { _body = _body + ([_x] call _rowFor); } forEach (_live + _dead);
-if (_body == "") then { _body = "<t color='#9a9a9a'>No players.</t>"; };
+if (_body == "") then { _body = "<t color='#9EA290'>No players.</t>"; };
 
 createDialog "WaldoScore";
 waitUntil { !isNull (uiNamespace getVariable ["WaldoScore", displayNull]) };
@@ -78,7 +78,7 @@ _display displayAddEventHandler ["KeyDown", { if ((_this select 1) == 37) then {
 
 private _confirmedDead = { !alive _x && {_x getVariable ["Waldo_roleRevealed", false]} } count allPlayers;
 (_display displayCtrl 3301) ctrlSetText format [
-	"Round Scoreboard    -    %1 alive / %2 total    -    %3 confirmed dead",
+	"ROUND SCOREBOARD    -    %1 ALIVE / %2 TOTAL    -    %3 CONFIRMED DEAD",
 	count _live, count allPlayers, _confirmedDead
 ];
 (_display displayCtrl 3300) ctrlSetStructuredText parseText _body;

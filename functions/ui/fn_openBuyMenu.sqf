@@ -40,16 +40,16 @@ createDialog "WaldoShop";
 waitUntil { !isNull (uiNamespace getVariable ["WaldoShop", displayNull]) };
 private _display = uiNamespace getVariable "WaldoShop";
 
-// --- Header ---
-(_display displayCtrl 1104) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 0.9];
-(_display displayCtrl 1100) ctrlSetText (format ["%1 Armory", _role]);
+// --- Header: a neutral dark bar with a thin stripe tinted to the role colour ---
+(_display displayCtrl 1108) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
+(_display displayCtrl 1100) ctrlSetText (format ["%1 ARMORY", toUpper _role]);
 
 private _credits = player getVariable ["points", 0];
-(_display displayCtrl 1101) ctrlSetText (format ["%1 credits", _credits]);
+(_display displayCtrl 1101) ctrlSetText (format ["%1 CREDITS", _credits]);
 
 // --- Default footer hint ---
 (_display displayCtrl 1103) ctrlSetStructuredText parseText (
-	"<t size='1.0' color='#9a9a9a'>Hover an item for details. Click to buy. Press Esc to close.</t>"
+	"<t size='1.0' color='#9EA290'>Hover an item for details.  Click to buy.  [ESC] Close.</t>"
 );
 
 // --- Purchased-this-round panel (what you already own + how to use it) ---
@@ -83,16 +83,16 @@ private _gapY = 0.008 * safezoneH;
 
 	if (_afford) then {
 		_btn ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 0.85];
-		_btn ctrlSetTextColor [1, 1, 1, 1];
+		_btn ctrlSetTextColor [0.95, 0.93, 0.86, 1];
 	} else {
-		_btn ctrlSetBackgroundColor [0.14, 0.14, 0.15, 0.9];
-		_btn ctrlSetTextColor [0.72, 0.4, 0.4, 1];
+		_btn ctrlSetBackgroundColor [0.06, 0.065, 0.055, 0.92];
+		_btn ctrlSetTextColor [0.75, 0.42, 0.4, 1];
 	};
 
 	// Pre-format the hover description shown in the footer (idc 1103).
-	private _afHex = ["#ffd23f", "#e06666"] select (!_afford);
+	private _afHex = ["#F2BE55", "#E4514B"] select (!_afford);
 	_btn setVariable ["descText", format [
-		"<t size='1.3' color='%1'>%2</t>   <t size='1.1' color='%3'>%4 cr</t>   <t size='0.9' color='#9a9a9a'>%5</t><br/><br/><t size='1.05'>%6</t>",
+		"<t size='1.3' color='%1'>%2</t>   <t size='1.1' color='%3'>%4 cr</t>   <t size='0.9' color='#9EA290'>%5</t><br/><br/><t size='1.05'>%6</t>",
 		_colorHex, _name, _afHex, _cost, ([_type] call _typeLabel), _tip
 	]];
 	_btn setVariable ["role", _role];

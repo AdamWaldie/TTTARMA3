@@ -106,12 +106,13 @@ class RscTitles
 };
 
 // ============================================================================
-// WaldoShop - shared buy menu dialog. A centred panel with a role-coloured
-// header, a scrollable grid of item cards, and a description footer that updates
-// as you hover. Cards are generated at runtime from the role's catalog by
-// Waldo_fnc_openBuyMenu, so this shell never changes when items are added.
+// WaldoShop - shared buy menu dialog. A centred panel with a near-black header,
+// a thin accent stripe (tinted to the role colour at runtime), a scrollable grid
+// of item cards, and a description footer that updates as you hover. Cards are
+// generated at runtime from the role's catalog by Waldo_fnc_openBuyMenu, so this
+// shell never changes when items are added.
 //   1100 title, 1101 credits, 1102 item grid, 1103 hover description,
-//   1104 header bar (tinted to the role colour at runtime), idc 2 close.
+//   1104 header bar, 1108 accent stripe (role-tinted), idc 2 close.
 // ============================================================================
 class WaldoShop {
 	idd = -1;
@@ -123,13 +124,29 @@ class WaldoShop {
 	onLoad = "with uiNamespace do { WaldoShop = _this select 0 }";
 
 	class controlsBackground {
+		// Dims the world behind the panel and drops a soft shadow under it.
+		class shopDim: RscText {
+			idc = -1;
+			x = safezoneX; y = safezoneY; w = safezoneW; h = safezoneH;
+			colorBackground[] = WALDO_DIM;
+			style = 0;
+		};
+		class shopShadow: RscText {
+			idc = -1;
+			x = safezoneX + (0.28 * safezoneW) - (0.006 * safezoneW);
+			y = safezoneY + (0.18 * safezoneH) - (0.006 * safezoneH);
+			w = (0.44 * safezoneW) + (0.012 * safezoneW);
+			h = (0.64 * safezoneH) + (0.012 * safezoneH);
+			colorBackground[] = WALDO_SHADOW;
+			style = 0;
+		};
 		class shopBG: RscText {
 			idc = -1;
 			x = safezoneX + (0.28 * safezoneW);
 			y = safezoneY + (0.18 * safezoneH);
 			w = 0.44 * safezoneW;
 			h = 0.64 * safezoneH;
-			colorBackground[] = {0.055,0.055,0.06,0.94};
+			colorBackground[] = WALDO_CASING;
 			style = 0;
 		};
 		class shopHeader: RscText {
@@ -138,7 +155,16 @@ class WaldoShop {
 			y = safezoneY + (0.18 * safezoneH);
 			w = 0.44 * safezoneW;
 			h = 0.062 * safezoneH;
-			colorBackground[] = {0.2,0.2,0.2,1};   // tinted to the role colour at runtime
+			colorBackground[] = WALDO_HEADERBG;
+			style = 0;
+		};
+		class shopAccentBar: RscText {
+			idc = 1108;
+			x = safezoneX + (0.28 * safezoneW);
+			y = safezoneY + (0.18 * safezoneH) + (0.062 * safezoneH);
+			w = 0.44 * safezoneW;
+			h = 0.006 * safezoneH;
+			colorBackground[] = WALDO_ACCENT;   // tinted to the role colour at runtime
 			style = 0;
 		};
 		class shopTitle: RscText {
@@ -149,7 +175,7 @@ class WaldoShop {
 			w = 0.26 * safezoneW;
 			h = 0.062 * safezoneH;
 			colorBackground[] = {0,0,0,0};
-			colorText[] = {1,1,1,1};
+			colorText[] = {0.95,0.93,0.86,1};
 			style = ST_LEFT + ST_VCENTER;
 			font = "PuristaBold";
 			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.5);
@@ -163,7 +189,7 @@ class WaldoShop {
 			w = 0.265 * safezoneW;
 			h = 0.062 * safezoneH;
 			colorBackground[] = {0,0,0,0};
-			colorText[] = {1,1,1,1};
+			colorText[] = {0.95,0.93,0.86,1};
 			style = ST_RIGHT + ST_VCENTER;
 			font = "PuristaBold";
 			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.25);
@@ -175,7 +201,7 @@ class WaldoShop {
 			y = safezoneY + (0.665 * safezoneH);
 			w = 0.42 * safezoneW;
 			h = 0.10 * safezoneH;
-			colorBackground[] = {0.1,0.1,0.11,0.95};
+			colorBackground[] = WALDO_HEADERBG;
 			style = 0;
 		};
 		class shopDesc: RscStructuredText {
@@ -188,7 +214,7 @@ class WaldoShop {
 			size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1);
 			class Attributes {
 				font = "PuristaMedium";
-				color = "#dcdcdc";
+				color = "#F2EFE3";
 				align = "left";
 				shadow = 1;
 			};
@@ -202,7 +228,7 @@ class WaldoShop {
 			y = safezoneY + (0.18 * safezoneH);
 			w = 0.20 * safezoneW;
 			h = 0.64 * safezoneH;
-			colorBackground[] = {0.055,0.055,0.06,0.94};
+			colorBackground[] = WALDO_CASING;
 			style = 0;
 		};
 		class shopPurchHeader: RscText {
@@ -211,7 +237,16 @@ class WaldoShop {
 			y = safezoneY + (0.18 * safezoneH);
 			w = 0.20 * safezoneW;
 			h = 0.062 * safezoneH;
-			colorBackground[] = {0.2,0.2,0.2,1};
+			colorBackground[] = WALDO_HEADERBG;
+			style = 0;
+		};
+		class shopPurchAccentBar: RscText {
+			idc = -1;
+			x = safezoneX + (0.73 * safezoneW);
+			y = safezoneY + (0.18 * safezoneH) + (0.062 * safezoneH);
+			w = 0.20 * safezoneW;
+			h = 0.006 * safezoneH;
+			colorBackground[] = WALDO_ACCENT;
 			style = 0;
 		};
 		class shopPurchTitle: RscText {
@@ -221,7 +256,7 @@ class WaldoShop {
 			y = safezoneY + (0.18 * safezoneH);
 			w = 0.19 * safezoneW;
 			h = 0.062 * safezoneH;
-			colorText[] = {1,1,1,1};
+			colorText[] = {0.95,0.93,0.86,1};
 			style = ST_LEFT + ST_VCENTER;
 			font = "PuristaBold";
 			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.1);
@@ -255,7 +290,7 @@ class WaldoShop {
 					size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.9);
 					class Attributes {
 						font = "PuristaMedium";
-						color = "#dcdcdc";
+						color = "#F2EFE3";
 						align = "left";
 						shadow = 1;
 					};
@@ -264,13 +299,14 @@ class WaldoShop {
 		};
 		class shopClose: RscButton {
 			idc = 2;
-			text = "Close  [Esc]";
+			text = "CLOSE [ESC]";
 			x = safezoneX + (0.60 * safezoneW);
 			y = safezoneY + (0.775 * safezoneH);
 			w = 0.10 * safezoneW;
 			h = 0.04 * safezoneH;
-			colorBackground[] = {0.18,0.18,0.2,1};
-			colorBackgroundActive[] = {0.3,0.3,0.34,1};
+			colorBackground[] = WALDO_BTN;
+			colorBackgroundActive[] = WALDO_BTNACTIVE;
+			colorText[] = {0.95,0.93,0.86,1};
 			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1);
 			action = "closeDialog 1";
 		};
@@ -293,17 +329,50 @@ class WaldoDebug {
 	onLoad = "with uiNamespace do { WaldoDebug = _this select 0 }";
 
 	class controlsBackground {
+		class dbgDim: RscText {
+			idc = -1;
+			x = safezoneX; y = safezoneY; w = safezoneW; h = safezoneH;
+			colorBackground[] = WALDO_DIM;
+			style = 0;
+		};
+		class dbgShadow: RscText {
+			idc = -1;
+			x = (safezoneX + (0.28 * safezoneW)) - (0.006 * safezoneW);
+			y = (safezoneY + (0.14 * safezoneH)) - (0.006 * safezoneH);
+			w = (0.44 * safezoneW) + (0.012 * safezoneW);
+			h = (0.72 * safezoneH) + (0.012 * safezoneH);
+			colorBackground[] = WALDO_SHADOW;
+			style = 0;
+		};
 		class dbgBG: RscText {
 			idc = -1;
 			x = (safezoneX + (0.28 * safezoneW));
 			y = (safezoneY + (0.14 * safezoneH));
 			w = 0.44 * safezoneW;
 			h = 0.72 * safezoneH;
-			colorBackground[] = {0.05,0.05,0.05,0.92};
-			colorText[] = {1,1,1,1};
+			colorBackground[] = WALDO_CASING;
+			colorText[] = {0.95,0.93,0.86,1};
 			style = 0;
 			font = "PuristaMedium";
 			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1);
+		};
+		class dbgHeader: RscText {
+			idc = -1;
+			x = (safezoneX + (0.28 * safezoneW));
+			y = (safezoneY + (0.14 * safezoneH));
+			w = 0.44 * safezoneW;
+			h = 0.06 * safezoneH;
+			colorBackground[] = WALDO_HEADERBG;
+			style = 0;
+		};
+		class dbgAccentBar: RscText {
+			idc = -1;
+			x = (safezoneX + (0.28 * safezoneW));
+			y = (safezoneY + (0.14 * safezoneH)) + (0.06 * safezoneH);
+			w = 0.44 * safezoneW;
+			h = 0.006 * safezoneH;
+			colorBackground[] = WALDO_ACCENT;
+			style = 0;
 		};
 		class dbgTitle: RscText {
 			idc = 3100;
@@ -313,8 +382,8 @@ class WaldoDebug {
 			w = 0.44 * safezoneW;
 			h = 0.06 * safezoneH;
 			colorBackground[] = {0,0,0,0};
-			colorText[] = {1,1,1,1};
-			style = ST_CENTER;
+			colorText[] = {0.95,0.93,0.86,1};
+			style = ST_CENTER + ST_VCENTER;
 			font = "PuristaBold";
 			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.5);
 		};
@@ -328,7 +397,7 @@ class WaldoDebug {
 			size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1);
 			class Attributes {
 				font = "PuristaMedium";
-				color = "#ffffff";
+				color = "#F2EFE3";
 				align = "left";
 				shadow = 1;
 			};
@@ -361,13 +430,28 @@ class WaldoScore {
 	onLoad = "with uiNamespace do { WaldoScore = _this select 0 }";
 
 	class controlsBackground {
+		class scDim: RscText {
+			idc = -1;
+			x = safezoneX; y = safezoneY; w = safezoneW; h = safezoneH;
+			colorBackground[] = WALDO_DIM;
+			style = 0;
+		};
+		class scShadow: RscText {
+			idc = -1;
+			x = safezoneX + (0.25 * safezoneW) - (0.006 * safezoneW);
+			y = safezoneY + (0.17 * safezoneH) - (0.006 * safezoneH);
+			w = (0.50 * safezoneW) + (0.012 * safezoneW);
+			h = (0.66 * safezoneH) + (0.012 * safezoneH);
+			colorBackground[] = WALDO_SHADOW;
+			style = 0;
+		};
 		class scBG: RscText {
 			idc = -1;
 			x = safezoneX + (0.25 * safezoneW);
 			y = safezoneY + (0.17 * safezoneH);
 			w = 0.50 * safezoneW;
 			h = 0.66 * safezoneH;
-			colorBackground[] = {0.055,0.055,0.06,0.94};
+			colorBackground[] = WALDO_CASING;
 			style = 0;
 		};
 		class scTitleBar: RscText {
@@ -376,7 +460,16 @@ class WaldoScore {
 			y = safezoneY + (0.17 * safezoneH);
 			w = 0.50 * safezoneW;
 			h = 0.062 * safezoneH;
-			colorBackground[] = {0.12,0.12,0.14,1};
+			colorBackground[] = WALDO_HEADERBG;
+			style = 0;
+		};
+		class scAccentBar: RscText {
+			idc = -1;
+			x = safezoneX + (0.25 * safezoneW);
+			y = safezoneY + (0.17 * safezoneH) + (0.062 * safezoneH);
+			w = 0.50 * safezoneW;
+			h = 0.006 * safezoneH;
+			colorBackground[] = WALDO_ACCENT;
 			style = 0;
 		};
 		class scTitle: RscText {
@@ -386,7 +479,7 @@ class WaldoScore {
 			y = safezoneY + (0.17 * safezoneH);
 			w = 0.50 * safezoneW;
 			h = 0.062 * safezoneH;
-			colorText[] = {1,1,1,1};
+			colorText[] = {0.95,0.93,0.86,1};
 			style = ST_CENTER + ST_VCENTER;
 			font = "PuristaBold";
 			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.4);
@@ -413,7 +506,7 @@ class WaldoScore {
 					size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1);
 					class Attributes {
 						font = "PuristaMedium";
-						color = "#e6e6e6";
+						color = "#F2EFE3";
 						align = "left";
 						shadow = 1;
 					};
@@ -422,13 +515,14 @@ class WaldoScore {
 		};
 		class scClose: RscButton {
 			idc = 2;
-			text = "Close  [K]";
+			text = "CLOSE [K]";
 			x = safezoneX + (0.64 * safezoneW);
 			y = safezoneY + (0.785 * safezoneH);
 			w = 0.10 * safezoneW;
 			h = 0.038 * safezoneH;
-			colorBackground[] = {0.18,0.18,0.2,1};
-			colorBackgroundActive[] = {0.3,0.3,0.34,1};
+			colorBackground[] = WALDO_BTN;
+			colorBackgroundActive[] = WALDO_BTNACTIVE;
+			colorText[] = {0.95,0.93,0.86,1};
 			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1);
 			action = "closeDialog 1";
 		};

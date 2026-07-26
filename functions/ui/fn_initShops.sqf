@@ -26,9 +26,9 @@ Waldo_shopRenderPurchased = {
 	private _body = "";
 	{
 		_x params ["_name", "_tip"];
-		_body = _body + format ["<t size='1.0' color='#ffd23f'>%1</t><br/><t size='0.85' color='#9a9a9a'>%2</t><br/><br/>", _name, _tip];
+		_body = _body + format ["<t size='1.0' color='#F2BE55'>%1</t><br/><t size='0.85' color='#9EA290'>%2</t><br/><br/>", _name, _tip];
 	} forEach _list;
-	if (_body == "") then { _body = "<t size='0.9' color='#9a9a9a'>Nothing purchased yet.</t>"; };
+	if (_body == "") then { _body = "<t size='0.9' color='#9EA290'>Nothing purchased yet.</t>"; };
 	(_display displayCtrl 1106) ctrlSetStructuredText parseText _body;
 };
 

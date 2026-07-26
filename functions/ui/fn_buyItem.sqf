@@ -25,10 +25,10 @@ private _disp = uiNamespace getVariable ["WaldoShop", displayNull];
 
 if (_pts < _cost) exitWith {
 	if (isNull _disp) then {
-		hint "Not enough credits.";
+		hint "[X] Not enough credits.";
 	} else {
 		(_disp displayCtrl 1103) ctrlSetStructuredText parseText (format [
-			"<t size='1.15' color='#e06666'>Not enough credits</t><br/><t size='0.95'>%1 costs %2 - you have %3.</t>",
+			"<t size='1.15' color='#E4514B'>[X] NOT ENOUGH CREDITS</t><br/><t size='0.95' color='#F2EFE3'>%1 costs %2 - you have %3.</t>",
 			_name, _cost, _pts
 		]);
 	};
@@ -59,7 +59,7 @@ if (isNull _disp) exitWith {
 [_disp] call Waldo_shopRenderPurchased;
 
 // --- Refresh the open shop: credits, card affordability, and a confirmation. ---
-(_disp displayCtrl 1101) ctrlSetText (format ["%1 credits", _new]);
+(_disp displayCtrl 1101) ctrlSetText (format ["%1 CREDITS", _new]);
 
 private _color = [_role] call Waldo_roleColor;
 {
@@ -68,16 +68,16 @@ private _color = [_role] call Waldo_roleColor;
 	if (!isNull _btn) then {
 		if (_new >= _c) then {
 			_btn ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 0.85];
-			_btn ctrlSetTextColor [1, 1, 1, 1];
+			_btn ctrlSetTextColor [0.95, 0.93, 0.86, 1];
 		} else {
-			_btn ctrlSetBackgroundColor [0.14, 0.14, 0.15, 0.9];
-			_btn ctrlSetTextColor [0.72, 0.4, 0.4, 1];
+			_btn ctrlSetBackgroundColor [0.06, 0.065, 0.055, 0.92];
+			_btn ctrlSetTextColor [0.75, 0.42, 0.4, 1];
 		};
 	};
 } forEach _catalog;
 
 private _extra = if (_type == "activation") then { " - press Y to use" } else { "" };
 (_disp displayCtrl 1103) ctrlSetStructuredText parseText (format [
-	"<t size='1.2' color='#7CFC7C'>Purchased: %1</t><t size='0.95' color='#9a9a9a'>%2</t><br/><t size='0.95' color='#9a9a9a'>%3 credits remaining.</t>",
+	"<t size='1.2' color='#6FCB74'>[OK] PURCHASED: %1</t><t size='0.95' color='#9EA290'>%2</t><br/><t size='0.95' color='#9EA290'>%3 credits remaining.</t>",
 	_name, _extra, _new
 ]);

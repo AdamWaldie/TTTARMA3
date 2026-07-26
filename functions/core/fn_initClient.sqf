@@ -179,13 +179,33 @@ player addEventHandler ["HandleDamage", {
 	}
 }];
 
-// ACE unconscious -> death, EXCEPT for the Jester (source-less setDamage would
-// wipe the "who killed me" attribution the Jester win depends on) and a unit
-// currently faking its death via Dead Ringer (which uses vanilla setUnconscious
-// to sell the ragdoll - if ACE treats that as its own unconscious state, this
-// force-kill must not undo the fake death).
-["ace_unconscious", {
-	params ["_unit", "_state"];
-	private _protected = ((_unit getVariable ["role", ""]) == "Jester") || (_unit getVariable ["Waldo_deadRingerTriggered", false]);
-	if (!_protected) then { _unit setDamage 1; };
-}] call CBA_fnc_addEventHandler;
+// ACE unconscious -> death (this TTT ruleset has no downed/incapacitated state
+// - going unconscious always means dead), EXCEPT for the Jester (source-less
+// setDamage would wipe the "who killed me" attribution the Jester win depends
+// on) and a unit currently faking its death via Dead Ringer.
+//
+// TWO redundant triggers, because a single CBA event handler was unreliable:
+//   1. The old handler ignored _state entirely, so it fired identically
+//      whether a unit went UNCONSCIOUS or RECOVERED - it could re-kill someone
+//      the instant they woke back up. Now gated on _state (only the "went
+//      unconscious" edge) and restricted to the unit's OWN machine
+//      (_unit == player) - calling setDamage locally on the affected player's
+//      machine is more reliable than every client reacting to the same
+//      broadcast event and racing to remote-kill the same unit.
+//   2. A local watchdog backstop using the ENGINE's own lifeState (not an
+//      ACE-internal variable name, which risks not matching ACE's actual
+//      implementation) - catches a unit stuck INCAPACITATED if the event is
+//      ever missed, or doesn't fire at all under a given ACE medical setting.
+[] spawn {
+	["ace_unconscious", {
+		params ["_unit", "_state"];
+		private _protected = ((_unit getVariable ["role", ""]) == "Jester") || (_unit getVariable ["Waldo_deadRingerTriggered", false]);
+		if (_state && {_unit == player} && {!_protected}) then { player setDamage 1; };
+	}] call CBA_fnc_addEventHandler;
+
+	while { true } do {
+		private _protected = ((player getVariable ["role", ""]) == "Jester") || (player getVariable ["Waldo_deadRingerTriggered", false]);
+		if (alive player && {lifeState player == "INCAPACITATED"} && {!_protected}) then { player setDamage 1; };
+		sleep 2;
+	};
+};

@@ -132,6 +132,7 @@ class CfgFunctions
 			class endRound {};          // Waldo_fnc_endRound
 			class onKilled {};          // Waldo_fnc_onKilled
 			class reviveAsTraitor {};   // Waldo_fnc_reviveAsTraitor
+			class roundMVP {};          // Waldo_fnc_roundMVP (server: finds + broadcasts the MVP)
 		};
 
 		class systems
@@ -156,6 +157,7 @@ class CfgFunctions
 			class titleSequence {};     // Waldo_fnc_titleSequence
 			class pregameScreen {};     // Waldo_fnc_pregameScreen
 			class scoreboard {};        // Waldo_fnc_scoreboard (in-round scoreboard, K)
+			class mvpCelebrate {};      // Waldo_fnc_mvpCelebrate (client: round-end MVP celebration)
 		};
 
 		class debug

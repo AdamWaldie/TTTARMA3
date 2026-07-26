@@ -8,6 +8,16 @@
 
 if (!hasInterface) exitWith {};   // dedicated server / headless: nothing to do
 
+// Damage off from the very first executable line, before anything else runs.
+// The player unit already exists in the world by the time this script starts
+// (wherever mission.sqm happened to place them, possibly in water, possibly
+// overlapping another unit, on a terrain those coordinates were never
+// checked against), and the holding-position relocation below still has two
+// waitUntils to clear before it can move them. Without this, that whole gap
+// is a window where a bad spawn point can actually hurt or kill someone
+// before the mission gets a chance to move them anywhere.
+player allowDamage false;
+
 private _logPhase = {
 	params ["_phase"];
 	diag_log ("[Waldo][client] phase: " + _phase);

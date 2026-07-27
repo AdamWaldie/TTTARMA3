@@ -81,9 +81,9 @@ class RscTitles
 			class roleCreditsShadow: RscText
 			{
 				idc = -1;
-				x = ((safezoneW + safezoneX) - (0.19 * safezoneH)) - (0.004 * safezoneH);
+				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.004 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.225 * safezoneH)) - (0.004 * safezoneH);
-				w = (0.18 * safezoneH) + (0.008 * safezoneH);
+				w = (0.15 * safezoneH) + (0.008 * safezoneH);
 				h = (0.03 * safezoneH) + (0.008 * safezoneH);
 				colorBackground[] = WALDO_SHADOW;
 				style = 0;
@@ -91,9 +91,9 @@ class RscTitles
 			class roleCreditsBG: RscText
 			{
 				idc = -1;
-				x = (safezoneW + safezoneX) - (0.19 * safezoneH);
+				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
 				y = (safezoneH + safezoneY) - (0.225 * safezoneH);
-				w = 0.18 * safezoneH;
+				w = 0.15 * safezoneH;
 				h = 0.03 * safezoneH;
 				colorBackground[] = WALDO_HEADERBG;
 				style = 0;
@@ -101,9 +101,9 @@ class RscTitles
 			class roleCreditsAccent: RscText
 			{
 				idc = 1003;
-				x = (safezoneW + safezoneX) - (0.19 * safezoneH);
+				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.225 * safezoneH)) + (0.03 * safezoneH) - (0.0025 * safezoneH);
-				w = 0.18 * safezoneH;
+				w = 0.15 * safezoneH;
 				h = 0.0025 * safezoneH;
 				colorBackground[] = WALDO_ACCENT;   // tinted to the role colour at runtime
 				style = 0;
@@ -112,15 +112,15 @@ class RscTitles
 			{
 				idc = 1002;
 				text = "";
-				x = (safezoneW + safezoneX) - (0.19 * safezoneH);
+				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
 				y = (safezoneH + safezoneY) - (0.225 * safezoneH);
-				w = 0.18 * safezoneH;
+				w = 0.15 * safezoneH;
 				h = 0.03 * safezoneH;
 				colorBackground[] = {0,0,0,0};
 				colorText[] = {1,1,1,1};
 				style = ST_CENTER;
 				font = "PuristaBold";
-				sizeEx = 0.024 * safezoneH;
+				sizeEx = 0.021 * safezoneH;
 				shadow = 1;
 			};
 

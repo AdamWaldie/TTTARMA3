@@ -10,6 +10,14 @@ titleRsc ["TTTHud", "PLAIN", 1, false];
 waitUntil { !isNull (uiNamespace getVariable ["TTTHud", displayNull]) };
 private _display = uiNamespace getVariable "TTTHud";
 
+// The ping picker's controls live inside this same resource (see TTTHud in
+// ui/TTTHud.hpp), which is created fresh for EVERY player at round start
+// regardless of role - nothing ever defaulted it to hidden, so it sat there
+// visible and empty for everyone until their first T hold. Waldo_fnc_pingWheelOpen
+// is the only thing that should ever show it again after this.
+(_display displayCtrl 3520) ctrlShow false;
+Waldo_pingWheelOpen = false;
+
 private _role = player getVariable ["role", "Innocent"];
 private _color = [_role] call Waldo_roleColor;
 

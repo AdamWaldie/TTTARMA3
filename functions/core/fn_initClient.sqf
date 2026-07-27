@@ -127,7 +127,10 @@ removeBackpack player;
 				case 48: {   // B - open buy menu
 					private _role = player getVariable ["role", "Innocent"];
 					if (_role in ["Traitor", "Detective"]) then {
-						[_role] call Waldo_fnc_openBuyMenu;
+						// openBuyMenu waitUntils on its dialog existing after createDialog -
+						// same reasoning as the debug menu below: never rely on that check
+						// happening to pass on its very first tick when called unscheduled.
+						[_role] spawn Waldo_fnc_openBuyMenu;
 						_handled = true;
 					};
 				};
@@ -148,7 +151,9 @@ removeBackpack player;
 					_handled = true;
 				};
 				case 37: {   // K - toggle the in-round scoreboard
-					[] call Waldo_fnc_scoreboard;
+					// Same createDialog + waitUntil pattern as the buy/debug menus -
+					// spawned for the same reason, not called.
+					[] spawn Waldo_fnc_scoreboard;
 					_handled = true;
 				};
 				case 20: {   // T - hold to open the ping picker (traitors only); release fires it

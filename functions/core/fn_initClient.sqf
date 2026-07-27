@@ -110,14 +110,27 @@ removeBackpack player;
 	waitUntil { !isNull (findDisplay 46) };
 	private _disp = findDisplay 46;
 	if (isNil { _disp getVariable "Waldo_keyEH" }) then {
+		// KeyDown fires repeatedly (OS key-repeat) for as long as a key stays
+		// physically down, not once per press - without this guard, holding T
+		// spams dozens of pings and holding any other bound key re-fires its
+		// action every repeat tick. Track which of our bound keys are currently
+		// held and ignore repeats until KeyUp clears them.
+		_disp setVariable ["Waldo_heldKeys", []];
 		private _eh = _disp displayAddEventHandler ["KeyDown", {
 			params ["_d", "_key"];
+			private _held = _d getVariable ["Waldo_heldKeys", []];
+			if (_key in _held) exitWith { false };
+			_held pushBack _key;
+			_d setVariable ["Waldo_heldKeys", _held];
 			private _handled = false;
 			switch (_key) do {
 				case 48: {   // B - open buy menu
 					private _role = player getVariable ["role", "Innocent"];
 					if (_role in ["Traitor", "Detective"]) then {
-						[_role] call Waldo_fnc_openBuyMenu;
+						// openBuyMenu waitUntils on its dialog existing after createDialog -
+						// same reasoning as the debug menu below: never rely on that check
+						// happening to pass on its very first tick when called unscheduled.
+						[_role] spawn Waldo_fnc_openBuyMenu;
 						_handled = true;
 					};
 				};
@@ -138,31 +151,53 @@ removeBackpack player;
 					_handled = true;
 				};
 				case 37: {   // K - toggle the in-round scoreboard
-					[] call Waldo_fnc_scoreboard;
+					// Same createDialog + waitUntil pattern as the buy/debug menus -
+					// spawned for the same reason, not called.
+					[] spawn Waldo_fnc_scoreboard;
 					_handled = true;
 				};
-				case 20: {   // T - traitor coordination ping (traitors only)
+				case 20: {   // T - hold to open the ping picker (traitors only); release fires it
 					if ((player getVariable ["role", ""]) == "Traitor") then {
-						[] call Waldo_fnc_traitorPing;
+						// pingWheelOpen waitUntils on its overlay existing the first time it's
+						// created - needs a scheduled context, same reason debugMenu does above.
+						[] spawn Waldo_fnc_pingWheelOpen;
 						_handled = true;
 					};
 				};
 				case 43: {   // \ - open the dev/test menu (only under Testing Mode)
 					if (missionNamespace getVariable ["TestingFlag", false]) then {
-						[] call Waldo_fnc_debugMenu;
-						_handled = true;
+						// debugMenu waitUntils on the dialog existing after createDialog -
+						// waitUntil needs a scheduled environment same as sleep does, and
+						// this KeyDown handler is unscheduled, so `call` threw here every
+						// time (the actual reason the menu never opened).
+						[] spawn Waldo_fnc_debugMenu;
+					} else {
+						// Silent no-op otherwise looks identical to a broken key - tell the
+						// player WHY nothing happened instead of leaving them guessing.
+						hint "Testing Mode is off for this session - enable it in the lobby's Parameters tab.";
 					};
+					_handled = true;
 				};
 				case 27: {   // right-bracket key - instant role cycle (Testing Mode only)
 					if (missionNamespace getVariable ["TestingFlag", false]) then {
 						call Waldo_debugCycleRole;
-						_handled = true;
+					} else {
+						hint "Testing Mode is off for this session - enable it in the lobby's Parameters tab.";
 					};
+					_handled = true;
 				};
 			};
 			_handled
 		}];
+		private _ehUp = _disp displayAddEventHandler ["KeyUp", {
+			params ["_d", "_key"];
+			private _held = _d getVariable ["Waldo_heldKeys", []];
+			_d setVariable ["Waldo_heldKeys", _held - [_key]];
+			if (_key == 20) then { [] call Waldo_fnc_pingWheelClose; };   // T released - fire the highlighted ping
+			false
+		}];
 		_disp setVariable ["Waldo_keyEH", _eh];
+		_disp setVariable ["Waldo_keyEHUp", _ehUp];
 	};
 };
 

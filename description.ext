@@ -160,6 +160,9 @@ class CfgFunctions
 			class pregameScreen {};     // Waldo_fnc_pregameScreen
 			class scoreboard {};        // Waldo_fnc_scoreboard (in-round scoreboard, K)
 			class mvpCelebrate {};      // Waldo_fnc_mvpCelebrate (client: round-end MVP celebration)
+			class pingWheelOpen {};     // Waldo_fnc_pingWheelOpen (traitor: hold-T ping picker, opens)
+			class pingWheelRender {};   // Waldo_fnc_pingWheelRender (traitor: redraw the ping picker highlight)
+			class pingWheelClose {};    // Waldo_fnc_pingWheelClose (traitor: T released, fires the highlighted ping)
 		};
 
 		class debug

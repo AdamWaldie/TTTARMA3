@@ -21,10 +21,17 @@ if ((player distance _target) > 4) exitWith {
 };
 
 hint "Disposing of the body...";
-sleep 2;
 
-if (isNull _target) exitWith { hint ""; true };   // someone else got there first
+// Y is handled unscheduled (called directly from the KeyDown handler), so the
+// delay has to live in its own scheduled thread - sleep is illegal here otherwise.
+[_target] spawn {
+	params ["_target"];
+	sleep 2;
 
-_target remoteExec ["deleteVehicle", 2];
-hint "Body removed.";
+	if (isNull _target) exitWith { hint "" };   // someone else got there first
+
+	_target remoteExec ["deleteVehicle", 2];
+	hint "Body removed.";
+};
+
 true

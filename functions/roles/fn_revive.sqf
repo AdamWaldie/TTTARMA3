@@ -33,21 +33,28 @@ private _revived = _target getVariable "player";
 if (isNull _revived) exitWith { hint "Revive failed."; false };
 
 hint "Reviving...";
-sleep 3;
-hint "";
 
-// Stash the revive intent on the corpse - onPlayerRespawn.sqf runs on the
-// revived player's own machine and gets the same object directly as
-// _oldUnit, so a broadcast setVariable here is all that's needed to hand it
-// off (no UID lookup required).
-private _asTraitor = (player getVariable ["role", ""]) == "Traitor";
-_revived setVariable ["Waldo_reviveAsTraitor", _asTraitor, true];
-_revived setVariable ["Waldo_revivePending", true, true];
+// Y is handled unscheduled (called directly from the KeyDown handler), so
+// both delays below have to live in their own scheduled thread.
+[_revived] spawn {
+	params ["_revived"];
+	sleep 3;
+	hint "";
 
-// Let them respawn now, then restore the long wait for future deaths.
-[0] remoteExec ["setPlayerRespawnTime", _revived];
-sleep 0.5;
-[2400] remoteExec ["setPlayerRespawnTime", _revived];
+	// Stash the revive intent on the corpse - onPlayerRespawn.sqf runs on the
+	// revived player's own machine and gets the same object directly as
+	// _oldUnit, so a broadcast setVariable here is all that's needed to hand it
+	// off (no UID lookup required).
+	private _asTraitor = (player getVariable ["role", ""]) == "Traitor";
+	_revived setVariable ["Waldo_reviveAsTraitor", _asTraitor, true];
+	_revived setVariable ["Waldo_revivePending", true, true];
 
-hint "Revive complete.";
+	// Let them respawn now, then restore the long wait for future deaths.
+	[0] remoteExec ["setPlayerRespawnTime", _revived];
+	sleep 0.5;
+	[2400] remoteExec ["setPlayerRespawnTime", _revived];
+
+	hint "Revive complete.";
+};
+
 true

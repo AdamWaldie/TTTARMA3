@@ -32,64 +32,68 @@ private _source = _target getVariable ["Waldo_killerDNA", objNull];
 if (isNull _source) exitWith { hint "No usable DNA here."; false };
 
 hint "Sampling DNA...";
-sleep 2;
-hint "";
 
-private _enhanced = player getVariable ["Waldo_enhancedScanner", false];
+// Y is handled unscheduled (called directly from the KeyDown handler), so
+// everything below (both early sleeps and the tracking loop) has to live in
+// one scheduled thread - sleep is illegal here otherwise.
+[_target, _source] spawn {
+	params ["_target", "_source"];
+	sleep 2;
+	hint "";
 
-// --- Contamination: chance the scanner points at the wrong person. ---
-private _contam = _target getVariable ["Waldo_dnaContamination", 0];
-private _misChance = (_contam * (if (_enhanced) then { 0.07 } else { 0.15 })) min 0.85;
-private _tracked = _source;
-if (_contam > 0 && {random 1 < _misChance}) then {
-	private _decoyPool = allPlayers select { alive _x && {_x != _source} };
-	if (count _decoyPool > 0) then { _tracked = selectRandom _decoyPool; };
-};
-if (_contam > 1) then {
-	hint format ["Sample contaminated (%1 people were near the scene) - the reading may be unreliable.", _contam];
-	sleep 1.5;
-};
+	private _enhanced = player getVariable ["Waldo_enhancedScanner", false];
 
-// --- Track duration: decays with trace age; Enhanced Scanner extends both ends. ---
-private _age = time - (_target getVariable ["Waldo_killerDNATime", time]);
-private _baseMax   = if (_enhanced) then { 60 } else { 45 };
-private _baseFloor = if (_enhanced) then { 20 } else { 12 };
-private _decayRate = if (_enhanced) then { 0.18 } else { 0.25 };
-private _dur = ((_baseMax - (_age * _decayRate)) max _baseFloor) min _baseMax;
-
-// --- Enhanced forensic line (only meaningful on a body, not dropped gear). ---
-private _forensics = "";
-if (_enhanced) then {
-	private _dt = _target getVariable ["Waldo_deathTime", -1];
-	if (_dt > 0) then {
-		private _dw = _target getVariable ["Waldo_deathWeapon", ""];
-		private _wTxt = if (_dw != "" && {isClass (configFile >> "CfgWeapons" >> _dw)}) then {
-			" - " + (getText (configFile >> "CfgWeapons" >> _dw >> "displayName"))
-		} else { "" };
-		_forensics = format ["<br/><t size='0.8' color='#02b3ff'>Died %1s ago%2</t>", round (time - _dt), _wTxt];
+	// --- Contamination: chance the scanner points at the wrong person. ---
+	private _contam = _target getVariable ["Waldo_dnaContamination", 0];
+	private _misChance = (_contam * (if (_enhanced) then { 0.07 } else { 0.15 })) min 0.85;
+	private _tracked = _source;
+	if (_contam > 0 && {random 1 < _misChance}) then {
+		private _decoyPool = allPlayers select { alive _x && {_x != _source} };
+		if (count _decoyPool > 0) then { _tracked = selectRandom _decoyPool; };
 	};
-};
+	if (_contam > 1) then {
+		hint format ["Sample contaminated (%1 people were near the scene) - the reading may be unreliable.", _contam];
+		sleep 1.5;
+	};
 
-[_tracked, _dur, _forensics] spawn {
-	params ["_suspect", "_dur", "_forensics"];
+	// --- Track duration: decays with trace age; Enhanced Scanner extends both ends. ---
+	private _age = time - (_target getVariable ["Waldo_killerDNATime", time]);
+	private _baseMax   = if (_enhanced) then { 60 } else { 45 };
+	private _baseFloor = if (_enhanced) then { 20 } else { 12 };
+	private _decayRate = if (_enhanced) then { 0.18 } else { 0.25 };
+	private _dur = ((_baseMax - (_age * _decayRate)) max _baseFloor) min _baseMax;
+
+	// --- Enhanced forensic line (only meaningful on a body, not dropped gear). ---
+	private _forensics = "";
+	if (_enhanced) then {
+		private _dt = _target getVariable ["Waldo_deathTime", -1];
+		if (_dt > 0) then {
+			private _dw = _target getVariable ["Waldo_deathWeapon", ""];
+			private _wTxt = if (_dw != "" && {isClass (configFile >> "CfgWeapons" >> _dw)}) then {
+				" - " + (getText (configFile >> "CfgWeapons" >> _dw >> "displayName"))
+			} else { "" };
+			_forensics = format ["<br/><t size='0.8' color='#02b3ff'>Died %1s ago%2</t>", round (time - _dt), _wTxt];
+		};
+	};
+
 	private _endAt = time + _dur;
 	private _dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
 	// Also stop the moment the round ends, so this doesn't keep overwriting
 	// hintSilent against the round-end MVP celebration banner.
 	while {
 		time < _endAt
-		&& {!isNull _suspect} && {alive _suspect} && {alive player}
+		&& {!isNull _tracked} && {alive _tracked} && {alive player}
 		&& {missionNamespace getVariable ["gameOn", true]}
 	} do {
-		private _d = round (player distance _suspect);
-		private _c = _dirs select (floor ((((player getDir _suspect) + 22.5) % 360) / 45));
+		private _d = round (player distance _tracked);
+		private _c = _dirs select (floor ((((player getDir _tracked) + 22.5) % 360) / 45));
 		hintSilent parseText format [
 			"<t size='1.2' color='#02b3ff'>DNA Suspect</t><br/><t size='1.4'>~%1 m</t>  <t size='1.1'>%2</t><br/><t size='0.8' color='#9a9a9a'>tracking %3s</t>%4",
 			_d, _c, round (_endAt - time), _forensics
 		];
 		sleep 1;
 	};
-	if (!isNull _suspect && {!alive _suspect}) then {
+	if (!isNull _tracked && {!alive _tracked}) then {
 		hintSilent parseText "<t size='1.2' color='#02b3ff'>Suspect is down.</t>";
 		sleep 3;
 	};

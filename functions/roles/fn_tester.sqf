@@ -20,6 +20,12 @@ if ((player distance _target) > 3) exitWith {
 
 _target setVariable ["tested", true, true];
 hint "Testing...";
-sleep 2;
-hint "";
+
+// Y is handled unscheduled (called directly from the KeyDown handler), so the
+// delay has to live in its own scheduled thread - sleep is illegal here otherwise.
+[] spawn {
+	sleep 2;
+	hint "";
+};
+
 true

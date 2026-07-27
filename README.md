@@ -53,6 +53,12 @@ The mission doesn't hardcode anything to a specific map: the arena, its loot, an
 
 ---
 
+## One server setting you must change
+
+Turn **Kill Messages** off in your server's difficulty settings. Every player slot in this mission is `side="Civilian"`, so as far as the engine is concerned every Traitor/Detective/Innocent kill is one civilian killing another civilian on the "same side" - and with Kill Messages on, Arma broadcasts who killed whom to everyone's system chat the instant it happens. That names the killer in plain text and blows the round's entire hidden-role premise. This is a difficulty preset the server hosts, not a mission setting, so there's nothing in `description.ext` or the lobby parameters below that can turn it off for you.
+
+---
+
 ## Lobby parameters
 
 | Group | What you can set |

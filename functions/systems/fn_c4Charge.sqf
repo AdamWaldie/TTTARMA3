@@ -47,5 +47,11 @@ _charge allowDamage false;
 
 	private _p = getPosATL _charge;
 	deleteVehicle _charge;
-	createVehicle ["Bo_Mk82", _p, [], 0, "NONE"];   // same blast the suicide bomb uses
+	private _bomb = createVehicle ["Bo_Mk82", _p, [], 0, "NONE"];   // same blast the suicide bomb uses
+	// A createVehicle'd bomb has no shooter by default, so anyone it kills would
+	// resolve to a null culprit in Waldo_fnc_onKilled - no karma penalty for
+	// blowing up a teammate, no DNA on the corpse, no round-kill credit. Tag the
+	// planter as both shooter and instigator so C4 kills attribute exactly like
+	// a gunshot would.
+	_bomb setShotParents [_owner, _owner];
 };

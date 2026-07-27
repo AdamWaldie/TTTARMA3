@@ -25,6 +25,16 @@ private _victimRole = _unit getVariable ["role", "Innocent"];
 // Resolve the real culprit (instigator preferred; fall back to killer).
 private _culprit = _instigator;
 if (isNull _culprit) then { _culprit = _killer; };
+
+// Final fallback: the last unit that actually damaged the victim, tracked locally via
+// HandleDamage on the victim's own machine (Waldo_lastDamager, set in fn_initClient.sqf).
+// Covers ACE bleed-out/DoT deaths, where the terminal MPKilled event's own
+// killer/instigator can resolve to null or to the victim themselves even though a real
+// player's shot is what actually put them down.
+if (isNull _culprit || {_culprit == _unit}) then {
+	private _lastDamager = _unit getVariable ["Waldo_lastDamager", objNull];
+	if (!isNull _lastDamager && {_lastDamager != _unit}) then { _culprit = _lastDamager; };
+};
 private _culpritRole = if (isNull _culprit) then { "" } else { _culprit getVariable ["role", ""] };
 
 // --- Forensic state on the body (for the DNA scanner + Identify Body) ---
@@ -99,8 +109,12 @@ if (_victimRole == "Detective") then {
 	if (_reward > 0) then { { _x setVariable ["points", (_x getVariable ["points", 0]) + _reward, true]; } forEach _traitors; };
 };
 
-// Jester clean kill: a non-Traitor (and not self / environment) killed the Jester.
-if (_victimRole == "Jester" && {!isNull _culprit} && {_culprit != _unit} && {_culpritRole != "Traitor"}) then {
+// Jester clean kill: a non-Traitor player (and not self / environment) killed the Jester.
+// isPlayer is required - a non-player culprit (a vehicle, an explosive/environment prop
+// with no "role" variable) has _culpritRole default to "" via getVariable's safe default,
+// and "" != "Traitor" was trivially true, incorrectly flagging a clean kill for any
+// non-player-attributed Jester death (e.g. an unattributed explosion).
+if (_victimRole == "Jester" && {!isNull _culprit} && {_culprit != _unit} && {isPlayer _culprit} && {_culpritRole != "Traitor"}) then {
 	missionNamespace setVariable ["JESTERCLEANKILL", true, true];
 };
 

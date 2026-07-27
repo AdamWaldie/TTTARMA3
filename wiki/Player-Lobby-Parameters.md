@@ -61,6 +61,10 @@ All lobby parameters are read by index in `Waldo_fnc_loadParams`, matching the o
 |---|---|
 | Enable Testing Mode | Unlocks the dev/test menu (`\`) and the instant role-cycle key (`]`). See [Dev and Test Mode](Dev-Test-Mode). Off, none of that exists for a normal game. |
 
+## A server difficulty setting, not a lobby parameter, that hosts must change
+
+**Kill Messages** needs to be off in your server's difficulty settings, and this isn't something any parameter above (or `description.ext`) can do for you. Every player slot is `side="Civilian"`, so a Traitor killing an Innocent, a Detective, or anyone else looks to the engine like plain civilian-on-civilian same-side fire. With Kill Messages enabled, Arma broadcasts the killer's and victim's names to everyone's system chat the moment it happens - which names the Traitor in plain text and ends the round's mystery instantly. Set it before you host, not after someone dies mid-round and asks what that chat line meant.
+
 ## A fixed lobby bug worth knowing about
 
 Every boolean-style parameter here reads as a numeric `{0,1}` value compared with `!= 0`, not as a `{False,True}` value with a bool default. Arma silently ignores a bool-typed lobby parameter that has a bool default, it just always returns the default no matter what the host picked in the lobby. An earlier version of this mission used bool defaults on several of these (Jester and Testing Mode included), which meant turning them on from the lobby did nothing. If you're adding a new on/off parameter, follow the existing pattern rather than the more "obvious" bool one.

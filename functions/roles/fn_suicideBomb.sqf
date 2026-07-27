@@ -16,6 +16,11 @@ playSound3D [getMissionPath "audio\suicide.ogg", player];
 	if (alive player) then {
 		private _ied = createVehicle ["Bo_Mk82", getPos player, [], 0, "NONE"];
 		_ied setPos (getPos player);
+		// setShotParents is server/HC-only in MP and would silently be ignored if
+		// called here on the bomber's own client - remoteExec it to the server so
+		// anyone this blast kills correctly attributes to the bomber (karma, DNA,
+		// round-kill credit), same as fn_c4Charge.sqf's own charge.
+		[_ied, [player, player]] remoteExec ["setShotParents", 2];
 		player setDamage 1;
 	};
 };

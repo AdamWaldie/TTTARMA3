@@ -13,7 +13,16 @@ if (!isServer) exitWith {
 	[getPosATL player] remoteExec ["Waldo_fnc_healthStation", 2];
 };
 
-params [["_pos", [0,0,0]]];
+// Default falls back to the CALLER's own current position, not a fixed
+// [0,0,0] - on a listen-server host, isServer is true on the very machine
+// that bought this, so the exitWith above never fires and this runs
+// straight through with the original empty _this from the shop's `[] call
+// Waldo_fnc_healthStation;` (no remoteExec ever happened to populate _pos).
+// A hardcoded [0,0,0] silently spawned the crate at the map's absolute
+// origin - nowhere near the player, so the purchase looked like it did
+// nothing at all. getPosATL player here is only ever evaluated when _pos
+// wasn't actually supplied, so the remote (non-host) path above is unaffected.
+params [["_pos", getPosATL player]];
 
 private _station = createVehicle ["Box_NATO_Support_F", _pos, [], 0, "CAN_COLLIDE"];
 _station allowDamage false;

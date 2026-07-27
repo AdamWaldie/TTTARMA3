@@ -81,9 +81,9 @@ class RscTitles
 			class roleCreditsShadow: RscText
 			{
 				idc = -1;
-				x = ((safezoneW + safezoneX) - (0.22 * safezoneH)) - (0.004 * safezoneH);
+				x = ((safezoneW + safezoneX) - (0.19 * safezoneH)) - (0.004 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.225 * safezoneH)) - (0.004 * safezoneH);
-				w = (0.24 * safezoneH) + (0.008 * safezoneH);
+				w = (0.18 * safezoneH) + (0.008 * safezoneH);
 				h = (0.03 * safezoneH) + (0.008 * safezoneH);
 				colorBackground[] = WALDO_SHADOW;
 				style = 0;
@@ -91,9 +91,9 @@ class RscTitles
 			class roleCreditsBG: RscText
 			{
 				idc = -1;
-				x = (safezoneW + safezoneX) - (0.22 * safezoneH);
+				x = (safezoneW + safezoneX) - (0.19 * safezoneH);
 				y = (safezoneH + safezoneY) - (0.225 * safezoneH);
-				w = 0.24 * safezoneH;
+				w = 0.18 * safezoneH;
 				h = 0.03 * safezoneH;
 				colorBackground[] = WALDO_HEADERBG;
 				style = 0;
@@ -101,9 +101,9 @@ class RscTitles
 			class roleCreditsAccent: RscText
 			{
 				idc = 1003;
-				x = (safezoneW + safezoneX) - (0.22 * safezoneH);
+				x = (safezoneW + safezoneX) - (0.19 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.225 * safezoneH)) + (0.03 * safezoneH) - (0.0025 * safezoneH);
-				w = 0.24 * safezoneH;
+				w = 0.18 * safezoneH;
 				h = 0.0025 * safezoneH;
 				colorBackground[] = WALDO_ACCENT;   // tinted to the role colour at runtime
 				style = 0;
@@ -112,15 +112,15 @@ class RscTitles
 			{
 				idc = 1002;
 				text = "";
-				x = (safezoneW + safezoneX) - (0.22 * safezoneH);
+				x = (safezoneW + safezoneX) - (0.19 * safezoneH);
 				y = (safezoneH + safezoneY) - (0.225 * safezoneH);
-				w = 0.24 * safezoneH;
+				w = 0.18 * safezoneH;
 				h = 0.03 * safezoneH;
 				colorBackground[] = {0,0,0,0};
 				colorText[] = {1,1,1,1};
 				style = ST_CENTER;
 				font = "PuristaBold";
-				sizeEx = 0.028 * safezoneH;
+				sizeEx = 0.024 * safezoneH;
 				shadow = 1;
 			};
 
@@ -129,71 +129,38 @@ class RscTitles
 			// discoverable - so this lists whatever's actually relevant to the
 			// current role, plus the dev binds too when Testing Mode is on
 			// (Waldo_fnc_initHud populates idc 1010, re-run on every role change).
-			// Given its own header + accent bar, matching the shop/debug/ping-wheel
-			// panels instead of being a bare floating text list.
+			// Sizes here are placeholders - Waldo_fnc_initHud resizes all three
+			// via ctrlSetPosition to fit however many lines actually apply (5
+			// without Testing Mode, up to 7 with it), so this never sits around
+			// as a fixed box mostly empty.
 			class keyHintShadow: RscText
 			{
-				idc = -1;
+				idc = 1012;
 				x = (safezoneX + (0.012 * safezoneW)) - (0.004 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.225 * safezoneH)) - (0.004 * safezoneH);
-				w = (0.21 * safezoneW) + (0.008 * safezoneH);
-				h = (0.225 * safezoneH) + (0.008 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.16 * safezoneH)) - (0.004 * safezoneH);
+				w = (0.16 * safezoneW) + (0.008 * safezoneH);
+				h = (0.15 * safezoneH) + (0.008 * safezoneH);
 				colorBackground[] = WALDO_SHADOW;
 				style = 0;
 			};
 			class keyHintBG: RscText
 			{
-				idc = -1;
+				idc = 1013;
 				x = safezoneX + (0.012 * safezoneW);
-				y = (safezoneH + safezoneY) - (0.225 * safezoneH);
-				w = 0.21 * safezoneW;
-				h = 0.225 * safezoneH;
+				y = (safezoneH + safezoneY) - (0.16 * safezoneH);
+				w = 0.16 * safezoneW;
+				h = 0.15 * safezoneH;
 				colorBackground[] = WALDO_CASING;
-				style = 0;
-			};
-			class keyHintHeaderBG: RscText
-			{
-				idc = -1;
-				x = safezoneX + (0.012 * safezoneW);
-				y = (safezoneH + safezoneY) - (0.225 * safezoneH);
-				w = 0.21 * safezoneW;
-				h = 0.034 * safezoneH;
-				colorBackground[] = WALDO_HEADERBG;
-				style = 0;
-			};
-			class keyHintTitle: RscText
-			{
-				idc = -1;
-				text = "CONTROLS";
-				x = safezoneX + (0.012 * safezoneW);
-				y = (safezoneH + safezoneY) - (0.225 * safezoneH);
-				w = 0.21 * safezoneW;
-				h = 0.034 * safezoneH;
-				colorBackground[] = {0,0,0,0};
-				colorText[] = {0.95,0.93,0.86,1};
-				style = ST_LEFT + ST_VCENTER;
-				font = "PuristaBold";
-				sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.85);
-				shadow = 1;
-			};
-			class keyHintAccent: RscText
-			{
-				idc = 1011;
-				x = safezoneX + (0.012 * safezoneW);
-				y = ((safezoneH + safezoneY) - (0.225 * safezoneH)) + (0.034 * safezoneH);
-				w = 0.21 * safezoneW;
-				h = 0.0025 * safezoneH;
-				colorBackground[] = WALDO_ACCENT;   // tinted to the role colour at runtime
 				style = 0;
 			};
 			class keyHintText: RscStructuredText
 			{
 				idc = 1010;
 				text = "";
-				x = (safezoneX + (0.012 * safezoneW)) + (0.012 * safezoneW);
-				y = ((safezoneH + safezoneY) - (0.225 * safezoneH)) + (0.044 * safezoneH);
-				w = (0.21 * safezoneW) - (0.024 * safezoneW);
-				h = (0.225 * safezoneH) - (0.054 * safezoneH);
+				x = (safezoneX + (0.012 * safezoneW)) + (0.010 * safezoneW);
+				y = ((safezoneH + safezoneY) - (0.16 * safezoneH)) + (0.008 * safezoneH);
+				w = (0.16 * safezoneW) - (0.020 * safezoneW);
+				h = (0.15 * safezoneH) - (0.016 * safezoneH);
 				size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.95);
 				colorBackground[] = {0,0,0,0};
 				class Attributes {

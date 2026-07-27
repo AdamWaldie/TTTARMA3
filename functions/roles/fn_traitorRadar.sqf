@@ -2,16 +2,29 @@
 // Waldo_fnc_traitorRadar
 // CLIENT: reveals every unit's position as a fading role-coloured pulse
 // that recharges every 30s. Uses ONE managed Draw3D handler (replaces any
-// previous one) plus ONE managed CBA per-frame handler for the recharge -
-// both replace rather than stack if called again (e.g. the shop item is
-// bought more than once, or fired again from the dev menu).
+// previous one) plus ONE managed recharge loop - both replace rather than
+// stack if called again (e.g. the shop item is bought more than once, or
+// fired again from the dev menu).
+//
+// Recharge prefers CBA_fnc_addPerFrameHandler when CBA is loaded (cheaper,
+// frame-driven), falling back to a plain spawn/sleep loop otherwise - CBA is
+// no longer treated as a hard requirement. The vanilla fallback uses a
+// token (same idiom as Waldo_hintFadeToken/Waldo_announceToken elsewhere)
+// instead of a removable handle, since a spawned loop has no handle to
+// remove the way CBA's PFH does.
 //////////////////////////////////////////////////////////////////
 
 private _old = player getVariable ["Waldo_radarEH", -1];
 if (_old >= 0) then { removeMissionEventHandler ["Draw3D", _old]; };
 
-private _oldPfh = player getVariable ["Waldo_radarPFH", -1];
-if (_oldPfh >= 0) then { [_oldPfh] call CBA_fnc_removePerFrameHandler; };
+private _useCBA = !(isNil "CBA_fnc_addPerFrameHandler");
+
+if (_useCBA) then {
+	private _oldPfh = player getVariable ["Waldo_radarPFH", -1];
+	if (_oldPfh >= 0) then { [_oldPfh] call CBA_fnc_removePerFrameHandler; };
+} else {
+	player setVariable ["Waldo_radarToken", (player getVariable ["Waldo_radarToken", 0]) + 1];
+};
 
 player setVariable ["radar", 1];
 
@@ -30,9 +43,20 @@ private _eh = addMissionEventHandler ["Draw3D", {
 player setVariable ["Waldo_radarEH", _eh];
 
 // Recharge the pulse periodically until the player dies.
-private _pfh = [{
-	params ["_args", "_handle"];
-	if (!alive player) exitWith { [_handle] call CBA_fnc_removePerFrameHandler; };
-	player setVariable ["radar", 1];
-}, 30] call CBA_fnc_addPerFrameHandler;
-player setVariable ["Waldo_radarPFH", _pfh];
+if (_useCBA) then {
+	private _pfh = [{
+		params ["_args", "_handle"];
+		if (!alive player) exitWith { [_handle] call CBA_fnc_removePerFrameHandler; };
+		player setVariable ["radar", 1];
+	}, 30] call CBA_fnc_addPerFrameHandler;
+	player setVariable ["Waldo_radarPFH", _pfh];
+} else {
+	private _token = player getVariable ["Waldo_radarToken", 0];
+	[_token] spawn {
+		params ["_token"];
+		while { alive player && {(player getVariable ["Waldo_radarToken", 0]) == _token} } do {
+			sleep 30;
+			if ((player getVariable ["Waldo_radarToken", 0]) == _token) then { player setVariable ["radar", 1]; };
+		};
+	};
+};

@@ -39,6 +39,7 @@ diag_log "[Waldo][server] buildArsenal: begin";
 private _lowMaxHit    = missionNamespace getVariable ["Waldo_arsenalLowMaxHit",    8];    // <= this -> low-powered primary -> loot
 private _sniperMinHit = missionNamespace getVariable ["Waldo_arsenalSniperMinHit", 12];   // >= this (+ small mag) -> sniper -> shop
 private _lmgMinRounds = missionNamespace getVariable ["Waldo_arsenalLmgMinRounds", 100];  // mags this large -> LMG -> airdrop
+private _fragMinIndirectHit = missionNamespace getVariable ["Waldo_arsenalFragMinIndirectHit", 6];  // >= this -> "Frag Grenades" candidate
 
 // ---- helpers ----
 private _magOf = {
@@ -61,6 +62,19 @@ private _vestCargo = {   // a vest's cargo capacity, 0 if it carries nothing at 
 	private _container = getText (configFile >> "CfgWeapons" >> _vest >> "ItemInfo" >> "containerClass");
 	if (_container == "") exitWith { 0 };
 	getNumber (configFile >> "CfgVehicles" >> _container >> "maximumLoad")
+};
+private _vestArmor = {   // a vest's total ballistic protection, 0 if it protects nothing at all
+	// There is no single flat "how armoured is this vest" number - real
+	// protection is a PER-HITPOINT bonus (Neck/Arms/Chest/Diaphragm/Abdomen/
+	// Body/...) nested under ItemInfo >> HitpointsProtectionInfo. Summing
+	// every hitpoint's own armor value gives a genuine, comparable "total
+	// protection" score across vests.
+	params ["_vest"];
+	private _hpi = configFile >> "CfgWeapons" >> _vest >> "ItemInfo" >> "HitpointsProtectionInfo";
+	if !(isClass _hpi) exitWith { 0 };
+	private _total = 0;
+	{ _total = _total + (getNumber (_x >> "armor")); } forEach ("true" configClasses _hpi);
+	_total
 };
 
 // ---- single pass over CfgWeapons: classify weapons, clothing and optics ----
@@ -228,13 +242,13 @@ if !(_vests isEqualTo []) then {
 	private _bestA = -1;
 	{
 		if (([_x] call _vestCargo) > 0) then {
-			private _a = getNumber (configFile >> "CfgWeapons" >> _x >> "ItemInfo" >> "armor");
+			private _a = [_x] call _vestArmor;
 			if (_a > _bestA) then { _bestA = _a; _armorVest = _x; };
 		};
 	} forEach _vests;
 	if (_bestA < 0) then {
 		{
-			private _a = getNumber (configFile >> "CfgWeapons" >> _x >> "ItemInfo" >> "armor");
+			private _a = [_x] call _vestArmor;
 			if (_a > _bestA) then { _bestA = _a; _armorVest = _x; };
 		} forEach _vests;
 	};
@@ -245,13 +259,22 @@ missionNamespace setVariable ["ShopArmorVest", _armorVest, true];
 // (exitWith inside a forEach only ends that one iteration, not the loop, so the
 // "stop at the first match" guard has to be an explicit _frag == "" check -
 // otherwise a later muzzle with its own match would silently overwrite it.)
+//
+// Threshold was 15 - but vanilla HandGrenade's OWN ammo (HandGrenade_Ammo)
+// has indirectHit = 8, so that threshold excluded the exact reference item
+// this is meant to identify. In a plain vanilla game this went unnoticed
+// (nothing ever matched, so it silently fell through to the "HandGrenade"
+// fallback below anyway), but with any mod loaded that adds a throwable
+// clearing 15, THAT got picked instead of vanilla HandGrenade - not
+// necessarily a real hand-thrown frag, and not necessarily working the same
+// way once thrown. 6 safely clears vanilla HandGrenade's real value.
 private _frag = "";
 {
 	if (_frag == "") then {
 		private _tMags = getArray (configFile >> "CfgWeapons" >> "Throw" >> _x >> "magazines");
 		private _i = _tMags findIf {
 			private _ammo = getText (configFile >> "CfgMagazines" >> _x >> "ammo");
-			(getNumber (configFile >> "CfgAmmo" >> _ammo >> "explosive") > 0) && {getNumber (configFile >> "CfgAmmo" >> _ammo >> "indirectHit") >= 15}
+			(getNumber (configFile >> "CfgAmmo" >> _ammo >> "explosive") > 0) && {getNumber (configFile >> "CfgAmmo" >> _ammo >> "indirectHit") >= _fragMinIndirectHit}
 		};
 		if (_i >= 0) then { _frag = _tMags select _i; };
 	};

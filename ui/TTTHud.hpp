@@ -137,9 +137,9 @@ class RscTitles
 			{
 				idc = 1012;
 				x = (safezoneX + (0.012 * safezoneW)) - (0.004 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.16 * safezoneH)) - (0.004 * safezoneH);
-				w = (0.16 * safezoneW) + (0.008 * safezoneH);
-				h = (0.15 * safezoneH) + (0.008 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.24 * safezoneH)) - (0.004 * safezoneH);
+				w = (0.20 * safezoneW) + (0.008 * safezoneH);
+				h = (0.23 * safezoneH) + (0.008 * safezoneH);
 				colorBackground[] = WALDO_SHADOW;
 				style = 0;
 			};
@@ -147,9 +147,9 @@ class RscTitles
 			{
 				idc = 1013;
 				x = safezoneX + (0.012 * safezoneW);
-				y = (safezoneH + safezoneY) - (0.16 * safezoneH);
-				w = 0.16 * safezoneW;
-				h = 0.15 * safezoneH;
+				y = (safezoneH + safezoneY) - (0.24 * safezoneH);
+				w = 0.20 * safezoneW;
+				h = 0.23 * safezoneH;
 				colorBackground[] = WALDO_CASING;
 				style = 0;
 			};
@@ -158,9 +158,9 @@ class RscTitles
 				idc = 1010;
 				text = "";
 				x = (safezoneX + (0.012 * safezoneW)) + (0.010 * safezoneW);
-				y = ((safezoneH + safezoneY) - (0.16 * safezoneH)) + (0.008 * safezoneH);
-				w = (0.16 * safezoneW) - (0.020 * safezoneW);
-				h = (0.15 * safezoneH) - (0.016 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.24 * safezoneH)) + (0.010 * safezoneH);
+				w = (0.20 * safezoneW) - (0.020 * safezoneW);
+				h = (0.23 * safezoneH) - (0.020 * safezoneH);
 				size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.95);
 				colorBackground[] = {0,0,0,0};
 				class Attributes {

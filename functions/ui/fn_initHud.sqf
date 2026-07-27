@@ -20,6 +20,10 @@ private _badge = _display displayCtrl 1001;
 _badge ctrlSetTextColor _color;
 _badge ctrlSetStructuredText parseText (toUpper (_role select [0, 1]));
 
+// Accent line under the credits pill, tinted to match (same treatment as the
+// shop panel's accent bar).
+(_display displayCtrl 1003) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
+
 // Live credits readout for shop roles (blank for the others).
 private _creditsCtrl = _display displayCtrl 1002;
 _creditsCtrl ctrlSetText "";

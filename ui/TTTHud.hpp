@@ -21,6 +21,19 @@ class RscTitles
 		// true circle and stays fully on-screen — the old height used safezoneW,
 		// which stretched it into an off-screen ellipse on widescreen.
 		class controlsBackground {
+			// Drop shadow behind the whole crest, same offset-dark-copy treatment the
+			// shop/debug panels use, so this reads as a mounted badge instead of a
+			// flat sticker floating over the world.
+			class roleShadow: RscPicture
+			{
+				idc = -1;
+				text = "ui\rolebg.paa";
+				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.008 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.010 * safezoneH);
+				w = 0.15 * safezoneH;
+				h = 0.15 * safezoneH;
+				color = [0,0,0,0.55];
+			};
 			class roleTextBGBG: RscPicture
 			{
 				idc = 999;
@@ -63,6 +76,38 @@ class RscTitles
 					valign = "middle";
 				};
 			};
+			// Credits readout: a proper casing pill (shadow + dark base + accent line)
+			// matching the shop/debug header treatment, instead of bare floating text.
+			class roleCreditsShadow: RscText
+			{
+				idc = -1;
+				x = ((safezoneW + safezoneX) - (0.22 * safezoneH)) - (0.004 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.225 * safezoneH)) - (0.004 * safezoneH);
+				w = (0.24 * safezoneH) + (0.008 * safezoneH);
+				h = (0.03 * safezoneH) + (0.008 * safezoneH);
+				colorBackground[] = WALDO_SHADOW;
+				style = 0;
+			};
+			class roleCreditsBG: RscText
+			{
+				idc = -1;
+				x = (safezoneW + safezoneX) - (0.22 * safezoneH);
+				y = (safezoneH + safezoneY) - (0.225 * safezoneH);
+				w = 0.24 * safezoneH;
+				h = 0.03 * safezoneH;
+				colorBackground[] = WALDO_HEADERBG;
+				style = 0;
+			};
+			class roleCreditsAccent: RscText
+			{
+				idc = 1003;
+				x = (safezoneW + safezoneX) - (0.22 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.225 * safezoneH)) + (0.03 * safezoneH) - (0.0025 * safezoneH);
+				w = 0.24 * safezoneH;
+				h = 0.0025 * safezoneH;
+				colorBackground[] = WALDO_ACCENT;   // tinted to the role colour at runtime
+				style = 0;
+			};
 			class roleCredits: RscText
 			{
 				idc = 1002;
@@ -77,6 +122,153 @@ class RscTitles
 				font = "PuristaBold";
 				sizeEx = 0.028 * safezoneH;
 				shadow = 1;
+			};
+		};
+	};
+
+	// ============================================================================
+	// TTTPingWheel - traitor coordination ping picker. Hold T to show it, scroll
+	// the mouse wheel to move the highlight, release T to fire the highlighted
+	// ping (Waldo_fnc_pingWheelOpen/Render/Close). Persistent-but-hidden like
+	// TTTHud: created once, then just shown/hidden via ctrlShow so re-opening
+	// never re-triggers a title fade-in.
+	// ============================================================================
+	class TTTPingWheel {
+		idd = -1;
+		fadeout = 0;
+		fadein = 0;
+		duration = 99999;
+		onLoad = "with uiNamespace do {TTTPingWheel = _this select 0}";
+
+		class controlsBackground {};
+
+		class Controls {
+			class pingWheelGroup: RscControlsGroup {
+				idc = 3520;
+				x = (safezoneX + (0.5 * safezoneW)) - (0.09 * safezoneW);
+				y = safezoneY + (0.30 * safezoneH);
+				w = 0.18 * safezoneW;
+				h = 0.225 * safezoneH;
+
+				class Controls {
+					class pwShadow: RscText {
+						idc = -1;
+						x = -0.004 * safezoneH;
+						y = -0.004 * safezoneH;
+						w = (0.18 * safezoneW) + (0.008 * safezoneH);
+						h = (0.225 * safezoneH) + (0.008 * safezoneH);
+						colorBackground[] = WALDO_SHADOW;
+						style = 0;
+					};
+					class pwCasing: RscText {
+						idc = -1;
+						x = 0; y = 0;
+						w = 0.18 * safezoneW;
+						h = 0.225 * safezoneH;
+						colorBackground[] = WALDO_CASING;
+						style = 0;
+					};
+					class pwHeaderBG: RscText {
+						idc = -1;
+						x = 0; y = 0;
+						w = 0.18 * safezoneW;
+						h = 0.032 * safezoneH;
+						colorBackground[] = WALDO_HEADERBG;
+						style = 0;
+					};
+					class pwTitle: RscText {
+						idc = -1;
+						text = "PING  -  scroll to choose";
+						x = 0; y = 0;
+						w = 0.18 * safezoneW;
+						h = 0.032 * safezoneH;
+						colorBackground[] = {0,0,0,0};
+						colorText[] = {0.95,0.93,0.86,1};
+						style = ST_CENTER + ST_VCENTER;
+						font = "PuristaBold";
+						sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.85);
+						shadow = 1;
+					};
+					class pwAccent: RscText {
+						idc = 3502;
+						x = 0;
+						y = 0.032 * safezoneH;
+						w = 0.18 * safezoneW;
+						h = 0.0025 * safezoneH;
+						colorBackground[] = WALDO_ACCENT;   // tinted to the role colour at runtime
+						style = 0;
+					};
+					class pwOpt0: RscText {
+						idc = 3510;
+						text = "";
+						x = 0.008 * safezoneW;
+						y = 0.036 * safezoneH;
+						w = 0.164 * safezoneW;
+						h = 0.036 * safezoneH;
+						colorBackground[] = {0,0,0,0};
+						colorText[] = {0.75,0.73,0.68,1};
+						style = ST_LEFT + ST_VCENTER;
+						font = "PuristaMedium";
+						sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.95);
+						shadow = 1;
+					};
+					class pwOpt1: RscText {
+						idc = 3511;
+						text = "";
+						x = 0.008 * safezoneW;
+						y = 0.072 * safezoneH;
+						w = 0.164 * safezoneW;
+						h = 0.036 * safezoneH;
+						colorBackground[] = {0,0,0,0};
+						colorText[] = {0.75,0.73,0.68,1};
+						style = ST_LEFT + ST_VCENTER;
+						font = "PuristaMedium";
+						sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.95);
+						shadow = 1;
+					};
+					class pwOpt2: RscText {
+						idc = 3512;
+						text = "";
+						x = 0.008 * safezoneW;
+						y = 0.108 * safezoneH;
+						w = 0.164 * safezoneW;
+						h = 0.036 * safezoneH;
+						colorBackground[] = {0,0,0,0};
+						colorText[] = {0.75,0.73,0.68,1};
+						style = ST_LEFT + ST_VCENTER;
+						font = "PuristaMedium";
+						sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.95);
+						shadow = 1;
+					};
+					class pwOpt3: RscText {
+						idc = 3513;
+						text = "";
+						x = 0.008 * safezoneW;
+						y = 0.144 * safezoneH;
+						w = 0.164 * safezoneW;
+						h = 0.036 * safezoneH;
+						colorBackground[] = {0,0,0,0};
+						colorText[] = {0.75,0.73,0.68,1};
+						style = ST_LEFT + ST_VCENTER;
+						font = "PuristaMedium";
+						sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.95);
+						shadow = 1;
+					};
+					class pwOpt4: RscText {
+						idc = 3514;
+						text = "";
+						x = 0.008 * safezoneW;
+						y = 0.180 * safezoneH;
+						w = 0.164 * safezoneW;
+						h = 0.036 * safezoneH;
+						colorBackground[] = {0,0,0,0};
+						colorText[] = {0.75,0.73,0.68,1};
+						style = ST_LEFT + ST_VCENTER;
+						font = "PuristaMedium";
+						sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.95);
+						shadow = 1;
+					};
+				};
 			};
 		};
 	};

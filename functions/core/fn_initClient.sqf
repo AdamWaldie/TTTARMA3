@@ -151,23 +151,35 @@ removeBackpack player;
 					[] call Waldo_fnc_scoreboard;
 					_handled = true;
 				};
-				case 20: {   // T - traitor coordination ping (traitors only)
+				case 20: {   // T - hold to open the ping picker (traitors only); release fires it
 					if ((player getVariable ["role", ""]) == "Traitor") then {
-						[] call Waldo_fnc_traitorPing;
+						// pingWheelOpen waitUntils on its overlay existing the first time it's
+						// created - needs a scheduled context, same reason debugMenu does above.
+						[] spawn Waldo_fnc_pingWheelOpen;
 						_handled = true;
 					};
 				};
 				case 43: {   // \ - open the dev/test menu (only under Testing Mode)
 					if (missionNamespace getVariable ["TestingFlag", false]) then {
-						[] call Waldo_fnc_debugMenu;
-						_handled = true;
+						// debugMenu waitUntils on the dialog existing after createDialog -
+						// waitUntil needs a scheduled environment same as sleep does, and
+						// this KeyDown handler is unscheduled, so `call` threw here every
+						// time (the actual reason the menu never opened).
+						[] spawn Waldo_fnc_debugMenu;
+					} else {
+						// Silent no-op otherwise looks identical to a broken key - tell the
+						// player WHY nothing happened instead of leaving them guessing.
+						hint "Testing Mode is off for this session - enable it in the lobby's Parameters tab.";
 					};
+					_handled = true;
 				};
 				case 27: {   // right-bracket key - instant role cycle (Testing Mode only)
 					if (missionNamespace getVariable ["TestingFlag", false]) then {
 						call Waldo_debugCycleRole;
-						_handled = true;
+					} else {
+						hint "Testing Mode is off for this session - enable it in the lobby's Parameters tab.";
 					};
+					_handled = true;
 				};
 			};
 			_handled
@@ -176,6 +188,7 @@ removeBackpack player;
 			params ["_d", "_key"];
 			private _held = _d getVariable ["Waldo_heldKeys", []];
 			_d setVariable ["Waldo_heldKeys", _held - [_key]];
+			if (_key == 20) then { [] call Waldo_fnc_pingWheelClose; };   // T released - fire the highlighted ping
 			false
 		}];
 		_disp setVariable ["Waldo_keyEH", _eh];

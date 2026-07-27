@@ -58,7 +58,11 @@ class RscTitles
 				idc = 1001;
 				text = "";
 				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
-				y = (safezoneH + safezoneY) - (0.185 * safezoneH);
+				// valign='middle' centres on the font's full line-height box, not the
+				// actual glyph - a single cap-height letter with no descender (T/D/J/I)
+				// visually sits high inside that box as a result. Nudged down to
+				// compensate rather than fighting the engine's own vertical metric.
+				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.012 * safezoneH);
 				w = 0.15 * safezoneH;
 				h = 0.15 * safezoneH;
 				size = 0.095 * safezoneH;
@@ -80,7 +84,7 @@ class RscTitles
 			// matching the shop/debug header treatment, instead of bare floating text.
 			class roleCreditsShadow: RscText
 			{
-				idc = -1;
+				idc = 1004;
 				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.004 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.225 * safezoneH)) - (0.004 * safezoneH);
 				w = (0.15 * safezoneH) + (0.008 * safezoneH);
@@ -90,7 +94,7 @@ class RscTitles
 			};
 			class roleCreditsBG: RscText
 			{
-				idc = -1;
+				idc = 1005;
 				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
 				y = (safezoneH + safezoneY) - (0.225 * safezoneH);
 				w = 0.15 * safezoneH;
@@ -137,31 +141,31 @@ class RscTitles
 			{
 				idc = 1012;
 				x = (safezoneX + (0.012 * safezoneW)) - (0.004 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.24 * safezoneH)) - (0.004 * safezoneH);
-				w = (0.20 * safezoneW) + (0.008 * safezoneH);
-				h = (0.23 * safezoneH) + (0.008 * safezoneH);
-				colorBackground[] = WALDO_SHADOW;
+				y = ((safezoneH + safezoneY) - (0.18 * safezoneH)) - (0.004 * safezoneH);
+				w = (0.13 * safezoneW) + (0.008 * safezoneH);
+				h = (0.17 * safezoneH) + (0.008 * safezoneH);
+				colorBackground[] = {0, 0, 0, 0.55};
 				style = 0;
 			};
 			class keyHintBG: RscText
 			{
 				idc = 1013;
 				x = safezoneX + (0.012 * safezoneW);
-				y = (safezoneH + safezoneY) - (0.24 * safezoneH);
-				w = 0.20 * safezoneW;
-				h = 0.23 * safezoneH;
-				colorBackground[] = WALDO_CASING;
+				y = (safezoneH + safezoneY) - (0.18 * safezoneH);
+				w = 0.13 * safezoneW;
+				h = 0.17 * safezoneH;
+				colorBackground[] = {0.105, 0.11, 0.095, 0.85};
 				style = 0;
 			};
 			class keyHintText: RscStructuredText
 			{
 				idc = 1010;
 				text = "";
-				x = (safezoneX + (0.012 * safezoneW)) + (0.010 * safezoneW);
-				y = ((safezoneH + safezoneY) - (0.24 * safezoneH)) + (0.010 * safezoneH);
-				w = (0.20 * safezoneW) - (0.020 * safezoneW);
-				h = (0.23 * safezoneH) - (0.020 * safezoneH);
-				size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.95);
+				x = (safezoneX + (0.012 * safezoneW)) + (0.008 * safezoneW);
+				y = ((safezoneH + safezoneY) - (0.18 * safezoneH)) + (0.007 * safezoneH);
+				w = (0.13 * safezoneW) - (0.016 * safezoneW);
+				h = (0.17 * safezoneH) - (0.014 * safezoneH);
+				size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.6);
 				colorBackground[] = {0,0,0,0};
 				class Attributes {
 					font = "PuristaMedium";

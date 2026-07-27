@@ -28,15 +28,18 @@ private _badge = _display displayCtrl 1001;
 _badge ctrlSetTextColor _color;
 _badge ctrlSetStructuredText parseText (toUpper (_role select [0, 1]));
 
-// Accent line under the credits pill, tinted to match (same treatment as the
-// shop panel's accent bar).
-(_display displayCtrl 1003) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
+// Credits pill (badge nameplate): only Traitor/Detective have credits at all,
+// so the whole pill - not just its text - is hidden for everyone else instead
+// of sitting there as an empty black bar with nothing to show.
+private _hasCredits = _role in ["Traitor", "Detective"];
+{ (_display displayCtrl _x) ctrlShow _hasCredits; } forEach [1002, 1003, 1004, 1005];
 
-// Live credits readout for shop roles (blank for the others).
-private _creditsCtrl = _display displayCtrl 1002;
-_creditsCtrl ctrlSetText "";
-if (_role in ["Traitor", "Detective"]) then {
-	private _credits = _creditsCtrl;
+if (_hasCredits) then {
+	// Accent line under the credits pill, tinted to match (same treatment as
+	// the shop panel's accent bar).
+	(_display displayCtrl 1003) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
+
+	private _credits = _display displayCtrl 1002;
 	_credits ctrlSetTextColor _color;
 	[_credits] spawn {
 		params ["_credits"];
@@ -75,14 +78,14 @@ private _hintBody = "";
 // _lineH is the per-line height BUDGET for sizing this box - it does not
 // control actual on-screen line spacing (that's the font's own metric, driven
 // by keyHintText's size), so it has to be measured against that font size, not
-// guessed independently. keyHintText's size resolves to a fixed 0.038*safezoneH
+// guessed independently. keyHintText's size resolves to a fixed 0.024*safezoneH
 // on any normal (>=1.2 aspect) display (the formula's `min 1.2` clause caps it
 // there in practice), and real line pitch for readable text runs meaningfully
 // taller than the bare glyph size - sizing the box any tighter than that
 // clips the last line(s) instead of just leaving extra room.
-private _lineH = 0.045 * safezoneH;
-private _padV = 0.010 * safezoneH;
-private _panelW = 0.20 * safezoneW;   // wide enough that "T (hold)  Ping" (the
+private _lineH = 0.032 * safezoneH;
+private _padV = 0.007 * safezoneH;
+private _panelW = 0.13 * safezoneW;   // wide enough that "T (hold)  Ping" (the
                                        // longest line) can't wrap - a structured-
                                        // text control wraps instead of clipping,
                                        // which would silently break this same
@@ -104,8 +107,27 @@ _bgCtrl ctrlCommit 0;
 
 private _textCtrl = _display displayCtrl 1010;
 _textCtrl ctrlSetPosition [
-	_panelX + (0.010 * safezoneW), _panelY + _padV,
-	_panelW - (0.020 * safezoneW), _panelH - (_padV * 2)
+	_panelX + (0.008 * safezoneW), _panelY + _padV,
+	_panelW - (0.016 * safezoneW), _panelH - (_padV * 2)
 ];
 _textCtrl ctrlCommit 0;
 _textCtrl ctrlSetStructuredText parseText _hintBody;
+
+// Visible and easy to read for a few seconds after every (re)draw - a fresh
+// round start or a role change is exactly when this is actually worth
+// glancing at - then fades to a small, unobtrusive corner reference rather
+// than sitting fully opaque for the whole round. ctrlCommit with a duration
+// (not 0) animates the transition instead of snapping to it.
+_shadowCtrl ctrlSetBackgroundColor [0, 0, 0, 0.55];
+_shadowCtrl ctrlCommit 0;
+_bgCtrl ctrlSetBackgroundColor [0.105, 0.11, 0.095, 0.85];
+_bgCtrl ctrlCommit 0;
+[_shadowCtrl, _bgCtrl] spawn {
+	params ["_shadowCtrl", "_bgCtrl"];
+	sleep 6;
+	if (isNull _shadowCtrl || {isNull _bgCtrl}) exitWith {};
+	_shadowCtrl ctrlSetBackgroundColor [0, 0, 0, 0.18];
+	_shadowCtrl ctrlCommit 2;
+	_bgCtrl ctrlSetBackgroundColor [0.105, 0.11, 0.095, 0.28];
+	_bgCtrl ctrlCommit 2;
+};

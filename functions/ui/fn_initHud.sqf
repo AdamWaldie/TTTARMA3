@@ -26,7 +26,7 @@ private _color = [_role] call Waldo_roleColor;
 (_display displayCtrl 1000) ctrlSetTextColor _color;
 private _badge = _display displayCtrl 1001;
 _badge ctrlSetTextColor _color;
-_badge ctrlSetStructuredText parseText (toUpper (_role select [0, 1]));
+_badge ctrlSetText toUpper (_role select [0, 1]);
 
 // Credits pill (badge nameplate): only Traitor/Detective have credits at all,
 // so the whole pill - not just its text - is hidden for everyone else instead

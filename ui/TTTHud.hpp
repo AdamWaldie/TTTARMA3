@@ -54,32 +54,27 @@ class RscTitles
 				w = 0.15 * safezoneH;
 				h = 0.15 * safezoneH;
 			};
-			class roleText: RscStructuredText
+			class roleText: RscText
 			{
 				idc = 1001;
 				text = "";
 				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
-				// valign='middle' centres on the font's full line-height box, not the
-				// actual glyph - a single cap-height letter with no descender (T/D/J/I)
-				// visually sits high inside that box as a result. Nudged down to
-				// compensate rather than fighting the engine's own vertical metric.
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.012 * safezoneH);
+				y = (safezoneH + safezoneY) - (0.185 * safezoneH);
 				w = 0.15 * safezoneH;
 				h = 0.15 * safezoneH;
-				size = 0.095 * safezoneH;
-				type = CT_STRUCTURED_TEXT;
-				style = ST_CENTER;
+				// CT_STRUCTURED_TEXT's valign='middle' (the old control type here) is a
+				// documented engine bug - BI forum reports confirm valign has no real
+				// effect on RscStructuredText - so the manual y-nudge that used to live
+				// here was only masking that broken behaviour, not fixing it. Plain
+				// RscText's ST_CENTER + ST_VCENTER (already used for the ping wheel's
+				// title below) centres both axes reliably with no markup quirks.
+				style = ST_CENTER + ST_VCENTER;
+				font = "PuristaBold";
+				// ~43% of the badge box, not 63% (the old 0.095) - leaves real margin
+				// so the glyph can't brush the ring regardless of the font's own metrics.
+				sizeEx = 0.065 * safezoneH;
 				shadow = false;
-				// CT_STRUCTURED_TEXT paints an opaque black box by default when
-				// colorBackground isn't set - invisible on the dark shop/debug panels
-				// elsewhere in this file, but a solid dark square over the role letter
-				// when it's this control sitting directly on the tinted circular badge.
 				colorBackground[] = {0,0,0,0};
-				class Attributes{
-					font = "PuristaBold";
-					align = "center";
-					valign = "middle";
-				};
 			};
 			// Credits readout: a proper casing pill (shadow + dark base + accent line)
 			// matching the shop/debug header treatment, instead of bare floating text.

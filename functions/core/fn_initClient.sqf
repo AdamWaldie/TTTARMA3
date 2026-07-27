@@ -82,8 +82,14 @@ waitUntil { !isNull player && time > 0 };
 // stuck loading. Skipped if the round already went live (a JIP mid-round
 // shouldn't restart the intro); logged either way so a silent failure shows
 // up in the .rpt instead of being another guess.
+//
+// _musicStarted is recorded (see the fadeMusic call near the end of this
+// script) so the fade-out below can be skipped entirely for a JIP client
+// that never started the music in the first place.
+private _musicStarted = false;
 if !(missionNamespace getVariable ["gameOn", false]) then {
 	playMusic ["TTTIntroMusic", 20];
+	_musicStarted = true;
 	diag_log "[Waldo][client] intro music: playMusic issued";
 } else {
 	diag_log "[Waldo][client] intro music: skipped, round already live (JIP)";
@@ -223,7 +229,26 @@ player allowDamage false;
 
 // --- Wait for the round to go live ---
 waitUntil { missionNamespace getVariable ["gameOn", false] };
-10 fadeMusic 0;
+
+// Fade out relative to the round's actual start (Waldo_roundLiveAt - the
+// server `time` the round went live, already broadcast for the round timer,
+// Waldo_fnc_topBarTimer) rather than the instant THIS client's script
+// notices gameOn: every client reaches "arena-ready" (and starts the music)
+// at a different point in the server's fixed warmup countdown depending on
+// its own load speed, so fading strictly off gameOn gave a fast-loading
+// client the whole warmup length of music but a slow-loading one almost
+// none. Anchoring the fade to the shared round-start moment instead means
+// everyone's music dies at the same real moment, a fixed stretch into the
+// round, regardless of when their own playback happened to begin. Spawned
+// so this wait can never delay allowDamage/HUD setup right below, which
+// still need to happen exactly at round-live for everyone alike.
+if (_musicStarted) then {
+	[] spawn {
+		private _fadeAt = (missionNamespace getVariable ["Waldo_roundLiveAt", time]) + 12;
+		waitUntil { time >= _fadeAt };
+		10 fadeMusic 0;
+	};
+};
 
 player allowDamage true;
 

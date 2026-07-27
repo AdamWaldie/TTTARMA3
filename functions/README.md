@@ -199,7 +199,7 @@ restarts.
 A centred, top-of-screen bar replaces the old server-broadcast round-timer
 hint and the old bottom-left key-hints panel:
 
-- During warmup (role selection), a separate `TTTWarmup` title resource shows
+- During warmup (role selection), a separate `TTTWarmup` resource shows
   "Selecting Roles: N" in the same position/casing the round timer will take
   over once the round goes live - role isn't assigned yet during warmup, so
   there's nothing for `TTTHud` itself to show. Driven by `Waldo_fnc_warmupBar`
@@ -208,13 +208,19 @@ hint and the old bottom-left key-hints panel:
   warmup ends at, broadcast once by `fn_initServer.sqf`) - same
   compute-locally-from-broadcast-state approach as the round timer below,
   instead of a per-second `remoteExec`'d hint. It also exits early if the dev
-  "Skip Warmup" flag fires. `TTTHud`'s own `titleRsc` call at round-live
-  evicts this display automatically (only one title resource is ever shown at
-  a time), so nothing has to explicitly close it.
+  "Skip Warmup" flag fires. It's a `cutRsc`, not a `titleRsc` like `TTTHud`:
+  it runs during the same window as the mission's title-card animation
+  (`Waldo_fnc_titleSequence`, built on `titleText`), and `titleText`/`titleRsc`
+  share one engine-wide layer while `cutRsc` has its own - so the two don't
+  evict each other, and `Waldo_fnc_warmupBar` explicitly clears its own
+  `cutRsc` on every exit path instead of relying on `TTTHud`'s later
+  `titleRsc` call to do it (that only evicts same-layer resources).
 - Once the round is live, the timer row (part of the `TTTHud` title resource,
   same as the role badge) shows the civilian countdown, labelled ("Round
-  M:SS"), plus a labelled Traitor deadline for Traitors only ("Traitor M:SS").
-  It's driven by `Waldo_fnc_topBarTimer`, started once per client from
+  M:SS"), plus a labelled "Deadline" for Traitors only ("Deadline M:SS") -
+  the round's real hard end time (grows on every death), not a "time left as
+  a Traitor" countdown, so the label describes what the number is rather than
+  who sees it. It's driven by `Waldo_fnc_topBarTimer`, started once per client from
   `fn_initClient.sqf` (never restarted on respawn), which computes the
   remaining time locally from already-broadcast state (`Waldo_startTime`,
   `timelimit`, `Waldo_roundLiveAt`) instead of the server formatting and

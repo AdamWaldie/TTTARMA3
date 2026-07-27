@@ -1,25 +1,37 @@
 //////////////////////////////////////////////////////////////////
 // Waldo_fnc_warmupBar
 // CLIENT: shows "Selecting Roles: N" in the same centre-top position/casing
-// as the round timer (TTTWarmup, a separate titleRsc from TTTHud - role isn't
+// as the round timer (TTTWarmup, a separate resource from TTTHud - role isn't
 // assigned yet at this point, so there's nothing for TTTHud itself to show).
 // Computes the countdown locally from Waldo_warmupEndAt (the server `time`
 // warmup ends at, broadcast once) instead of the old per-second remoteExec'd
 // hint, same reasoning as Waldo_fnc_topBarTimer.
 //
-// Exits the moment any of: the countdown reaches 0, the debug "Skip Warmup"
-// flag flips true (Waldo_debugSkipWarmup, broadcast globally by the dev
-// menu), or gameOn goes true - whichever the loop notices first. TTTHud's
-// own titleRsc call (Waldo_fnc_initHud, at round-live) evicts this display
-// the normal way once the round actually starts, so no explicit close/hide
-// is needed here even if this loop exits a little before that happens.
+// A cutRsc, deliberately NOT a titleRsc like TTTHud: this runs during the
+// exact same window as Waldo_fnc_titleSequence's BIS_fnc_typeText call, which
+// is built on the titleText command - titleText/titleRsc/titleObj all share
+// ONE engine-wide "title" layer (confirmed via allActiveTitleEffects - title
+// effects report layer -1, distinct from cutText/cutRsc/cutObj's own numbered
+// layers), so a titleRsc TTTWarmup would get evicted by every single
+// character BIS_fnc_typeText types (and would evict the type sequence right
+// back) - exactly why nothing was showing. cutRsc has its own, separate
+// layer system, so this coexists with the mission's title-card animation
+// instead of fighting it.
+//
+// Being on a different layer than TTTHud also means TTTHud's own titleRsc
+// call does NOT evict this automatically the way same-layer titleRsc calls
+// would - every exit path below explicitly clears the cutRsc itself instead
+// of relying on that.
 //////////////////////////////////////////////////////////////////
 
 if (!hasInterface) exitWith {};
 
-waitUntil { !isNull (uiNamespace getVariable ["TTTWarmup", displayNull]) || {missionNamespace getVariable ["gameOn", false]} };
 if (missionNamespace getVariable ["gameOn", false]) exitWith {};   // already live by the time this got here - nothing to show
 
+if (isNull (uiNamespace getVariable ["TTTWarmup", displayNull])) then {
+	cutRsc ["TTTWarmup", "PLAIN", 1, false];
+};
+waitUntil { !isNull (uiNamespace getVariable ["TTTWarmup", displayNull]) };
 private _display = uiNamespace getVariable "TTTWarmup";
 private _textCtrl = _display displayCtrl 3630;
 
@@ -41,3 +53,5 @@ while { !(missionNamespace getVariable ["gameOn", false]) } do {
 	if (_remaining <= 0) exitWith {};   // warmup's over - TTTHud takes over at round-live
 	sleep 0.25;
 };
+
+cutText ["", "PLAIN"];   // explicit clear - TTTHud's titleRsc call no longer does this for us (different layer)

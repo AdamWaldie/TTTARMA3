@@ -197,7 +197,14 @@ private _sp = "hgun_P07_F";
 private _spMag = "16Rnd_9x21_Mag";
 private _spSup = "muzzle_snds_L";
 if !(_pistols isEqualTo []) then {
-	private _p = selectRandom _pistols;
+	// Prefer a pistol that actually HAS a muzzle-compatible suppressor - a
+	// pistol picked purely at random can easily land on one with no muzzle
+	// slot at all (several vanilla/mod pistols have none), which silently
+	// hands out an unsuppressed "Silenced Pistol" (Waldo_fnc_buyItem only
+	// attaches one if ShopPistolSuppressor isn't "").
+	private _suppressed = _pistols select { !((getArray (configFile >> "CfgWeapons" >> _x >> "WeaponSlotsInfo" >> "MuzzleSlot" >> "compatibleItems")) isEqualTo []) };
+	private _pool = if (_suppressed isEqualTo []) then { _pistols } else { _suppressed };
+	private _p = selectRandom _pool;
 	private _m = [_p] call _magOf;
 	if (_m != "") then {
 		_sp = _p;

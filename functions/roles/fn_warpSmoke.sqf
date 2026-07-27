@@ -42,6 +42,7 @@ private _eh = player addEventHandler ["Fired", {
 			triggerAmmo _flare;
 			sleep 2;
 			playSound3D [getMissionPath "audio\portalIn.ogg", _unit];
+			sleep 1;   // let the ~1s "in" cue finish before the "out" cue - they were firing back to back with zero gap, overlapping almost entirely
 			_unit setPos getPos _projectile;
 			playSound3D [getMissionPath "audio\portalOut.ogg", _unit];
 			sleep 0.5;
@@ -69,6 +70,7 @@ if (!isNil "CBA_fnc_addEventHandler") then {
 				triggerAmmo _flare;
 				sleep 2;
 				playSound3D [getMissionPath "audio\portalIn.ogg", _unit];
+				sleep 1;   // let the ~1s "in" cue finish before the "out" cue - they were firing back to back with zero gap, overlapping almost entirely
 				_unit setPos getPos _projectile;
 				playSound3D [getMissionPath "audio\portalOut.ogg", _unit];
 				sleep 0.5;

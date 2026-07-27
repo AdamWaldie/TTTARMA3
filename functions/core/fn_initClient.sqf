@@ -86,8 +86,22 @@ waitUntil { !isNull player && time > 0 };
 // _musicStarted is recorded (see the fadeMusic call near the end of this
 // script) so the fade-out below can be skipped entirely for a JIP client
 // that never started the music in the first place.
+//
+// 0 fadeMusic 1 first: fadeMusic sets an engine-level "scripted volume"
+// multiplier (final volume = client's own Music slider * this), and it is
+// NOT track-specific or reset by playMusic - it just stays wherever the
+// LAST fadeMusic call left it. This mission restarts a fresh round (and
+// calls playMusic again) many times in the same server session, and
+// fn_initClient.sqf's own fade-out at round-live (`10 fadeMusic 0;`, near
+// the end of this script) leaves that multiplier at 0 - silently muting
+// every playMusic call for the rest of the server's life (this round's MVP
+// replay, Waldo_fnc_mvpCelebrate, and every later round's intro alike) with
+// zero indication anywhere that it happened, since playMusic itself still
+// resolves and logs cleanly. Resetting to 1 (instantly, duration 0) right
+// before playing is what actually guarantees this is audible.
 private _musicStarted = false;
 if !(missionNamespace getVariable ["gameOn", false]) then {
+	0 fadeMusic 1;
 	playMusic ["TTTIntroMusic", 20];
 	_musicStarted = true;
 	diag_log "[Waldo][client] intro music: playMusic issued";

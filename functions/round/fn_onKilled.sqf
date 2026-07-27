@@ -74,7 +74,13 @@ if (!isNull _culprit && {_culprit != _unit}) then {
 // (JIP-safe).
 [_unit, [
 	"<t color='#ffd23f'>Identify Body</t>",
-	{ [_target, _this] remoteExec ["Waldo_fnc_identifyBody", 2]; },
+	// addAction's own _this is [_target, _caller, _actionId, _arguments], NOT
+	// just the caller - passing it through as the second element made
+	// Waldo_fnc_identifyBody's _finder that whole 4-element array instead of
+	// the caller unit, breaking the "who identified this" attribution
+	// entirely. _target/_caller are already the right values as magic
+	// variables here; no need to touch _this at all.
+	{ [_target, _caller] remoteExec ["Waldo_fnc_identifyBody", 2]; },
 	nil, 4, true, false, "",
 	"!(_target getVariable ['Waldo_roleRevealed', false])",
 	2.5

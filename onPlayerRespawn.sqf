@@ -34,7 +34,9 @@ _newUnit setVariable ["points", (_oldUnit getVariable ["points", 0]), true];
 _newUnit setVariable ["Waldo_roundKills", (_oldUnit getVariable ["Waldo_roundKills", 0]), true];
 _newUnit setVariable ["Waldo_purchases", (_oldUnit getVariable ["Waldo_purchases", []])];
 _newUnit setVariable ["tested", (_oldUnit getVariable ["tested", false]), true];
-_newUnit setVariable ["activationQueue", (_oldUnit getVariable ["activationQueue", []])];
+_newUnit setVariable ["Waldo_activationSlots", (_oldUnit getVariable ["Waldo_activationSlots", [-1, -1, -1]])];
+_newUnit setVariable ["Waldo_activationBacklog", (_oldUnit getVariable ["Waldo_activationBacklog", []])];
+_newUnit setVariable ["Waldo_purchaseSeq", (_oldUnit getVariable ["Waldo_purchaseSeq", 0])];
 
 // Authoritative list membership (TraitorList/DetectiveList/JesterList) and the
 // forced-Traitor conversion must be relinked server-side.

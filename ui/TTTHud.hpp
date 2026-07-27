@@ -17,27 +17,28 @@ class RscTitles
 
 		// GMod-TTT style role crest: a circular badge with the role's letter
 		// (T / D / I / J) centred in it, tinted to the role colour. The badge is
-		// SQUARE (w == h, both in safezoneH units) so ui\role.paa renders as a
+		// SQUARE (w == h, both in safezoneH units) so ui\role.png renders as a
 		// true circle and stays fully on-screen — the old height used safezoneW,
 		// which stretched it into an off-screen ellipse on widescreen.
 		class controlsBackground {
-			// Drop shadow behind the whole crest, same offset-dark-copy treatment the
-			// shop/debug panels use, so this reads as a mounted badge instead of a
-			// flat sticker floating over the world.
+			// Drop shadow behind the whole crest: a dedicated soft Gaussian-blurred
+			// disc (ui\roleshadow.png), not an offset dark-tinted copy of the fill -
+			// that old technique produced a hard-edged flat silhouette instead of an
+			// actual soft shadow.
 			class roleShadow: RscPicture
 			{
 				idc = -1;
-				text = "ui\rolebg.paa";
+				text = "ui\roleshadow.png";
 				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.008 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.010 * safezoneH);
 				w = 0.15 * safezoneH;
 				h = 0.15 * safezoneH;
-				color = [0,0,0,0.55];
+				color = [0,0,0,0.8];
 			};
 			class roleTextBGBG: RscPicture
 			{
 				idc = 999;
-				text = "ui\rolebg.paa";
+				text = "ui\rolebg.png";
 				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
 				y = (safezoneH + safezoneY) - (0.185 * safezoneH);
 				w = 0.15 * safezoneH;
@@ -47,13 +48,13 @@ class RscTitles
 			class roleTextBG: RscPicture
 			{
 				idc = 1000;
-				text = "ui\role.paa";
+				text = "ui\role.png";
 				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
 				y = (safezoneH + safezoneY) - (0.185 * safezoneH);
 				w = 0.15 * safezoneH;
 				h = 0.15 * safezoneH;
 			};
-			class roleText: RscStructuredText
+			class roleText: RscText
 			{
 				idc = 1001;
 				text = "";
@@ -61,26 +62,25 @@ class RscTitles
 				y = (safezoneH + safezoneY) - (0.185 * safezoneH);
 				w = 0.15 * safezoneH;
 				h = 0.15 * safezoneH;
-				size = 0.095 * safezoneH;
-				type = CT_STRUCTURED_TEXT;
-				style = ST_CENTER;
+				// CT_STRUCTURED_TEXT's valign='middle' (the old control type here) is a
+				// documented engine bug - BI forum reports confirm valign has no real
+				// effect on RscStructuredText - so the manual y-nudge that used to live
+				// here was only masking that broken behaviour, not fixing it. Plain
+				// RscText's ST_CENTER + ST_VCENTER (already used for the ping wheel's
+				// title below) centres both axes reliably with no markup quirks.
+				style = ST_CENTER + ST_VCENTER;
+				font = "PuristaBold";
+				// ~43% of the badge box, not 63% (the old 0.095) - leaves real margin
+				// so the glyph can't brush the ring regardless of the font's own metrics.
+				sizeEx = 0.065 * safezoneH;
 				shadow = false;
-				// CT_STRUCTURED_TEXT paints an opaque black box by default when
-				// colorBackground isn't set - invisible on the dark shop/debug panels
-				// elsewhere in this file, but a solid dark square over the role letter
-				// when it's this control sitting directly on the tinted circular badge.
 				colorBackground[] = {0,0,0,0};
-				class Attributes{
-					font = "PuristaBold";
-					align = "center";
-					valign = "middle";
-				};
 			};
 			// Credits readout: a proper casing pill (shadow + dark base + accent line)
 			// matching the shop/debug header treatment, instead of bare floating text.
 			class roleCreditsShadow: RscText
 			{
-				idc = -1;
+				idc = 1004;
 				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.004 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.225 * safezoneH)) - (0.004 * safezoneH);
 				w = (0.15 * safezoneH) + (0.008 * safezoneH);
@@ -90,7 +90,7 @@ class RscTitles
 			};
 			class roleCreditsBG: RscText
 			{
-				idc = -1;
+				idc = 1005;
 				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
 				y = (safezoneH + safezoneY) - (0.225 * safezoneH);
 				w = 0.15 * safezoneH;
@@ -137,31 +137,31 @@ class RscTitles
 			{
 				idc = 1012;
 				x = (safezoneX + (0.012 * safezoneW)) - (0.004 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.24 * safezoneH)) - (0.004 * safezoneH);
-				w = (0.20 * safezoneW) + (0.008 * safezoneH);
-				h = (0.23 * safezoneH) + (0.008 * safezoneH);
-				colorBackground[] = WALDO_SHADOW;
+				y = ((safezoneH + safezoneY) - (0.18 * safezoneH)) - (0.004 * safezoneH);
+				w = (0.13 * safezoneW) + (0.008 * safezoneH);
+				h = (0.17 * safezoneH) + (0.008 * safezoneH);
+				colorBackground[] = {0, 0, 0, 0.55};
 				style = 0;
 			};
 			class keyHintBG: RscText
 			{
 				idc = 1013;
 				x = safezoneX + (0.012 * safezoneW);
-				y = (safezoneH + safezoneY) - (0.24 * safezoneH);
-				w = 0.20 * safezoneW;
-				h = 0.23 * safezoneH;
-				colorBackground[] = WALDO_CASING;
+				y = (safezoneH + safezoneY) - (0.18 * safezoneH);
+				w = 0.13 * safezoneW;
+				h = 0.17 * safezoneH;
+				colorBackground[] = {0.105, 0.11, 0.095, 0.85};
 				style = 0;
 			};
 			class keyHintText: RscStructuredText
 			{
 				idc = 1010;
 				text = "";
-				x = (safezoneX + (0.012 * safezoneW)) + (0.010 * safezoneW);
-				y = ((safezoneH + safezoneY) - (0.24 * safezoneH)) + (0.010 * safezoneH);
-				w = (0.20 * safezoneW) - (0.020 * safezoneW);
-				h = (0.23 * safezoneH) - (0.020 * safezoneH);
-				size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.95);
+				x = (safezoneX + (0.012 * safezoneW)) + (0.008 * safezoneW);
+				y = ((safezoneH + safezoneY) - (0.18 * safezoneH)) + (0.007 * safezoneH);
+				w = (0.13 * safezoneW) - (0.016 * safezoneW);
+				h = (0.17 * safezoneH) - (0.014 * safezoneH);
+				size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.6);
 				colorBackground[] = {0,0,0,0};
 				class Attributes {
 					font = "PuristaMedium";
@@ -332,7 +332,9 @@ class RscTitles
 // generated at runtime from the role's catalog by Waldo_fnc_openBuyMenu, so this
 // shell never changes when items are added.
 //   1100 title, 1101 credits, 1102 item grid, 1103 hover description,
-//   1104 header bar, 1108 accent stripe (role-tinted), idc 2 close.
+//   1104 header bar, 1107 purchased-panel group (rows built at runtime by
+//   Waldo_shopRenderPurchased, including the Y/U/J key-assign buttons),
+//   1108 accent stripe (role-tinted), idc 2 close.
 // ============================================================================
 class WaldoShop {
 	idd = -1;
@@ -500,20 +502,22 @@ class WaldoShop {
 			h = 0.545 * safezoneH;
 
 			class Controls {
-				class shopPurchList: RscStructuredText {
-					idc = 1106;
+				// Invisible spacer, declared (not runtime-created) so the group's
+				// scrollable extent is fixed at dialog-load time - a group's scroll
+				// range is computed from its DECLARED children only, not whatever
+				// Waldo_shopRenderPurchased ctrlCreate's into it afterwards (same
+				// reason the item grid above sizes itself to fit rather than relying
+				// on runtime children to trigger scrolling). This stays tall enough
+				// that the group scrolls once a round's purchases run past one screen,
+				// and every runtime row shares its scroll offset as a sibling in the
+				// same group.
+				class shopPurchSpacer: RscStructuredText {
+					idc = -1;
 					text = "";
 					x = 0;
 					y = 0;
 					w = 0.18 * safezoneW;
-					h = 2.0 * safezoneH;   // tall so the group scrolls once purchases stack up
-					size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.9);
-					class Attributes {
-						font = "PuristaMedium";
-						color = "#F2EFE3";
-						align = "left";
-						shadow = 1;
-					};
+					h = 2.0 * safezoneH;
 				};
 			};
 		};

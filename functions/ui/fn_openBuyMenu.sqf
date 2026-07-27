@@ -31,7 +31,9 @@ private _typeLabel = {
 	switch (_t) do {
 		case "weapon":     { "Weapon" };
 		case "passive":    { "Passive" };
-		case "activation": { "Activation - press Y to use" };
+		// Which of Y/U/J actually fires this depends on key assignment (see the
+		// Purchased panel), so this can't hardcode a specific key.
+		case "activation": { "Activation - assign a key in the Purchased panel" };
 		default            { _t };
 	};
 };

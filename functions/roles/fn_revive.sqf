@@ -1,8 +1,9 @@
 //////////////////////////////////////////////////////////////////
 // Waldo_fnc_revive
-// CLIENT: activation item (Y). Aim at a dead PLAYER's body within 3m and
-// press Y. A Detective restores the player with their original allegiance;
-// a Traitor revives them onto the Traitor team ("Defibrillator").
+// CLIENT: activation item (Y/U/J, whichever it's bound to). Aim at a dead
+// PLAYER's body within 3m and press it. A Detective restores the player with
+// their original allegiance; a Traitor revives them onto the Traitor team
+// ("Defibrillator").
 //
 // A truly dead unit (damage 1, Killed already fired) can never be revived in
 // place - respawn always creates a brand-new unit object. So this can't act
@@ -11,7 +12,7 @@
 // read via its direct _oldUnit parameter once the new unit actually exists.
 //
 // Returns true when a revive was performed (consuming the item), false
-// otherwise so the item stays queued.
+// otherwise so the item stays assigned.
 //////////////////////////////////////////////////////////////////
 
 private _target = cursorTarget;

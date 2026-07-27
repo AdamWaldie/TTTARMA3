@@ -8,9 +8,9 @@ Traitors and Detectives each get a shop (press **B**) with roughly fourteen item
 
 - `_type` is `"passive"`, `"weapon"`, or `"activation"`.
 - `_onBuy` runs immediately when the item is purchased.
-- `_onActivate` (activation items only) runs when the player presses **Y**. It returns `true` to consume the item or `false` to leave it queued, which is how items like the DNA scanner or tester stay available if you pressed Y without a valid target in front of you.
+- `_onActivate` (activation items only) runs when the player presses whichever of **Y** / **U** / **J** the item is bound to. It returns `true` to consume the item or `false` to leave it assigned, which is how items like the DNA scanner or tester stay available if you pressed the key without a valid target in front of you.
 
-Activation items are held in a LIFO queue (`activationQueue`), so buying a passive item after queuing an activation item never bumps it out of the queue.
+Activation items get 3 key slots (Y/U/J), not one - the first activation item you buy lands on Y, the second on U, the third on J. Buy a fourth and it goes to a backlog instead of bumping anything, until you free up a slot (by using one) or reassign one yourself from the shop's Purchased panel, where every owned, not-yet-used activation item shows a Y/U/J button row - click one to move that item to that key.
 
 ## Traitor shop
 
@@ -25,6 +25,8 @@ Weapon and gear classnames in both catalogs are read from `missionNamespace` at 
 ## The Purchased panel
 
 A second panel in the shop dialog lists everything bought this round with its tooltip as a how-to-use reminder (`Waldo_purchases`, reset each round in `assignRoles`). The point is that you're never three purchases deep and unable to remember what an item you bought five minutes ago actually does.
+
+For activation items specifically, each entry also shows which key (Y/U/J) it's currently bound to - or `[unassigned]` if it's sitting in the backlog because all 3 slots were already taken when you bought it, or `[used]` once it's been spent. Click any of the Y/U/J buttons on that row to (re)assign it to that key; whatever was already there gets bumped to the backlog rather than lost.
 
 ## Revive, in more detail
 

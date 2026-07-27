@@ -49,7 +49,12 @@ if (missionNamespace getVariable ["gameOn", false]) then { player setDammage 1; 
 // --- Spawn loadout ---
 player setVariable ["tested", false, true];
 player setVariable ["player", player, true];
-player setVariable ["activationQueue", []];   // local: holds bought activation items
+// local: 3 keyed activation slots (Y/U/J) + an overflow backlog for anything
+// bought beyond 3 activation items at once (see Waldo_fnc_buyItem /
+// Waldo_fnc_useActivationSlot / Waldo_fnc_assignActivationSlot).
+player setVariable ["Waldo_activationSlots", [-1, -1, -1]];
+player setVariable ["Waldo_activationBacklog", []];
+player setVariable ["Waldo_purchaseSeq", 0];   // next unique Waldo_purchases id
 
 [] call Waldo_fnc_applySpawnLoadout;
 player allowDamage false;
@@ -110,7 +115,8 @@ player allowDamage false;
 
 // --- Install the buy-menu / activation / holster key handler ONCE ---
 // Add-only; we never displayRemoveAllEventHandlers (that thrash used to
-// break the B key). B = buy menu, Y = use activation item, L = holster.
+// break the B key). B = buy menu, Y/U/J = use activation item slot 1/2/3,
+// L = holster.
 [] spawn {
 	waitUntil { !isNull (findDisplay 46) };
 	private _disp = findDisplay 46;
@@ -139,17 +145,17 @@ player allowDamage false;
 						_handled = true;
 					};
 				};
-				case 21: {   // Y - use most-recent activation item (LIFO)
-					private _q = player getVariable ["activationQueue", []];
-					if (count _q > 0) then {
-						private _item = _q select (count _q - 1);
-						private _ok = call (_item select 1);
-						if (_ok isEqualType true && {_ok}) then {
-							_q deleteAt (count _q - 1);
-							player setVariable ["activationQueue", _q];
-						};
-						_handled = true;
-					};
+				case 21: {   // Y - use the activation item bound to slot 1
+					[0] call Waldo_fnc_useActivationSlot;
+					_handled = true;
+				};
+				case 22: {   // U - use the activation item bound to slot 2
+					[1] call Waldo_fnc_useActivationSlot;
+					_handled = true;
+				};
+				case 36: {   // J - use the activation item bound to slot 3
+					[2] call Waldo_fnc_useActivationSlot;
+					_handled = true;
 				};
 				case 38: {   // L - holster / lower weapon
 					[] call Waldo_fnc_holster;

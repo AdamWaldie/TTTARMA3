@@ -153,6 +153,7 @@ class CfgFunctions
 			file = "functions\ui";
 			class initShops { preInit = 1; }; // defines shop catalogs on every machine
 			class initHud {};           // Waldo_fnc_initHud
+			class topBarTimer {};       // Waldo_fnc_topBarTimer (top bar's round-timer loop, started once)
 			class drawRoleIcons {};     // Waldo_fnc_drawRoleIcons
 			class openBuyMenu {};       // Waldo_fnc_openBuyMenu
 			class buyItem {};           // Waldo_fnc_buyItem

@@ -122,6 +122,29 @@ Waldo_shopRenderPurchased = {
 	_display setVariable ["Waldo_purchRowIds", _newIds];
 };
 
+// Per-role keybind list, shared by the top bar's horizontal row
+// (Waldo_fnc_initHud) and the scoreboard's right-side panel
+// (Waldo_fnc_scoreboard) - one source of truth so the two never drift out of
+// sync. Returns [key, label] pairs rather than pre-formatted strings so each
+// caller can join/colour them however its own layout needs (horizontal vs
+// stacked). Dev-only binds are appended only when Testing Mode is actually on.
+Waldo_keyHintsFor = {
+	params ["_role"];
+	private _hints = [["L", "Holster"], ["K", "Scoreboard"]];
+	if (_role in ["Traitor", "Detective"]) then {
+		_hints pushBack ["B", "Buy Menu"];
+		_hints pushBack ["Y U J", "Use Item"];
+	};
+	if (_role == "Traitor") then {
+		_hints pushBack ["T (hold)", "Ping"];
+	};
+	if (missionNamespace getVariable ["TestingFlag", false]) then {
+		_hints pushBack ["[", "Dev Menu"];
+		_hints pushBack ["]", "Cycle Role"];
+	};
+	_hints
+};
+
 // Role -> RGBA colour (shared by HUD, icons, menus).
 Waldo_roleColor = {
 	params ["_role"];

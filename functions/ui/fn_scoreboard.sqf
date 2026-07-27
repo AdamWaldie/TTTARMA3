@@ -82,3 +82,11 @@ private _confirmedDead = { !alive _x && {_x getVariable ["Waldo_roleRevealed", f
 	count _live, count allPlayers, _confirmedDead
 ];
 (_display displayCtrl 3300) ctrlSetStructuredText parseText _body;
+
+// Keybind reference panel (attached to the right edge, idc 3320) - same
+// per-role list the top bar shows (Waldo_keyHintsFor), just stacked vertically
+// here since this panel is tall and narrow rather than wide and short.
+private _kbList = [_myRole] call Waldo_keyHintsFor;
+private _kbBody = "";
+{ _x params ["_key", "_label"]; _kbBody = _kbBody + format ["<t color='#F2BE55'>[%1]</t> %2<br/>", _key, _label]; } forEach _kbList;
+(_display displayCtrl 3320) ctrlSetStructuredText parseText _kbBody;

@@ -150,42 +150,100 @@ class RscTitles
 			// via ctrlSetPosition to fit however many lines actually apply (5
 			// without Testing Mode, up to 7 with it), so this never sits around
 			// as a fixed box mostly empty.
-			class keyHintShadow: RscText
+			// ====================================================================
+			// Top bar: round timer (counts down, always visible while the round is
+			// live) + a horizontal keybind row directly below it that fades out
+			// completely a few seconds after each (re)draw - replaces the old
+			// bottom-left key-hints panel and the server's per-second hintSilent
+			// timer broadcast (Waldo_fnc_roundLoop now only owns game logic; the
+			// client computes and renders its own countdown locally from the
+			// already-broadcast timelimit/Waldo_startTime, see Waldo_fnc_topBarTimer).
+			// Centred top, matching this mission pack's shared WALDO_CASING look.
+			// 3600-3603: timer shadow/casing/accent/text. 3610-3612: keybind row
+			// shadow/casing/text.
+			// ====================================================================
+			class topBarTimerShadow: RscText
 			{
-				idc = 1012;
-				x = (safezoneX + (0.012 * safezoneW)) - (0.004 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.18 * safezoneH)) - (0.004 * safezoneH);
-				w = (0.13 * safezoneW) + (0.008 * safezoneH);
-				h = (0.17 * safezoneH) + (0.008 * safezoneH);
+				idc = 3600;
+				x = ((safezoneX + (0.5 * safezoneW)) - (0.15 * safezoneW)) - (0.004 * safezoneH);
+				y = (safezoneY + (0.015 * safezoneH)) - (0.004 * safezoneH);
+				w = (0.30 * safezoneW) + (0.008 * safezoneH);
+				h = (0.062 * safezoneH) + (0.008 * safezoneH);
+				colorBackground[] = WALDO_SHADOW;
+				style = 0;
+			};
+			class topBarTimerBG: RscText
+			{
+				idc = 3601;
+				x = (safezoneX + (0.5 * safezoneW)) - (0.15 * safezoneW);
+				y = safezoneY + (0.015 * safezoneH);
+				w = 0.30 * safezoneW;
+				h = 0.062 * safezoneH;
+				colorBackground[] = WALDO_HEADERBG;
+				style = 0;
+			};
+			class topBarTimerAccent: RscText
+			{
+				idc = 3602;
+				x = (safezoneX + (0.5 * safezoneW)) - (0.15 * safezoneW);
+				y = (safezoneY + (0.015 * safezoneH)) + (0.062 * safezoneH);
+				w = 0.30 * safezoneW;
+				h = 0.006 * safezoneH;
+				colorBackground[] = WALDO_ACCENT;
+				style = 0;
+			};
+			class topBarTimerText: RscText
+			{
+				idc = 3603;
+				text = "";
+				x = (safezoneX + (0.5 * safezoneW)) - (0.15 * safezoneW);
+				y = safezoneY + (0.015 * safezoneH);
+				w = 0.30 * safezoneW;
+				h = 0.062 * safezoneH;
+				colorBackground[] = {0,0,0,0};
+				colorText[] = {0.95,0.93,0.86,1};
+				// ST_CENTER alone, NOT "+ ST_VCENTER" - that combination is invalid
+				// (see roleText's own fix above); vertical centring is done in
+				// script via ctrlTextHeight, same as roleText.
+				style = ST_CENTER;
+				font = "PuristaBold";
+				sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.5);
+				shadow = 1;
+			};
+			class topBarHintShadow: RscText
+			{
+				idc = 3610;
+				x = ((safezoneX + (0.5 * safezoneW)) - (0.15 * safezoneW)) - (0.004 * safezoneH);
+				y = ((safezoneY + (0.015 * safezoneH)) + (0.068 * safezoneH)) - (0.004 * safezoneH);
+				w = (0.30 * safezoneW) + (0.008 * safezoneH);
+				h = (0.045 * safezoneH) + (0.008 * safezoneH);
 				colorBackground[] = {0, 0, 0, 0.55};
 				style = 0;
 			};
-			class keyHintBG: RscText
+			class topBarHintBG: RscText
 			{
-				idc = 1013;
-				x = safezoneX + (0.012 * safezoneW);
-				y = (safezoneH + safezoneY) - (0.18 * safezoneH);
-				w = 0.13 * safezoneW;
-				h = 0.17 * safezoneH;
+				idc = 3611;
+				x = (safezoneX + (0.5 * safezoneW)) - (0.15 * safezoneW);
+				y = (safezoneY + (0.015 * safezoneH)) + (0.068 * safezoneH);
+				w = 0.30 * safezoneW;
+				h = 0.045 * safezoneH;
 				colorBackground[] = {0.105, 0.11, 0.095, 0.85};
 				style = 0;
 			};
-			class keyHintText: RscStructuredText
+			class topBarHintText: RscText
 			{
-				idc = 1010;
+				idc = 3612;
 				text = "";
-				x = (safezoneX + (0.012 * safezoneW)) + (0.008 * safezoneW);
-				y = ((safezoneH + safezoneY) - (0.18 * safezoneH)) + (0.007 * safezoneH);
-				w = (0.13 * safezoneW) - (0.016 * safezoneW);
-				h = (0.17 * safezoneH) - (0.014 * safezoneH);
-				size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.6);
+				x = (safezoneX + (0.5 * safezoneW)) - (0.15 * safezoneW);
+				y = (safezoneY + (0.015 * safezoneH)) + (0.068 * safezoneH);
+				w = 0.30 * safezoneW;
+				h = 0.045 * safezoneH;
 				colorBackground[] = {0,0,0,0};
-				class Attributes {
-					font = "PuristaMedium";
-					color = "#D8D5C8";
-					align = "left";
-					shadow = 1;
-				};
+				colorText[] = {0.95,0.93,0.86,1};
+				style = ST_CENTER;
+				font = "PuristaMedium";
+				sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.8);
+				shadow = 1;
 			};
 		};
 
@@ -733,6 +791,75 @@ class WaldoScore {
 			font = "PuristaBold";
 			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.4);
 			shadow = 1;
+		};
+
+		// Keybind reference panel, attached to the scoreboard's right edge (same
+		// top/height, small gap after its 0.75W right edge). Populated at runtime
+		// by Waldo_fnc_scoreboard from the same Waldo_keyHintsFor helper the top
+		// bar uses, so both stay in sync with a single source of truth.
+		class scKbShadow: RscText {
+			idc = -1;
+			x = (safezoneX + (0.756 * safezoneW)) - (0.006 * safezoneW);
+			y = safezoneY + (0.17 * safezoneH) - (0.006 * safezoneW);
+			w = (0.16 * safezoneW) + (0.012 * safezoneW);
+			h = (0.66 * safezoneH) + (0.012 * safezoneW);
+			colorBackground[] = WALDO_SHADOW;
+			style = 0;
+		};
+		class scKbBG: RscText {
+			idc = -1;
+			x = safezoneX + (0.756 * safezoneW);
+			y = safezoneY + (0.17 * safezoneH);
+			w = 0.16 * safezoneW;
+			h = 0.66 * safezoneH;
+			colorBackground[] = WALDO_CASING;
+			style = 0;
+		};
+		class scKbHeaderBG: RscText {
+			idc = -1;
+			x = safezoneX + (0.756 * safezoneW);
+			y = safezoneY + (0.17 * safezoneH);
+			w = 0.16 * safezoneW;
+			h = 0.05 * safezoneH;
+			colorBackground[] = WALDO_HEADERBG;
+			style = 0;
+		};
+		class scKbAccent: RscText {
+			idc = -1;
+			x = safezoneX + (0.756 * safezoneW);
+			y = safezoneY + (0.17 * safezoneH) + (0.05 * safezoneH);
+			w = 0.16 * safezoneW;
+			h = 0.005 * safezoneH;
+			colorBackground[] = WALDO_ACCENT;
+			style = 0;
+		};
+		class scKbTitle: RscText {
+			idc = -1;
+			text = "Keybinds";
+			x = safezoneX + (0.756 * safezoneW);
+			y = safezoneY + (0.17 * safezoneH);
+			w = 0.16 * safezoneW;
+			h = 0.05 * safezoneH;
+			colorText[] = {0.95,0.93,0.86,1};
+			style = ST_CENTER;
+			font = "PuristaBold";
+			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.05);
+			shadow = 1;
+		};
+		class scKbList: RscStructuredText {
+			idc = 3320;
+			text = "";
+			x = safezoneX + (0.756 * safezoneW) + (0.010 * safezoneW);
+			y = safezoneY + (0.17 * safezoneH) + (0.06 * safezoneH);
+			w = (0.16 * safezoneW) - (0.020 * safezoneW);
+			h = (0.66 * safezoneH) - (0.07 * safezoneH);
+			size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.9);
+			class Attributes {
+				font = "PuristaMedium";
+				color = "#D8D5C8";
+				align = "left";
+				shadow = 1;
+			};
 		};
 	};
 

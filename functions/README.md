@@ -194,6 +194,34 @@ arena, and a banner names the MVP (or "Round Complete" if nobody scored a kill).
 `endRound` sleeps 6s afterward so it has time to play before the mission
 restarts.
 
+## Top bar (round timer + keybind row)
+
+A centred, top-of-screen bar (part of the `TTTHud` title resource, same as the
+role badge) replaces the old server-broadcast round-timer hint and the old
+bottom-left key-hints panel:
+
+- The timer row always shows the civilian countdown (and, for Traitors, the
+  longer deadline in parentheses) and counts down in real time. It's driven by
+  `Waldo_fnc_topBarTimer`, started once per client from `fn_initClient.sqf`
+  (never restarted on respawn), which computes the remaining time locally from
+  already-broadcast state (`Waldo_startTime`, `timelimit`, `Waldo_roundLiveAt`)
+  instead of the server formatting and `remoteExec`-ing a string to every
+  client every second. `Waldo_roundLiveAt` is the server `time` the round went
+  live at; the dev "freeze" debug flag keeps it in lockstep with real time so
+  the display doesn't quietly keep counting down while everything else is
+  paused (`Waldo_fnc_roundLoop`).
+- The keybind row below it lists whatever's relevant to your current role
+  (`Waldo_keyHintsFor`, shared with the scoreboard's own keybind panel - see
+  below), redrawn on every respawn/role change by `Waldo_fnc_initHud`. It's
+  visible for a few seconds after each redraw, then fades out completely
+  (not just dimmed) rather than sitting on screen for the whole round - a
+  token guard stops an in-flight fade from a previous redraw from clobbering
+  a fresh one if you respawn again before the last fade finished.
+
+The scoreboard (`Waldo_fnc_scoreboard`, **K**) also shows the same
+`Waldo_keyHintsFor` list, stacked vertically in a panel attached to its right
+edge, as a standing reference that doesn't fade.
+
 ## Keys
 
 - **B** — open your buy menu (Traitor / Detective).

@@ -10,7 +10,8 @@
 //   TraitorRifle / *Mag / *Optics, TraitorLauncher/*Mag  (traitor shop weapons)
 //   ShopPistol/*Mag/*Suppressor                          (shop silenced sidearm)
 //   ShopArmorVest / ShopFrag / ShopNVG / ShopBinocular   (shop gear)
-//   uniformsConfig / headgearsConfig / vestsConfig       (spawn loadout)
+//   uniformsConfig / headgearsConfig / vestsConfig /
+//     backpacksConfig                                    (spawn loadout)
 //   detectiveConfig                                      (detective loadout)
 //
 // Intent buckets:
@@ -54,6 +55,12 @@ private _cap = {   // shuffle + trim to a sane size
 	private _a = +_arr call BIS_fnc_arrayShuffle;
 	if (count _a > _n) then { _a resize _n };
 	_a
+};
+private _vestCargo = {   // a vest's cargo capacity, 0 if it carries nothing at all
+	params ["_vest"];
+	private _container = getText (configFile >> "CfgWeapons" >> _vest >> "ItemInfo" >> "containerClass");
+	if (_container == "") exitWith { 0 };
+	getNumber (configFile >> "CfgVehicles" >> _container >> "maximumLoad")
 };
 
 // ---- single pass over CfgWeapons: classify weapons, clothing and optics ----
@@ -123,6 +130,16 @@ private _blacklist = [];    // overpowered optics excluded from loot
 		};
 	};
 } forEach ("true" configClasses (configFile >> "CfgWeapons"));
+
+// Backpacks live under CfgVehicles (inheriting Bag_Base), not CfgWeapons like
+// every other wearable above, so they need their own scan.
+private _backpacks = [];
+{
+	private _cls = configName _x;
+	if (getNumber (_x >> "scope") == 2 && {_cls isKindOf ["Bag_Base", configFile >> "CfgVehicles"]}) then {
+		_backpacks pushBack _cls;
+	};
+} forEach ("true" configClasses (configFile >> "CfgVehicles"));
 
 // ---- publish: ground loot (driven by the Loot Power lobby setting) ----
 //   0 Low: SMG / pistol-calibre only   1 Balanced: low, + standard if sparse
@@ -194,14 +211,26 @@ missionNamespace setVariable ["ShopPistolMag", _spMag, true];
 missionNamespace setVariable ["ShopPistolSuppressor", _spSup, true];
 
 // ---- publish: shop gear (heavy vest, frag grenade, NVG, binocular) ----
-// Body Armor: the highest-armour discovered vest.
+// Body Armor: the highest-armour vest that still carries SOMETHING - picking
+// purely by armour can land on a heavy plate-carrier variant with zero cargo
+// space, which defeats half the point of a wearable upgrade. Only falls back
+// to an armour-only pick if literally nothing in the discovered pool has any
+// cargo at all.
 private _armorVest = "V_PlateCarrier2_rgr";
 if !(_vests isEqualTo []) then {
 	private _bestA = -1;
 	{
-		private _a = getNumber (configFile >> "CfgWeapons" >> _x >> "ItemInfo" >> "armor");
-		if (_a > _bestA) then { _bestA = _a; _armorVest = _x; };
+		if (([_x] call _vestCargo) > 0) then {
+			private _a = getNumber (configFile >> "CfgWeapons" >> _x >> "ItemInfo" >> "armor");
+			if (_a > _bestA) then { _bestA = _a; _armorVest = _x; };
+		};
 	} forEach _vests;
+	if (_bestA < 0) then {
+		{
+			private _a = getNumber (configFile >> "CfgWeapons" >> _x >> "ItemInfo" >> "armor");
+			if (_a > _bestA) then { _bestA = _a; _armorVest = _x; };
+		} forEach _vests;
+	};
 };
 missionNamespace setVariable ["ShopArmorVest", _armorVest, true];
 
@@ -246,15 +275,18 @@ if (_airdrops isEqualTo []) then {
 missionNamespace setVariable ["airdropLoadouts", _airdrops, true];
 
 // ---- publish: clothing (dressed on spawn) ----
-if (_uniforms isEqualTo []) then { _uniforms = ["U_BG_Guerilla2_1", "U_C_Poloshirt_blue", "U_C_Commoner1_1"]; };
-if (_headgear isEqualTo []) then { _headgear = ["H_Cap_oli", "H_Booniehat_khk", "H_Bandanna_gry"]; };
-if (_vests    isEqualTo []) then { _vests    = ["V_Rangemaster_belt"]; };
+if (_uniforms  isEqualTo []) then { _uniforms  = ["U_BG_Guerilla2_1", "U_C_Poloshirt_blue", "U_C_Commoner1_1"]; };
+if (_headgear  isEqualTo []) then { _headgear  = ["H_Cap_oli", "H_Booniehat_khk", "H_Bandanna_gry"]; };
+if (_vests     isEqualTo []) then { _vests     = ["V_Rangemaster_belt"]; };
+if (_backpacks isEqualTo []) then { _backpacks = ["B_AssaultPack_mcamo"]; };
 private _uniPool = [_uniforms, 12] call _cap;
 private _headPool = [_headgear, 12] call _cap;
 private _vestPool = [_vests, 8] call _cap;
+private _packPool = [_backpacks, 12] call _cap;
 missionNamespace setVariable ["uniformsConfig",  _uniPool,  true];
 missionNamespace setVariable ["headgearsConfig", _headPool, true];
 missionNamespace setVariable ["vestsConfig",     _vestPool, true];
+missionNamespace setVariable ["backpacksConfig", _packPool, true];
 
 // ---- publish: detective loadout (distinct look + a standard primary) ----
 private _detUni  = if !(_uniPool  isEqualTo []) then { selectRandom _uniPool }  else { "U_B_GEN_Soldier_F" };
@@ -266,8 +298,8 @@ if (_detMag == "") then { _detMag = "30Rnd_65x39_caseless_black_mag"; };
 missionNamespace setVariable ["detectiveConfig", [_detUni, _detVest, _detHead, [_detPri, _detMag, 3], ["", "", 0]], true];
 
 diag_log format [
-	"[Waldo][server] buildArsenal: done in %1ms - low=%2 std=%3 snipers=%4 lmg=%5 pistols=%6 launchers=%7 | uni=%8 head=%9 vest=%10 optBlacklist=%11",
+	"[Waldo][server] buildArsenal: done in %1ms - low=%2 std=%3 snipers=%4 lmg=%5 pistols=%6 launchers=%7 | uni=%8 head=%9 vest=%10 pack=%11 optBlacklist=%12",
 	round ((diag_tickTime - _t0) * 1000),
 	count _low, count _std, count _snipers, count _lmgs, count _pistols, count _launchers,
-	count _uniforms, count _headgear, count _vests, count _blacklist
+	count _uniforms, count _headgear, count _vests, count _backpacks, count _blacklist
 ];

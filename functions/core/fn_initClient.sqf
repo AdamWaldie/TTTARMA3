@@ -94,7 +94,6 @@ if !(_empty isEqualTo []) then { _pos = _empty; };
 player setPos _pos;
 player setDir _dir;
 player allowDamage false;
-removeBackpack player;
 ["teleported"] call _logPhase;
 
 // Keep the player inside the arena (single managed loop)
@@ -208,7 +207,6 @@ removeBackpack player;
 waitUntil { missionNamespace getVariable ["gameOn", false] };
 10 fadeMusic 0;
 
-removeBackpack player;
 player allowDamage true;
 
 // HUD (role badge + live credits)

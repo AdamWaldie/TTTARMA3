@@ -28,6 +28,22 @@ private _badge = _display displayCtrl 1001;
 _badge ctrlSetTextColor _color;
 _badge ctrlSetText toUpper (_role select [0, 1]);
 
+// Real measured vertical centring, not a guessed offset: ST_VCENTER does NOT
+// mean "centre vertically" despite the name - BIKI documents it (with
+// ST_UP/ST_DOWN) as a vertical/rotated TEXT ORIENTATION mode that "should
+// not be mixed with any other styles", which is exactly what this control
+// used to do (ST_CENTER + ST_VCENTER) and almost certainly why the letter
+// rendered badly off-position rather than just high/low by a few pixels.
+// ctrlTextHeight reads back the engine's own actual rendered height for the
+// text just set, so this centres correctly regardless of the font's real
+// metrics instead of assuming a line-height ratio.
+private _badgeX = (safezoneW + safezoneX) - (0.175 * safezoneH);
+private _badgeY = (safezoneH + safezoneY) - (0.185 * safezoneH);
+private _badgeSize = 0.15 * safezoneH;
+private _textH = ctrlTextHeight _badge;
+_badge ctrlSetPosition [_badgeX, _badgeY + ((_badgeSize - _textH) / 2), _badgeSize, _textH];
+_badge ctrlCommit 0;
+
 // Credits pill (badge nameplate): only Traitor/Detective have credits at all,
 // so the whole pill - not just its text - is hidden for everyone else instead
 // of sitting there as an empty black bar with nothing to show.

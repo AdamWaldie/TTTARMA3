@@ -72,13 +72,19 @@ class RscTitles
 				y = (safezoneH + safezoneY) - (0.185 * safezoneH);
 				w = 0.15 * safezoneH;
 				h = 0.15 * safezoneH;
-				// CT_STRUCTURED_TEXT's valign='middle' (the old control type here) is a
-				// documented engine bug - BI forum reports confirm valign has no real
-				// effect on RscStructuredText - so the manual y-nudge that used to live
-				// here was only masking that broken behaviour, not fixing it. Plain
-				// RscText's ST_CENTER + ST_VCENTER (already used for the ping wheel's
-				// title below) centres both axes reliably with no markup quirks.
-				style = ST_CENTER + ST_VCENTER;
+				// CT_STRUCTURED_TEXT's valign='middle' (the old control type here) was
+				// a documented engine bug - BI forum reports confirm valign has no real
+				// effect on RscStructuredText - so switching to plain RscText was the
+				// right call. But ST_VCENTER (which used to be added here) is NOT a
+				// "centre vertically" flag despite the name - BIKI documents it (with
+				// ST_UP/ST_DOWN) as a VERTICAL/ROTATED TEXT ORIENTATION mode that
+				// "should not be mixed with any other styles", which is exactly what
+				// combining it with ST_CENTER did. That's almost certainly what threw
+				// the letter noticeably off-position rather than just high/low by a
+				// few pixels. ST_CENTER alone handles horizontal centring correctly;
+				// vertical centring is done for real below, in fn_initHud.sqf, via
+				// ctrlTextHeight's actual measured value - not another guessed offset.
+				style = ST_CENTER;
 				font = "PuristaBold";
 				// ~43% of the badge box, not 63% (the old 0.095) - leaves real margin
 				// so the glyph can't brush the ring regardless of the font's own metrics.

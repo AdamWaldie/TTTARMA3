@@ -36,9 +36,16 @@ private _consider = {
 	if (_score > _bestScore) then { _bestScore = _score; _bestPos = _cand; };
 };
 
-// --- Preferred: named towns (scan a shuffled, capped set) ---
-private _towns = (nearestLocations [[0,0,0], ["NameVillage", "NameCity", "NameCityCapital"], 50000]) call BIS_fnc_arrayShuffle;
-if (count _towns > 40) then { _towns resize 40; };
+// --- Preferred: every named settlement, large or small ---
+// Previously capped to a shuffled sample of 40 "NameVillage"/"NameCity"/
+// "NameCityCapital" locations only - fine on Altis (dozens of sizeable towns),
+// but on a sparser terrain (Stratis, Tanoa) that pool runs dry fast and the
+// arena falls back to blind random points, which land on empty wilderness far
+// more often than not - the actual source of "only one building" arenas.
+// Scoring every real settlement (including small hamlets via "NameLocal") is
+// cheap - bounded by how many the terrain actually has - and guarantees the
+// genuinely best-scoring real location is found instead of a random sample of it.
+private _towns = nearestLocations [[0,0,0], ["NameVillage", "NameCity", "NameCityCapital", "NameLocal"], 50000];
 { [locationPosition _x] call _consider; } forEach _towns;
 
 // --- Random search if towns didn't reach the target ---

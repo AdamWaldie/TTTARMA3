@@ -214,7 +214,13 @@ player allowDamage true;
 
 // --- Kill handling (server-authoritative logic lives in Waldo_fnc_onKilled) ---
 player addMPEventHandler ["MPKilled", {
+	params ["_unit"];
 	_this call Waldo_fnc_onKilled;
+	// Nothing clears a hint/hintSilent on death - a scanner readout, "Reviving...",
+	// "Charge armed", whatever happened to be up at the moment of death, was
+	// otherwise left on screen bleeding into the Spectator view with no way to
+	// dismiss it.
+	if (_unit == player) then { hint ""; hintSilent ""; };
 }];
 
 // Dead Ringer guard: while armed (Waldo_fnc_deadRinger sets Waldo_deadRingerArmed),

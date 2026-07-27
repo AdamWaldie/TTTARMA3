@@ -8,10 +8,5 @@
     "anchor": [1987.31, 5625.9],
     "z": 200,
     "landmark": "Stratis Air Base"
-  },
-  "Livonia": {
-    "anchor": [3990.1, 10256.4],
-    "z": 200,
-    "landmark": "Lukow Airfield (Nadbor region)"
   }
 }

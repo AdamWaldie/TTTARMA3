@@ -45,7 +45,7 @@ For mechanics in more depth than fits here, see the [wiki](https://github.com/Ad
 
 ## Installation
 
-1. Grab a release from this repo. Each release ships one zip per terrain (Altis, Tanoa, Stratis, Livonia), named `TroubleInArmaville_<version>.<Terrain>`, since Arma needs the folder name to match the terrain to list it correctly. Pick the one matching the map you want to run.
+1. Grab a release from this repo. Each release ships one zip per terrain (Altis, Tanoa, Stratis), named `TroubleInArmaville_<version>.<Terrain>`, since Arma needs the folder name to match the terrain to list it correctly. Pick the one matching the map you want to run.
 2. Unzip it into your Arma 3 missions directory.
 3. Host it or launch it in multiplayer.
 

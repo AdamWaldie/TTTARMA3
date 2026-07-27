@@ -8,6 +8,11 @@
 // else Location), so releasing T immediately still behaves like the old
 // auto-detect ping. Waldo_fnc_pingWheelClose reads the final highlight on KeyUp
 // and fires it.
+//
+// The picker's controls live inside the SAME "TTTHud" title resource as the
+// role badge/key-hints panel (Waldo_fnc_initHud), not a second titleRsc-shown
+// class - titleRsc only has one active slot, so a second title resource would
+// silently evict the whole HUD the moment this first opened.
 //////////////////////////////////////////////////////////////////
 
 if (!hasInterface) exitWith {};
@@ -15,11 +20,8 @@ if ((player getVariable ["role", ""]) != "Traitor") exitWith {};
 if (missionNamespace getVariable ["Waldo_pingWheelOpen", false]) exitWith {};
 
 disableSerialization;
-if (isNil { uiNamespace getVariable "TTTPingWheel" }) then {
-	titleRsc ["TTTPingWheel", "PLAIN", 1, false];
-	waitUntil { !isNull (uiNamespace getVariable ["TTTPingWheel", displayNull]) };
-};
-private _display = uiNamespace getVariable "TTTPingWheel";
+waitUntil { !isNull (uiNamespace getVariable ["TTTHud", displayNull]) };
+private _display = uiNamespace getVariable "TTTHud";
 
 Waldo_pingWheelOptions = [
 	["Target",        "track who you're aiming at"],

@@ -163,6 +163,9 @@ class CfgFunctions
 			class pingWheelOpen {};     // Waldo_fnc_pingWheelOpen (traitor: hold-T ping picker, opens)
 			class pingWheelRender {};   // Waldo_fnc_pingWheelRender (traitor: redraw the ping picker highlight)
 			class pingWheelClose {};    // Waldo_fnc_pingWheelClose (traitor: T released, fires the highlighted ping)
+			class useActivationSlot {};    // Waldo_fnc_useActivationSlot (fires the item bound to Y/U/J)
+			class assignActivationSlot {}; // Waldo_fnc_assignActivationSlot (buy menu: rebind an item to a key)
+			class registerActivationSlot {}; // Waldo_fnc_registerActivationSlot (shared: slot/backlog assignment)
 		};
 
 		class debug

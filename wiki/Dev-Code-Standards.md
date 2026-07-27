@@ -44,7 +44,7 @@ Every local variable is `private`. The handful of unprefixed globals you'll see 
 `setVariable`'s third argument is a deliberate choice, not a habit:
 
 - `true` when another machine needs to see the value: role, points, list membership, forensic tags on a body, anything read by `getVariable` on a different client than the one that set it.
-- Omitted (local only) for state that's genuinely per-client and never read elsewhere: the activation queue, a UI handler id, a debug toggle.
+- Omitted (local only) for state that's genuinely per-client and never read elsewhere: the activation key slots/backlog, a UI handler id, a debug toggle.
 
 If you're not sure which a new variable needs, check whether anything on another machine will ever call `getVariable` on it. If yes, broadcast it.
 

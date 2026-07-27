@@ -1,9 +1,9 @@
 //////////////////////////////////////////////////////////////////
 // Waldo_fnc_tester
-// CLIENT: detective activation item (Y). "Tests" the aimed-at person within
+// CLIENT: detective activation item (Y/U/J, whichever it's bound to). "Tests" the aimed-at person within
 // 3m (alive or a corpse), permanently revealing their role to the detective
 // via the icons handler. Returns true when a valid target was tested (so it
-// is consumed), false otherwise so it stays queued for another try.
+// is consumed), false otherwise so it stays assigned for another try.
 //////////////////////////////////////////////////////////////////
 
 private _target = cursorTarget;

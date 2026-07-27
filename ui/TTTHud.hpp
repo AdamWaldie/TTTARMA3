@@ -332,7 +332,9 @@ class RscTitles
 // generated at runtime from the role's catalog by Waldo_fnc_openBuyMenu, so this
 // shell never changes when items are added.
 //   1100 title, 1101 credits, 1102 item grid, 1103 hover description,
-//   1104 header bar, 1108 accent stripe (role-tinted), idc 2 close.
+//   1104 header bar, 1107 purchased-panel group (rows built at runtime by
+//   Waldo_shopRenderPurchased, including the Y/U/J key-assign buttons),
+//   1108 accent stripe (role-tinted), idc 2 close.
 // ============================================================================
 class WaldoShop {
 	idd = -1;
@@ -500,20 +502,22 @@ class WaldoShop {
 			h = 0.545 * safezoneH;
 
 			class Controls {
-				class shopPurchList: RscStructuredText {
-					idc = 1106;
+				// Invisible spacer, declared (not runtime-created) so the group's
+				// scrollable extent is fixed at dialog-load time - a group's scroll
+				// range is computed from its DECLARED children only, not whatever
+				// Waldo_shopRenderPurchased ctrlCreate's into it afterwards (same
+				// reason the item grid above sizes itself to fit rather than relying
+				// on runtime children to trigger scrolling). This stays tall enough
+				// that the group scrolls once a round's purchases run past one screen,
+				// and every runtime row shares its scroll offset as a sibling in the
+				// same group.
+				class shopPurchSpacer: RscStructuredText {
+					idc = -1;
 					text = "";
 					x = 0;
 					y = 0;
 					w = 0.18 * safezoneW;
-					h = 2.0 * safezoneH;   // tall so the group scrolls once purchases stack up
-					size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.9);
-					class Attributes {
-						font = "PuristaMedium";
-						color = "#F2EFE3";
-						align = "left";
-						shadow = 1;
-					};
+					h = 2.0 * safezoneH;
 				};
 			};
 		};

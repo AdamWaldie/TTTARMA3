@@ -1,12 +1,14 @@
 //////////////////////////////////////////////////////////////////
 // Waldo_fnc_buyItem
 // CLIENT: handles one purchase - checks credits, deducts, runs the buy effect,
-// and (for activation items) queues the activation for the Y key.
+// and (for activation items) assigns it to the first free of 3 key slots
+// (Y/U/J), or the backlog if all 3 are already taken - see
+// Waldo_fnc_useActivationSlot / Waldo_fnc_assignActivationSlot for how those
+// are fired/reassigned.
 //
 // The shop is left OPEN after a purchase so the player can keep browsing; the
 // header credits and each card's affordability are refreshed live, and the
-// footer confirms the buy. Activation items are stored in a LIFO queue so buying
-// a passive item after an activation item never wipes the pending activation.
+// footer confirms the buy.
 //
 // params: [_role, _index]
 //////////////////////////////////////////////////////////////////
@@ -40,20 +42,26 @@ player setVariable ["points", _new, true];
 // Immediate purchase effect.
 call _onBuy;
 
-// Queue activation items for the Y key.
-if (_type == "activation") then {
-	private _q = player getVariable ["activationQueue", []];
-	_q pushBack [_name, _onAct];
-	player setVariable ["activationQueue", _q];
-};
+// Log the purchase (id + name + tip + type + activation code) for the shop's
+// "Purchased" panel - the id is what key slots/backlog reference, never the
+// code block itself (see Waldo_fnc_useActivationSlot).
+private _id = player getVariable ["Waldo_purchaseSeq", 0];
+player setVariable ["Waldo_purchaseSeq", _id + 1];
 
-// Log the purchase (name + how-to-use tip) for the shop's "Purchased" panel.
+private _keyLabel = if (_type == "activation") then { [_id] call Waldo_fnc_registerActivationSlot } else { "" };
+
 private _purchases = player getVariable ["Waldo_purchases", []];
-_purchases pushBack [_name, _tip];
+_purchases pushBack [_id, _name, _tip, _type, _onAct];
 player setVariable ["Waldo_purchases", _purchases];
 
 if (isNull _disp) exitWith {
-	if (_type == "activation") then { hint format ["%1 ready - press Y to use.", _name]; };
+	if (_type == "activation") then {
+		if (_keyLabel != "") then {
+			hint format ["%1 ready - press %2 to use.", _name, _keyLabel];
+		} else {
+			hint format ["%1 bought - all 3 keys are full, assign it a key from the Buy Menu.", _name];
+		};
+	};
 };
 
 [_disp] call Waldo_shopRenderPurchased;
@@ -76,7 +84,10 @@ private _color = [_role] call Waldo_roleColor;
 	};
 } forEach _catalog;
 
-private _extra = if (_type == "activation") then { " - press Y to use" } else { "" };
+private _extra = "";
+if (_type == "activation") then {
+	_extra = if (_keyLabel != "") then { format [" - press %1 to use", _keyLabel] } else { " - assign it a key below" };
+};
 (_disp displayCtrl 1103) ctrlSetStructuredText parseText (format [
 	"<t size='1.2' color='#6FCB74'>[OK] PURCHASED: %1</t><t size='0.95' color='#9EA290'>%2</t><br/><t size='0.95' color='#9EA290'>%3 credits remaining.</t>",
 	_name, _extra, _new

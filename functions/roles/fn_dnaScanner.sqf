@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////////////
 // Waldo_fnc_dnaScanner
-// CLIENT: detective activation item (Y). Aim at a source of DNA within 4m and
-// press Y to sample it, then track the suspect with a "hot/cold" readout
-// (distance + compass bearing).
+// CLIENT: detective activation item (Y/U/J, whichever it's bound to). Aim at
+// a source of DNA within 4m and press it to sample the trace, then track the
+// suspect with a "hot/cold" readout (distance + compass bearing).
 //
 // DNA is left by Waldo_fnc_onKilled on bodies AND dropped gear, and by placed
 // traitor equipment (e.g. C4 charges) - investigation is not limited to

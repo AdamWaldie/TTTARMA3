@@ -82,7 +82,7 @@ Every category has a vanilla classname as a fallback, so a total-conversion mod 
 | Key | Does |
 |---|---|
 | B | Open your buy menu (Traitor / Detective only) |
-| Y | Use your most recently bought activation item |
+| Y / U / J | Use the activation item bound to slot 1 / 2 / 3 (assign items to a slot from the Purchased panel in the buy menu) |
 | L | Holster / lower weapon |
 | K | Toggle the in-round scoreboard |
 | T | Hold to pick a ping type (Target / Location / Danger / Regroup Here / Enemy Spotted), release to send it (Traitors only) |

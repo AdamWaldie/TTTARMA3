@@ -105,8 +105,17 @@ Edit the catalog in `ui/fn_initShops.sqf`. Each entry is:
 
 - `_type`: `"passive"` | `"weapon"` | `"activation"`.
 - `_onBuy`: runs immediately on purchase.
-- `_onActivate`: for activation items, runs when the player presses **Y**;
-  return `true` to consume the item, `false` to keep it queued (e.g. no target).
+- `_onActivate`: for activation items, runs when the player presses whichever
+  of **Y** / **U** / **J** the item is bound to; return `true` to consume the
+  item, `false` to keep it assigned (e.g. no target).
+
+Activation items are assigned to the first free of 3 key slots (Y/U/J) on
+purchase, or held in a backlog if all 3 are already taken
+(`Waldo_fnc_registerActivationSlot`); the player can reassign any owned,
+not-yet-used activation item to a different slot from the Purchased panel
+(`Waldo_fnc_assignActivationSlot`). Pressing a bound key runs the item's
+`_onActivate` and, on success, promotes the oldest backlogged item (if any)
+into the freed slot (`Waldo_fnc_useActivationSlot`).
 
 The buy menu (`Waldo_fnc_openBuyMenu`) builds its cards from the catalog at
 runtime, so no `.hpp` changes are needed. The dialog is a centred panel with a
@@ -115,9 +124,12 @@ footer that shows the hovered item's name, cost, type and `_tooltip` (so write
 `_tooltip` as the item's description). Buying refreshes credits + affordability
 in place and leaves the shop open (`Waldo_fnc_buyItem`); Esc or **Close** exits.
 A second panel, **Purchased**, lists everything bought this round with its
-`_tooltip` as a how-to-use reminder (`Waldo_purchases`, reset each round in
-`assignRoles`; rendered by the shared `Waldo_shopRenderPurchased` helper) — so
-you're never stuck remembering what an item does after you've bought it.
+`_tooltip` as a how-to-use reminder, and — for activation items — a live
+Y/U/J key-assignment row (`Waldo_purchases`, reset each round in
+`assignRoles`; rendered at runtime by `Waldo_shopRenderPurchased`, which fully
+rebuilds the panel's controls on every purchase or reassignment) — so you're
+never stuck remembering what an item does, or which key fires it, after
+you've bought it.
 
 The traitor and detective catalogs each carry ~14 items — offence (silenced
 sidearm, frags, launcher, long rifle), utility (radar, stamina, night vision,
@@ -185,7 +197,7 @@ restarts.
 ## Keys
 
 - **B** — open your buy menu (Traitor / Detective).
-- **Y** — use your most recently bought activation item.
+- **Y / U / J** — use the activation item bound to slot 1 / 2 / 3 (reassign from the buy menu's Purchased panel).
 - **L** — holster / lower weapon.
 - **K** — toggle the in-round scoreboard.
 - **T** — hold to pick a ping type (Target / Location / Danger / Regroup Here / Enemy Spotted), release to send it (Traitors only).

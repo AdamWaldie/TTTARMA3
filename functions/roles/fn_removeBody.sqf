@@ -1,11 +1,12 @@
 //////////////////////////////////////////////////////////////////
 // Waldo_fnc_removeBody
-// CLIENT: activation item (Y). Aim at a dead body within 4m and press Y to
-// dispose of it, destroying the evidence so a Detective can no longer test the
-// corpse. Deletion is done on the server (bodies are not always local).
+// CLIENT: activation item (Y/U/J, whichever it's bound to). Aim at a dead body
+// within 4m and press it to dispose of the body, destroying the evidence so a
+// Detective can no longer test the corpse. Deletion is done on the server
+// (bodies are not always local).
 //
 // Returns true when a body was removed (consuming the item), false otherwise so
-// the item stays queued for another try.
+// the item stays assigned for another try.
 //////////////////////////////////////////////////////////////////
 
 private _target = cursorTarget;

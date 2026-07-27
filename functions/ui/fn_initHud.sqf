@@ -58,7 +58,11 @@ if (_hasCredits) then {
 private _hints = ["<t color='#F2BE55'>L</t>  Holster", "<t color='#F2BE55'>K</t>  Scoreboard"];
 if (_role in ["Traitor", "Detective"]) then {
 	_hints pushBack "<t color='#F2BE55'>B</t>  Buy Menu";
-	_hints pushBack "<t color='#F2BE55'>Y</t>  Use Item";
+	// "Y U J  Use Item" (15 visible chars) stays within the panel's existing
+	// width budget (sized around "T (hold)  Ping", 14 chars) - which key does
+	// what for a given owned item is shown live in the Purchased panel instead
+	// of spelled out here.
+	_hints pushBack "<t color='#F2BE55'>Y U J</t>  Use Item";
 };
 if (_role == "Traitor") then {
 	_hints pushBack "<t color='#F2BE55'>T</t> (hold)  Ping";

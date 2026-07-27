@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////
 // Waldo_fnc_suicideBomb
-// CLIENT: activation item (Y). Plays a warning, then detonates a bomb at
+// CLIENT: activation item (Y/U/J, whichever it's bound to). Plays a warning, then detonates a bomb at
 // the player's position after a short delay. Returns true (always consumed).
 //////////////////////////////////////////////////////////////////
 

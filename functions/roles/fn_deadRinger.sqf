@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////
 // Waldo_fnc_deadRinger
-// CLIENT: traitor activation item (Y). Arms a 25s window: the next lethal hit
+// CLIENT: traitor activation item (Y/U/J, whichever it's bound to). Arms a 25s window: the next lethal hit
 // you take in that time is faked instead of killing you (see
 // Waldo_fnc_deadRingerTrigger, triggered from the HandleDamage guard installed
 // once in Waldo_fnc_initClient). Whoever shot you sees you go down normally -

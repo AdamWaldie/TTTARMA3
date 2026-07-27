@@ -11,6 +11,12 @@
 if (!hasInterface) exitWith {};
 params [["_name", ""], ["_role", ""], ["_kills", 0]];
 
+// Reset fadeMusic's scripted volume multiplier before playing - it's a
+// standing engine-level value (not track-specific, not reset by playMusic
+// itself), and Waldo_fnc_initClient's own `10 fadeMusic 0;` at round-live
+// just left it at 0 for the round that's now ending. Without this, the
+// replay resolves and "plays" with zero audible output.
+0 fadeMusic 1;
 playMusic ["TTTIntroMusic", 20];
 
 // Fireworks: a handful of coloured smoke shells launched up and out over the

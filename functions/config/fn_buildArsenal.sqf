@@ -286,9 +286,23 @@ if (_uniforms  isEqualTo []) then { _uniforms  = ["U_BG_Guerilla2_1", "U_C_Polos
 if (_headgear  isEqualTo []) then { _headgear  = ["H_Cap_oli", "H_Booniehat_khk", "H_Bandanna_gry"]; };
 if (_vests     isEqualTo []) then { _vests     = ["V_Rangemaster_belt"]; };
 if (_backpacks isEqualTo []) then { _backpacks = ["B_AssaultPack_mcamo"]; };
-private _uniPool = [_uniforms, 12] call _cap;
+
+// Prefer uniforms/vests that actually carry SOMETHING (same reasoning as
+// Body Armor above, _vestCargo works the same way for either slot) - picked
+// purely at random from every discovered TYPE_UNIFORM/TYPE_VEST, this pool
+// includes plenty of decorative/civilian pieces with zero cargo space. A
+// Traitor or Detective who spawns wearing nothing but two zero-cargo pieces
+// has nowhere for a shop purchase to go - credits spent, nothing delivered,
+// with no error or warning anywhere. Only falls back to the full pool if
+// literally nothing discovered has any cargo at all.
+private _uniformsWithCargo = _uniforms select { ([_x] call _vestCargo) > 0 };
+if (_uniformsWithCargo isEqualTo []) then { _uniformsWithCargo = _uniforms; };
+private _vestsWithCargo = _vests select { ([_x] call _vestCargo) > 0 };
+if (_vestsWithCargo isEqualTo []) then { _vestsWithCargo = _vests; };
+
+private _uniPool = [_uniformsWithCargo, 12] call _cap;
 private _headPool = [_headgear, 12] call _cap;
-private _vestPool = [_vests, 8] call _cap;
+private _vestPool = [_vestsWithCargo, 8] call _cap;
 private _packPool = [_backpacks, 12] call _cap;
 missionNamespace setVariable ["uniformsConfig",  _uniPool,  true];
 missionNamespace setVariable ["headgearsConfig", _headPool, true];

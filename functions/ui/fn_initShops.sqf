@@ -145,6 +145,24 @@ Waldo_keyHintsFor = {
 	_hints
 };
 
+// Swaps the player's vest, carrying over whatever was already stored in the
+// old one instead of discarding it - Arma's addVest always replaces (and
+// empties) the currently-worn vest, no way around that, but there's no
+// reason a shop "upgrade" should also erase everything the player was
+// carrying. Best-effort: if the new vest has less cargo space than the old
+// one, whatever doesn't fit is silently dropped (same as any other
+// over-capacity add), not an error.
+Waldo_swapVestKeepCargo = {
+	params ["_newVest"];
+	private _oldContainer = vestContainer player;
+	private _mags = magazinesAmmoCargo _oldContainer;
+	private _items = itemCargo _oldContainer;
+	player addVest _newVest;
+	private _newContainer = vestContainer player;
+	{ _x params ["_cls", "_ammo"]; _newContainer addMagazineAmmoCargo [_cls, 1, _ammo]; } forEach _mags;
+	{ _x params ["_cls", "_cnt"]; _newContainer addItemCargo [_cls, _cnt]; } forEach _items;
+};
+
 // Role -> RGBA colour (shared by HUD, icons, menus).
 Waldo_roleColor = {
 	params ["_role"];
@@ -216,9 +234,14 @@ Waldo_traitorShop = [
 		"Two fragmentation grenades"],
 
 	["Body Armor", 2, "passive",
-		{ player addVest (missionNamespace getVariable ["ShopArmorVest", "V_PlateCarrier2_rgr"]); },
+		{ [missionNamespace getVariable ["ShopArmorVest", "V_PlateCarrier2_rgr"]] call Waldo_swapVestKeepCargo; },
 		{},
 		"A heavy plate carrier - soak an extra hit or two"],
+
+	["Medical Kit", 1, "weapon",
+		{ player addItem "Medikit"; player addItem "FirstAidKit"; },
+		{},
+		"A medikit + first aid kit to patch yourself up"],
 
 	["Body Remover", 1, "activation",
 		{},
@@ -299,7 +322,7 @@ Waldo_detectiveShop = [
 		"Two fragmentation grenades"],
 
 	["Body Armor", 2, "passive",
-		{ player addVest (missionNamespace getVariable ["ShopArmorVest", "V_PlateCarrier2_rgr"]); },
+		{ [missionNamespace getVariable ["ShopArmorVest", "V_PlateCarrier2_rgr"]] call Waldo_swapVestKeepCargo; },
 		{},
 		"A heavy plate carrier - stay standing long enough to catch the traitor"],
 

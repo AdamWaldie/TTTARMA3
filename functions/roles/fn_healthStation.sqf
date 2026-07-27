@@ -19,6 +19,13 @@ private _station = createVehicle ["Box_NATO_Support_F", _pos, [], 0, "CAN_COLLID
 _station allowDamage false;
 _station setVariable ["Waldo_healUntil", time + 120, true];
 
+// Plain setDamage doesn't actually heal a player under ACE's medical
+// system - ACE tracks its own per-limb injury/bleeding/pain state and
+// largely ignores/overrides direct damage changes, which is why this did
+// nothing at all with ACE Medical active. ace_medical_treatment_fnc_fullHeal
+// is ACE's own documented way to heal a unit; harmless/idempotent to call
+// repeatedly on someone already at full health, so no extra "are they
+// hurt" check is needed before calling it.
 [{
 	params ["_args", "_handle"];
 	_args params ["_station"];
@@ -26,8 +33,14 @@ _station setVariable ["Waldo_healUntil", time + 120, true];
 		[_handle] call CBA_fnc_removePerFrameHandler;
 	};
 	{
-		if (alive _x && {(_x distance _station) < 5} && {damage _x > 0}) then {
-			[_x, (((damage _x) - 0.05) max 0)] remoteExec ["setDamage", _x];
+		if (alive _x && {(_x distance _station) < 5}) then {
+			if (isNil "ace_medical_treatment_fnc_fullHeal") then {
+				if (damage _x > 0) then {
+					[_x, (((damage _x) - 0.05) max 0)] remoteExec ["setDamage", _x];
+				};
+			} else {
+				[objNull, _x] remoteExec ["ace_medical_treatment_fnc_fullHeal", _x];
+			};
 		};
 	} forEach allPlayers;
 }, 2, [_station]] call CBA_fnc_addPerFrameHandler;

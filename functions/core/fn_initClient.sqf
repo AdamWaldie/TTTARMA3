@@ -58,13 +58,20 @@ waitUntil { !isNull player && time > 0 };
 
 // Intro music. Started in a guarded thread so it is not swallowed while the
 // client is still on the loading screen (the cause of it not playing for
-// everyone): wait until the main game display exists, then play - unless the
-// round already went live (a JIP mid-round shouldn't restart the intro).
+// everyone): wait until the main game display exists AND a few real seconds
+// of mission time have passed (time > 0 alone can already be true the instant
+// the display exists, which is not the same as the audio engine actually
+// being ready), then play - unless the round already went live (a JIP
+// mid-round shouldn't restart the intro). Logged either way so a silent
+// failure shows up in the .rpt instead of just "it didn't play, no idea why".
 [] spawn {
-	waitUntil { !isNull (findDisplay 46) && {time > 0} };
-	sleep 0.5;
+	waitUntil { !isNull (findDisplay 46) && {time > 3} };
+	sleep 1.5;
 	if !(missionNamespace getVariable ["gameOn", false]) then {
 		playMusic ["TTTIntroMusic", 20];
+		diag_log "[Waldo][client] intro music: playMusic issued";
+	} else {
+		diag_log "[Waldo][client] intro music: skipped, round already live (JIP)";
 	};
 };
 

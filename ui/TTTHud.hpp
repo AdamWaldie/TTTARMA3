@@ -22,13 +22,21 @@ class RscTitles
 		// which stretched it into an off-screen ellipse on widescreen.
 		class controlsBackground {
 			// Drop shadow behind the whole crest: a dedicated soft Gaussian-blurred
-			// disc (ui\roleshadow.png), not an offset dark-tinted copy of the fill -
-			// that old technique produced a hard-edged flat silhouette instead of an
-			// actual soft shadow.
+			// disc, not an offset dark-tinted copy of the fill - that old technique
+			// produced a hard-edged flat silhouette instead of an actual soft shadow.
+			//
+			// This one specific image is a real .paa, not .png like role/rolebg -
+			// confirmed live in-game that this exact PNG (heavy alpha gradient
+			// across nearly the whole canvas, from the Gaussian blur) threw
+			// "Cannot load texture" while role.png/rolebg.png loaded fine, even
+			// with byte-identical PNG structure/parameters and a confirmed-correct
+			// file on disk. Converted with a real DXT5 encoder
+			// (github.com/woozymasta/paa) rather than a hand-rolled one, since a
+			// subtly wrong PAA would just trade one silent load failure for another.
 			class roleShadow: RscPicture
 			{
 				idc = -1;
-				text = "ui\roleshadow.png";
+				text = "ui\roleshadow.paa";
 				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.008 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.010 * safezoneH);
 				w = 0.15 * safezoneH;

@@ -291,7 +291,16 @@ player addMPEventHandler ["MPKilled", {
 // a hit that would be fatal is capped instead of killing, and
 // Waldo_fnc_deadRingerTrigger sells the fake death. Installed once per client.
 player addEventHandler ["HandleDamage", {
-	params ["_unit", "_selection", "_damage"];
+	params ["_unit", "_selection", "_damage", "_source", "_projectile", "_hitIndex", "_instigator"];
+	// Track the last real (non-null, non-self) damager independent of the Dead Ringer
+	// check below - ACE bleed-out/DoT damage ticks can hit this handler with a null
+	// _instigator, and by the time the terminal MPKilled event fires its own
+	// killer/instigator can likewise resolve to null or to the victim themselves, even
+	// though a real player caused the damage that led to death. Waldo_fnc_onKilled falls
+	// back to this when MPKilled's own attribution comes up empty.
+	if (!isNull _instigator && {_instigator != _unit}) then {
+		_unit setVariable ["Waldo_lastDamager", _instigator, true];
+	};
 	if ((_unit getVariable ["Waldo_deadRingerArmed", false]) && {((damage _unit) + _damage) >= 1}) then {
 		[_unit] call Waldo_fnc_deadRingerTrigger;
 		0.9

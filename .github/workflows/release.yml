@@ -1,15 +1,23 @@
 name: Release
 
 # Packages the mission itself, not the whole repo, once per supported
-# terrain. The mission is terrain-agnostic at RUNTIME (the arena, loot, and
+# terrain, as both a .zip (for manually unpacking into a missions folder)
+# and a real .pbo (for dropping straight into MPMissions on a dedicated
+# server). The mission is terrain-agnostic at RUNTIME (the arena, loot, and
 # the pre-arena holding spot are all picked dynamically, see
 # Waldo_fnc_selectArena and Waldo_fnc_selectHoldingPos), but mission.sqm's
 # 128 placed player-start positions are raw world coordinates baked in when
 # the mission was saved in Eden, and those are only ever real for the one
 # terrain it was authored on (Altis). Shipping them unmodified for a
 # differently-shaped terrain risks landing outside the map entirely, not
-# just in water. Arma also requires a mission folder to be named
-# "MissionName.TerrainName" to show up for that terrain at all.
+# just in water.
+#
+# Naming is Arma's own "MissionName.TerrainName" convention, and it's a hard
+# rule, not a style choice: the part before the terrain name must not
+# contain ANY dots, or the game fails to parse the folder/pbo name and the
+# mission won't show up at all. A version like 2.6.0 breaks that outright if
+# used verbatim, so dots in the version are replaced with dashes for the
+# packaged name (2.6.0 -> 2-6-0); the git tag itself is untouched.
 #
 # For each terrain this resolves player-start positions in priority order:
 #   1. terrains/<Terrain>/mission.sqm, if present - a real, in-editor
@@ -28,7 +36,10 @@ name: Release
 #
 # A tag push (or a manual run against an existing tag) stages the mission
 # once, explicitly excluding .git, .github, terrains/, and the wiki/ source
-# folder, then builds each terrain's folder/zip from that staged copy.
+# folder, then builds each terrain's folder from that staged copy and packs
+# it into both a .zip and a .pbo (.github/scripts/make_pbo.py - a small,
+# self-verifying implementation of the documented PBO format, since no
+# actively maintained prebuilt Linux packer exists to depend on instead).
 
 on:
   push:
@@ -57,13 +68,14 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Resolve tag and version
+      - name: Resolve tag and a filename-safe version
         id: tag
         run: |
           TAG="${{ inputs.tag || github.ref_name }}"
           VERSION="${TAG#v}"
+          VERSION_SAFE="${VERSION//./-}"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "version_safe=$VERSION_SAFE" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v4
         with:
@@ -81,12 +93,12 @@ jobs:
             --exclude="dist" \
             ./ stage/_mission/
 
-      - name: Build one folder and zip per terrain
+      - name: Build one folder, zip, and pbo per terrain
         run: |
-          VERSION="${{ steps.tag.outputs.version }}"
+          VERSION_SAFE="${{ steps.tag.outputs.version_safe }}"
           cd stage
           for TERRAIN in ${{ env.TERRAINS }}; do
-            NAME="TroubleInArmaville_${VERSION}.${TERRAIN}"
+            NAME="TroubleInArmaville_${VERSION_SAFE}.${TERRAIN}"
             rm -rf "$NAME"
             cp -r _mission "$NAME"
 
@@ -104,6 +116,7 @@ jobs:
             fi
 
             zip -rq "../dist/${NAME}.zip" "$NAME"
+            python3 ../.github/scripts/make_pbo.py "$NAME" "../dist/${NAME}.pbo"
             rm -rf "$NAME"
           done
 
@@ -111,9 +124,9 @@ jobs:
         run: |
           TAG="${{ steps.tag.outputs.tag }}"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" dist/*.zip --clobber
+            gh release upload "$TAG" dist/* --clobber
           else
-            gh release create "$TAG" dist/*.zip \
+            gh release create "$TAG" dist/* \
               --title "Trouble In Armaville $TAG" \
               --generate-notes
           fi

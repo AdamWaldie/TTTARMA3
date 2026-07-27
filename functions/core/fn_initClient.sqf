@@ -110,8 +110,18 @@ removeBackpack player;
 	waitUntil { !isNull (findDisplay 46) };
 	private _disp = findDisplay 46;
 	if (isNil { _disp getVariable "Waldo_keyEH" }) then {
+		// KeyDown fires repeatedly (OS key-repeat) for as long as a key stays
+		// physically down, not once per press - without this guard, holding T
+		// spams dozens of pings and holding any other bound key re-fires its
+		// action every repeat tick. Track which of our bound keys are currently
+		// held and ignore repeats until KeyUp clears them.
+		_disp setVariable ["Waldo_heldKeys", []];
 		private _eh = _disp displayAddEventHandler ["KeyDown", {
 			params ["_d", "_key"];
+			private _held = _d getVariable ["Waldo_heldKeys", []];
+			if (_key in _held) exitWith { false };
+			_held pushBack _key;
+			_d setVariable ["Waldo_heldKeys", _held];
 			private _handled = false;
 			switch (_key) do {
 				case 48: {   // B - open buy menu
@@ -162,7 +172,14 @@ removeBackpack player;
 			};
 			_handled
 		}];
+		private _ehUp = _disp displayAddEventHandler ["KeyUp", {
+			params ["_d", "_key"];
+			private _held = _d getVariable ["Waldo_heldKeys", []];
+			_d setVariable ["Waldo_heldKeys", _held - [_key]];
+			false
+		}];
 		_disp setVariable ["Waldo_keyEH", _eh];
+		_disp setVariable ["Waldo_keyEHUp", _ehUp];
 	};
 };
 

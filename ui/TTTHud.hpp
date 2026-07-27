@@ -17,7 +17,7 @@ class RscTitles
 
 		// GMod-TTT style role crest: a circular badge with the role's letter
 		// (T / D / I / J) centred in it, tinted to the role colour. The badge is
-		// SQUARE (w == h, both in safezoneH units) so ui\role.png renders as a
+		// SQUARE (w == h, both in safezoneH units) so ui\role.paa renders as a
 		// true circle and stays fully on-screen — the old height used safezoneW,
 		// which stretched it into an off-screen ellipse on widescreen.
 		class controlsBackground {
@@ -25,14 +25,16 @@ class RscTitles
 			// disc, not an offset dark-tinted copy of the fill - that old technique
 			// produced a hard-edged flat silhouette instead of an actual soft shadow.
 			//
-			// This one specific image is a real .paa, not .png like role/rolebg -
-			// confirmed live in-game that this exact PNG (heavy alpha gradient
-			// across nearly the whole canvas, from the Gaussian blur) threw
-			// "Cannot load texture" while role.png/rolebg.png loaded fine, even
-			// with byte-identical PNG structure/parameters and a confirmed-correct
-			// file on disk. Converted with a real DXT5 encoder
+			// All three badge images (role/rolebg/roleshadow) are real .paa, not
+			// .png. .png first seemed fine (role.png/rolebg.png loaded live while
+			// roleshadow.png alone threw "Cannot load texture"), but rolebg.png
+			// then failed the exact same way on a later test with no code change
+			// in between - so this isn't about any one image's content, it's that
+			// this engine build/version doesn't reliably support raw PNG for these
+			// controls at all. Converted with a real DXT5 encoder
 			// (github.com/woozymasta/paa) rather than a hand-rolled one, since a
-			// subtly wrong PAA would just trade one silent load failure for another.
+			// subtly wrong PAA would just trade one silent load failure for
+			// another.
 			class roleShadow: RscPicture
 			{
 				idc = -1;
@@ -46,7 +48,7 @@ class RscTitles
 			class roleTextBGBG: RscPicture
 			{
 				idc = 999;
-				text = "ui\rolebg.png";
+				text = "ui\rolebg.paa";
 				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
 				y = (safezoneH + safezoneY) - (0.185 * safezoneH);
 				w = 0.15 * safezoneH;
@@ -56,7 +58,7 @@ class RscTitles
 			class roleTextBG: RscPicture
 			{
 				idc = 1000;
-				text = "ui\role.png";
+				text = "ui\role.paa";
 				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
 				y = (safezoneH + safezoneY) - (0.185 * safezoneH);
 				w = 0.15 * safezoneH;
@@ -70,13 +72,19 @@ class RscTitles
 				y = (safezoneH + safezoneY) - (0.185 * safezoneH);
 				w = 0.15 * safezoneH;
 				h = 0.15 * safezoneH;
-				// CT_STRUCTURED_TEXT's valign='middle' (the old control type here) is a
-				// documented engine bug - BI forum reports confirm valign has no real
-				// effect on RscStructuredText - so the manual y-nudge that used to live
-				// here was only masking that broken behaviour, not fixing it. Plain
-				// RscText's ST_CENTER + ST_VCENTER (already used for the ping wheel's
-				// title below) centres both axes reliably with no markup quirks.
-				style = ST_CENTER + ST_VCENTER;
+				// CT_STRUCTURED_TEXT's valign='middle' (the old control type here) was
+				// a documented engine bug - BI forum reports confirm valign has no real
+				// effect on RscStructuredText - so switching to plain RscText was the
+				// right call. But ST_VCENTER (which used to be added here) is NOT a
+				// "centre vertically" flag despite the name - BIKI documents it (with
+				// ST_UP/ST_DOWN) as a VERTICAL/ROTATED TEXT ORIENTATION mode that
+				// "should not be mixed with any other styles", which is exactly what
+				// combining it with ST_CENTER did. That's almost certainly what threw
+				// the letter noticeably off-position rather than just high/low by a
+				// few pixels. ST_CENTER alone handles horizontal centring correctly;
+				// vertical centring is done for real below, in fn_initHud.sqf, via
+				// ctrlTextHeight's actual measured value - not another guessed offset.
+				style = ST_CENTER;
 				font = "PuristaBold";
 				// ~43% of the badge box, not 63% (the old 0.095) - leaves real margin
 				// so the glyph can't brush the ring regardless of the font's own metrics.

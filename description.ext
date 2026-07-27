@@ -6,7 +6,7 @@ overviewPicture = "ui\TroubleInArmaville.jpg";
 // === LOAD SCREEN
 
 loadScreen = "ui\TroubleInArmaville.jpg";
-author = "Waldo"; // Author
+author = "WaldoTheWarfighter"; // Author
 onLoadName = "Trouble in ArmaVille"; // Mission name
 onLoadMission = "Version 2.5.0"; // Description
 
@@ -72,7 +72,7 @@ class CfgDebriefing
 
 class CfgMusic
 {
-	tracks[] = {};
+	tracks[] = {"TTTIntroMusic"};
 	class TTTIntroMusic
 	{
 		// display name

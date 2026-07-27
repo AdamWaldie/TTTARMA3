@@ -52,6 +52,11 @@ class RscTitles
 				type = CT_STRUCTURED_TEXT;
 				style = ST_CENTER;
 				shadow = false;
+				// CT_STRUCTURED_TEXT paints an opaque black box by default when
+				// colorBackground isn't set - invisible on the dark shop/debug panels
+				// elsewhere in this file, but a solid dark square over the role letter
+				// when it's this control sitting directly on the tinted circular badge.
+				colorBackground[] = {0,0,0,0};
 				class Attributes{
 					font = "PuristaBold";
 					align = "center";

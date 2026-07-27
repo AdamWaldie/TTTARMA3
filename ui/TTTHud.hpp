@@ -8,6 +8,68 @@ class RscTitles
 		onLoad = "";
 	};
 
+	// ============================================================================
+	// TTTWarmup - "Selecting Roles: N" during the pre-round warmup, in the same
+	// centre-top position/casing style as TTTHud's own round-timer bar (not the
+	// same titleRsc resource though: TTTHud doesn't exist yet at this point -
+	// role isn't assigned, so there's no badge/credits/keybinds to show - and
+	// this phase is over well before TTTHud is ever created, so the two never
+	// overlap; TTTHud's own titleRsc call simply evicts this one when the round
+	// goes live, same single-slot behaviour used deliberately here instead of
+	// worked around). Driven by Waldo_fnc_warmupBar.
+	// ============================================================================
+	class TTTWarmup {
+		idd = -1;
+		fadeout = 0;
+		fadein = 0;
+		duration = 99999;
+		onLoad = "with uiNamespace do {TTTWarmup = _this select 0}";
+
+		class controlsBackground {
+			class twShadow: RscText {
+				idc = -1;
+				x = ((safezoneX + (0.5 * safezoneW)) - (0.18 * safezoneW)) - (0.004 * safezoneH);
+				y = (safezoneY + (0.015 * safezoneH)) - (0.004 * safezoneH);
+				w = (0.36 * safezoneW) + (0.008 * safezoneH);
+				h = (0.062 * safezoneH) + (0.008 * safezoneH);
+				colorBackground[] = WALDO_SHADOW;
+				style = 0;
+			};
+			class twBG: RscText {
+				idc = -1;
+				x = (safezoneX + (0.5 * safezoneW)) - (0.18 * safezoneW);
+				y = safezoneY + (0.015 * safezoneH);
+				w = 0.36 * safezoneW;
+				h = 0.062 * safezoneH;
+				colorBackground[] = WALDO_HEADERBG;
+				style = 0;
+			};
+			class twAccent: RscText {
+				idc = -1;
+				x = (safezoneX + (0.5 * safezoneW)) - (0.18 * safezoneW);
+				y = (safezoneY + (0.015 * safezoneH)) + (0.062 * safezoneH);
+				w = 0.36 * safezoneW;
+				h = 0.006 * safezoneH;
+				colorBackground[] = WALDO_ACCENT;
+				style = 0;
+			};
+			class twText: RscText {
+				idc = 3630;
+				text = "";
+				x = (safezoneX + (0.5 * safezoneW)) - (0.18 * safezoneW);
+				y = safezoneY + (0.015 * safezoneH);
+				w = 0.36 * safezoneW;
+				h = 0.062 * safezoneH;
+				colorBackground[] = {0,0,0,0};
+				colorText[] = {0.95,0.93,0.86,1};
+				style = ST_CENTER;   // vertical centring in script via ctrlTextHeight
+				font = "PuristaBold";
+				sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.35);
+				shadow = 1;
+			};
+		};
+	};
+
 	class TTTHud {
 		idd = -1;
 		fadeout=0;
@@ -86,10 +148,12 @@ class RscTitles
 				// ctrlTextHeight's actual measured value - not another guessed offset.
 				style = ST_CENTER;
 				font = "PuristaBold";
-				// ~50% of the badge box - bumped up from 0.065 (43%, confirmed too
-				// small once the badge was actually rendering) while still well
-				// short of the old 0.095 (63%, no margin at all against the ring).
-				sizeEx = 0.075 * safezoneH;
+				// ~59% of the badge box - confirmed live that 0.075 (50%) still
+				// read too small, so this jumps further than the last increment
+				// rather than inching up again. Still a bit short of the old 0.095
+				// (63%, no margin at all against the ring) to keep some breathing
+				// room.
+				sizeEx = 0.088 * safezoneH;
 				shadow = false;
 				colorBackground[] = {0,0,0,0};
 			};
@@ -159,15 +223,17 @@ class RscTitles
 			// client computes and renders its own countdown locally from the
 			// already-broadcast timelimit/Waldo_startTime, see Waldo_fnc_topBarTimer).
 			// Centred top, matching this mission pack's shared WALDO_CASING look.
-			// 3600-3603: timer shadow/casing/accent/text. 3610-3612: keybind row
-			// shadow/casing/text.
+			// 3600-3603: timer shadow/casing/accent/text. 3610-3614: keybind row
+			// shadow/casing/2 text lines (7 items under Testing Mode don't fit one
+			// line without clipping - CT_STATIC never wraps, it just cuts overflow
+			// - so the row is genuinely two stacked lines, not one).
 			// ====================================================================
 			class topBarTimerShadow: RscText
 			{
 				idc = 3600;
-				x = ((safezoneX + (0.5 * safezoneW)) - (0.15 * safezoneW)) - (0.004 * safezoneH);
+				x = ((safezoneX + (0.5 * safezoneW)) - (0.18 * safezoneW)) - (0.004 * safezoneH);
 				y = (safezoneY + (0.015 * safezoneH)) - (0.004 * safezoneH);
-				w = (0.30 * safezoneW) + (0.008 * safezoneH);
+				w = (0.36 * safezoneW) + (0.008 * safezoneH);
 				h = (0.062 * safezoneH) + (0.008 * safezoneH);
 				colorBackground[] = WALDO_SHADOW;
 				style = 0;
@@ -175,19 +241,24 @@ class RscTitles
 			class topBarTimerBG: RscText
 			{
 				idc = 3601;
-				x = (safezoneX + (0.5 * safezoneW)) - (0.15 * safezoneW);
+				x = (safezoneX + (0.5 * safezoneW)) - (0.18 * safezoneW);
 				y = safezoneY + (0.015 * safezoneH);
-				w = 0.30 * safezoneW;
+				w = 0.36 * safezoneW;
 				h = 0.062 * safezoneH;
 				colorBackground[] = WALDO_HEADERBG;
 				style = 0;
 			};
+			// Baseline/full-width position for the accent bar - Waldo_fnc_topBarTimer
+			// shrinks its w/x at runtime to double as a countdown progress bar (see
+			// there for why: needs a live fraction-of-time-remaining this file can't
+			// know), and flashes it in the last 30s. These values are just its
+			// starting (100% remaining) state.
 			class topBarTimerAccent: RscText
 			{
 				idc = 3602;
-				x = (safezoneX + (0.5 * safezoneW)) - (0.15 * safezoneW);
+				x = (safezoneX + (0.5 * safezoneW)) - (0.18 * safezoneW);
 				y = (safezoneY + (0.015 * safezoneH)) + (0.062 * safezoneH);
-				w = 0.30 * safezoneW;
+				w = 0.36 * safezoneW;
 				h = 0.006 * safezoneH;
 				colorBackground[] = WALDO_ACCENT;
 				style = 0;
@@ -196,9 +267,9 @@ class RscTitles
 			{
 				idc = 3603;
 				text = "";
-				x = (safezoneX + (0.5 * safezoneW)) - (0.15 * safezoneW);
+				x = (safezoneX + (0.5 * safezoneW)) - (0.18 * safezoneW);
 				y = safezoneY + (0.015 * safezoneH);
-				w = 0.30 * safezoneW;
+				w = 0.36 * safezoneW;
 				h = 0.062 * safezoneH;
 				colorBackground[] = {0,0,0,0};
 				colorText[] = {0.95,0.93,0.86,1};
@@ -207,42 +278,102 @@ class RscTitles
 				// script via ctrlTextHeight, same as roleText.
 				style = ST_CENTER;
 				font = "PuristaBold";
-				sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.5);
+				sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.35);
 				shadow = 1;
 			};
 			class topBarHintShadow: RscText
 			{
 				idc = 3610;
-				x = ((safezoneX + (0.5 * safezoneW)) - (0.15 * safezoneW)) - (0.004 * safezoneH);
+				x = ((safezoneX + (0.5 * safezoneW)) - (0.18 * safezoneW)) - (0.004 * safezoneH);
 				y = ((safezoneY + (0.015 * safezoneH)) + (0.068 * safezoneH)) - (0.004 * safezoneH);
-				w = (0.30 * safezoneW) + (0.008 * safezoneH);
-				h = (0.045 * safezoneH) + (0.008 * safezoneH);
+				w = (0.36 * safezoneW) + (0.008 * safezoneH);
+				h = (0.075 * safezoneH) + (0.008 * safezoneH);
 				colorBackground[] = {0, 0, 0, 0.55};
 				style = 0;
 			};
 			class topBarHintBG: RscText
 			{
 				idc = 3611;
-				x = (safezoneX + (0.5 * safezoneW)) - (0.15 * safezoneW);
+				x = (safezoneX + (0.5 * safezoneW)) - (0.18 * safezoneW);
 				y = (safezoneY + (0.015 * safezoneH)) + (0.068 * safezoneH);
-				w = 0.30 * safezoneW;
-				h = 0.045 * safezoneH;
+				w = 0.36 * safezoneW;
+				h = 0.075 * safezoneH;
 				colorBackground[] = {0.105, 0.11, 0.095, 0.85};
 				style = 0;
 			};
+			// Two stacked lines, not one - a plain RscText/CT_STATIC control never
+			// wraps (it just cuts overflow), and 7 keybinds under Testing Mode
+			// never fit one line at a readable size regardless of box width.
+			// Waldo_fnc_initHud splits the current role's hint list evenly across
+			// both.
 			class topBarHintText: RscText
 			{
 				idc = 3612;
 				text = "";
-				x = (safezoneX + (0.5 * safezoneW)) - (0.15 * safezoneW);
+				x = ((safezoneX + (0.5 * safezoneW)) - (0.18 * safezoneW)) + (0.015 * safezoneW);
 				y = (safezoneY + (0.015 * safezoneH)) + (0.068 * safezoneH);
-				w = 0.30 * safezoneW;
-				h = 0.045 * safezoneH;
+				w = (0.36 * safezoneW) - (0.030 * safezoneW);
+				h = 0.0375 * safezoneH;
 				colorBackground[] = {0,0,0,0};
 				colorText[] = {0.95,0.93,0.86,1};
 				style = ST_CENTER;
 				font = "PuristaMedium";
-				sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.8);
+				sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.72);
+				shadow = 1;
+			};
+			class topBarHintText2: RscText
+			{
+				idc = 3613;
+				text = "";
+				x = ((safezoneX + (0.5 * safezoneW)) - (0.18 * safezoneW)) + (0.015 * safezoneW);
+				y = (safezoneY + (0.015 * safezoneH)) + (0.068 * safezoneH) + (0.0375 * safezoneH);
+				w = (0.36 * safezoneW) - (0.030 * safezoneW);
+				h = 0.0375 * safezoneH;
+				colorBackground[] = {0,0,0,0};
+				colorText[] = {0.95,0.93,0.86,1};
+				style = ST_CENTER;
+				font = "PuristaMedium";
+				sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.72);
+				shadow = 1;
+			};
+
+			// Announcement banner (airdrops, etc. - Waldo_fnc_topBarAnnounce):
+			// "pops out" from directly under the keybind row, fades in, holds,
+			// fades back out - alpha 0 by default. All three (shadow/bg/text)
+			// need real idc's since the fade animates all of them together.
+			class topBarAnnounceShadow: RscText
+			{
+				idc = 3619;
+				x = ((safezoneX + (0.5 * safezoneW)) - (0.18 * safezoneW)) - (0.004 * safezoneH);
+				y = ((safezoneY + (0.015 * safezoneH)) + (0.149 * safezoneH)) - (0.004 * safezoneH);
+				w = (0.36 * safezoneW) + (0.008 * safezoneH);
+				h = (0.05 * safezoneH) + (0.008 * safezoneH);
+				colorBackground[] = {0, 0, 0, 0};
+				style = 0;
+			};
+			class topBarAnnounceBG: RscText
+			{
+				idc = 3620;
+				x = (safezoneX + (0.5 * safezoneW)) - (0.18 * safezoneW);
+				y = (safezoneY + (0.015 * safezoneH)) + (0.149 * safezoneH);
+				w = 0.36 * safezoneW;
+				h = 0.05 * safezoneH;
+				colorBackground[] = {0.105, 0.11, 0.095, 0};
+				style = 0;
+			};
+			class topBarAnnounceText: RscText
+			{
+				idc = 3621;
+				text = "";
+				x = (safezoneX + (0.5 * safezoneW)) - (0.18 * safezoneW);
+				y = (safezoneY + (0.015 * safezoneH)) + (0.149 * safezoneH);
+				w = 0.36 * safezoneW;
+				h = 0.05 * safezoneH;
+				colorBackground[] = {0,0,0,0};
+				colorText[] = {1, 0.82, 0.25, 0};
+				style = ST_CENTER;
+				font = "PuristaBold";
+				sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.0);
 				shadow = 1;
 			};
 		};
@@ -256,12 +387,24 @@ class RscTitles
 		// entire HUD (badge + key hints) the moment the picker first opened.
 		// ========================================================================
 		class Controls {
+			// Row height was 0.044*safezoneH for ALL rows, but the SELECTED row
+			// renders TWO lines (label at size 1.0, description at 0.8) - two
+			// stacked lines at those sizes need roughly 0.09*safezoneH with a
+			// real line-height margin (same "budget must exceed the actual
+			// rendered size" rule as the old key-hints panel), so the
+			// description clipped past the row's bottom edge every time. Rows
+			// bumped to 0.075*safezoneH each (group height grown to match) fixes
+			// that with real margin. `style = 0` on the group itself (overriding
+			// RscControlsGroup's own default) kills the scrollbar this never
+			// needed - 5 fixed rows in a group sized to fit all of them isn't
+			// scrollable content to begin with.
 			class pingWheelGroup: RscControlsGroup {
 				idc = 3520;
 				x = (safezoneX + (0.5 * safezoneW)) - (0.1 * safezoneW);
 				y = safezoneY + (0.28 * safezoneH);
 				w = 0.2 * safezoneW;
-				h = 0.27 * safezoneH;
+				h = 0.42 * safezoneH;
+				style = 0;
 
 				class Controls {
 					class pwShadow: RscText {
@@ -269,7 +412,7 @@ class RscTitles
 						x = -0.004 * safezoneH;
 						y = -0.004 * safezoneH;
 						w = (0.2 * safezoneW) + (0.008 * safezoneH);
-						h = (0.27 * safezoneH) + (0.008 * safezoneH);
+						h = (0.42 * safezoneH) + (0.008 * safezoneH);
 						colorBackground[] = WALDO_SHADOW;
 						style = 0;
 					};
@@ -277,7 +420,7 @@ class RscTitles
 						idc = -1;
 						x = 0; y = 0;
 						w = 0.2 * safezoneW;
-						h = 0.27 * safezoneH;
+						h = 0.42 * safezoneH;
 						colorBackground[] = WALDO_CASING;
 						style = 0;
 					};
@@ -315,9 +458,9 @@ class RscTitles
 						idc = 3510;
 						text = "";
 						x = 0.010 * safezoneW;
-						y = 0.042 * safezoneH;
+						y = 0.040 * safezoneH;
 						w = 0.18 * safezoneW;
-						h = 0.044 * safezoneH;
+						h = 0.075 * safezoneH;
 						size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.0);
 						colorBackground[] = {0,0,0,0};
 						class Attributes { font = "PuristaMedium"; color = "#BFBCAF"; align = "left"; shadow = 1; };
@@ -326,9 +469,9 @@ class RscTitles
 						idc = 3511;
 						text = "";
 						x = 0.010 * safezoneW;
-						y = 0.086 * safezoneH;
+						y = 0.115 * safezoneH;
 						w = 0.18 * safezoneW;
-						h = 0.044 * safezoneH;
+						h = 0.075 * safezoneH;
 						size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.0);
 						colorBackground[] = {0,0,0,0};
 						class Attributes { font = "PuristaMedium"; color = "#BFBCAF"; align = "left"; shadow = 1; };
@@ -337,9 +480,9 @@ class RscTitles
 						idc = 3512;
 						text = "";
 						x = 0.010 * safezoneW;
-						y = 0.130 * safezoneH;
+						y = 0.190 * safezoneH;
 						w = 0.18 * safezoneW;
-						h = 0.044 * safezoneH;
+						h = 0.075 * safezoneH;
 						size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.0);
 						colorBackground[] = {0,0,0,0};
 						class Attributes { font = "PuristaMedium"; color = "#BFBCAF"; align = "left"; shadow = 1; };
@@ -348,9 +491,9 @@ class RscTitles
 						idc = 3513;
 						text = "";
 						x = 0.010 * safezoneW;
-						y = 0.174 * safezoneH;
+						y = 0.265 * safezoneH;
 						w = 0.18 * safezoneW;
-						h = 0.044 * safezoneH;
+						h = 0.075 * safezoneH;
 						size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.0);
 						colorBackground[] = {0,0,0,0};
 						class Attributes { font = "PuristaMedium"; color = "#BFBCAF"; align = "left"; shadow = 1; };
@@ -359,9 +502,9 @@ class RscTitles
 						idc = 3514;
 						text = "";
 						x = 0.010 * safezoneW;
-						y = 0.218 * safezoneH;
+						y = 0.340 * safezoneH;
 						w = 0.18 * safezoneW;
-						h = 0.044 * safezoneH;
+						h = 0.075 * safezoneH;
 						size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.0);
 						colorBackground[] = {0,0,0,0};
 						class Attributes { font = "PuristaMedium"; color = "#BFBCAF"; align = "left"; shadow = 1; };

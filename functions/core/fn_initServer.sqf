@@ -60,15 +60,16 @@ while { true } do {
 // --- Warmup: let clients teleport in while roles are picked ---
 missionNamespace setVariable ["mapDone", true, true];
 private _warmup = missionNamespace getVariable ["roundWarmupLength", 20];
+// Broadcast the end time ONCE - clients (Waldo_fnc_warmupBar) compute their own
+// local countdown from it every frame instead of the old per-second
+// remoteExec'd hint, same reasoning as Waldo_fnc_topBarTimer's round clock.
+// This loop still runs for the server's OWN timing (waiting out the warmup
+// duration, or reacting to the debug "Skip Warmup" flag) - it just no longer
+// pushes any client-facing text itself.
+missionNamespace setVariable ["Waldo_warmupEndAt", time + _warmup, true];
 for "_i" from 0 to (_warmup - 1) do {
 	// Dev/test menu can end the warmup early (the "Skip Warmup" test action).
 	if (missionNamespace getVariable ["Waldo_debugSkipWarmup", false]) exitWith {};
-	private _remaining = _warmup - _i;
-	private _text = format [
-		"<t align='center' size='1.5'><t color='#ffbb00' shadow='1'>Selecting Roles:</t><br />%1</t>",
-		_remaining
-	];
-	{ (parseText _text) remoteExec ["hint", _x]; } forEach allPlayers;
 	sleep 1;
 };
 ["warmup-done"] call Waldo_logPhase;

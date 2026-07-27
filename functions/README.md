@@ -194,29 +194,53 @@ arena, and a banner names the MVP (or "Round Complete" if nobody scored a kill).
 `endRound` sleeps 6s afterward so it has time to play before the mission
 restarts.
 
-## Top bar (round timer + keybind row)
+## Top bar (warmup / round timer + keybind row + announcements)
 
-A centred, top-of-screen bar (part of the `TTTHud` title resource, same as the
-role badge) replaces the old server-broadcast round-timer hint and the old
-bottom-left key-hints panel:
+A centred, top-of-screen bar replaces the old server-broadcast round-timer
+hint and the old bottom-left key-hints panel:
 
-- The timer row always shows the civilian countdown (and, for Traitors, the
-  longer deadline in parentheses) and counts down in real time. It's driven by
-  `Waldo_fnc_topBarTimer`, started once per client from `fn_initClient.sqf`
-  (never restarted on respawn), which computes the remaining time locally from
-  already-broadcast state (`Waldo_startTime`, `timelimit`, `Waldo_roundLiveAt`)
-  instead of the server formatting and `remoteExec`-ing a string to every
-  client every second. `Waldo_roundLiveAt` is the server `time` the round went
-  live at; the dev "freeze" debug flag keeps it in lockstep with real time so
-  the display doesn't quietly keep counting down while everything else is
-  paused (`Waldo_fnc_roundLoop`).
-- The keybind row below it lists whatever's relevant to your current role
+- During warmup (role selection), a separate `TTTWarmup` title resource shows
+  "Selecting Roles: N" in the same position/casing the round timer will take
+  over once the round goes live - role isn't assigned yet during warmup, so
+  there's nothing for `TTTHud` itself to show. Driven by `Waldo_fnc_warmupBar`
+  (started from `fn_initClient.sqf` right after the pregame "arena ready"
+  wait), which counts down locally from `Waldo_warmupEndAt` (the server `time`
+  warmup ends at, broadcast once by `fn_initServer.sqf`) - same
+  compute-locally-from-broadcast-state approach as the round timer below,
+  instead of a per-second `remoteExec`'d hint. It also exits early if the dev
+  "Skip Warmup" flag fires. `TTTHud`'s own `titleRsc` call at round-live
+  evicts this display automatically (only one title resource is ever shown at
+  a time), so nothing has to explicitly close it.
+- Once the round is live, the timer row (part of the `TTTHud` title resource,
+  same as the role badge) shows the civilian countdown, labelled ("Round
+  M:SS"), plus a labelled Traitor deadline for Traitors only ("Traitor M:SS").
+  It's driven by `Waldo_fnc_topBarTimer`, started once per client from
+  `fn_initClient.sqf` (never restarted on respawn), which computes the
+  remaining time locally from already-broadcast state (`Waldo_startTime`,
+  `timelimit`, `Waldo_roundLiveAt`) instead of the server formatting and
+  `remoteExec`-ing a string to every client every second. `Waldo_roundLiveAt`
+  is the server `time` the round went live at; the dev "freeze" debug flag
+  keeps it in lockstep with real time so the display doesn't quietly keep
+  counting down while everything else is paused (`Waldo_fnc_roundLoop`). A
+  thin accent bar under the timer doubles as a progress indicator: it shrinks
+  toward the centre as the civilian clock runs down, and flashes once 30s or
+  less remain.
+- The keybind row below that lists whatever's relevant to your current role
   (`Waldo_keyHintsFor`, shared with the scoreboard's own keybind panel - see
-  below), redrawn on every respawn/role change by `Waldo_fnc_initHud`. It's
-  visible for a few seconds after each redraw, then fades out completely
-  (not just dimmed) rather than sitting on screen for the whole round - a
-  token guard stops an in-flight fade from a previous redraw from clobbering
-  a fresh one if you respawn again before the last fade finished.
+  below), split across two stacked lines (a single `RscText` never wraps, it
+  only clips overflow, and Testing Mode's full key list doesn't fit one line),
+  redrawn on every respawn/role change by `Waldo_fnc_initHud`. It's visible
+  for a few seconds after each redraw, then fades out completely (not just
+  dimmed) rather than sitting on screen for the whole round - a token guard
+  stops an in-flight fade from a previous redraw from clobbering a fresh one
+  if you respawn again before the last fade finished.
+- A banner directly below the keybind row "pops out" for one-off callouts
+  during a live round (airdrops, currently) - it fades in, holds a few
+  seconds, then fades back out, rather than an instant hint-style pop. Driven
+  by `Waldo_fnc_topBarAnnounce` (`[_text, _color, _hold] remoteExec [...]`),
+  token-guarded the same way as the keybind row's fade so a newer announcement
+  always supersedes a still-fading-out older one instead of fighting it.
+  `Waldo_fnc_spawnAirdrop` uses it for both normal and golden airdrop drops.
 
 The scoreboard (`Waldo_fnc_scoreboard`, **K**) also shows the same
 `Waldo_keyHintsFor` list, stacked vertically in a panel attached to its right

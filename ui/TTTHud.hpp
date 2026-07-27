@@ -17,27 +17,28 @@ class RscTitles
 
 		// GMod-TTT style role crest: a circular badge with the role's letter
 		// (T / D / I / J) centred in it, tinted to the role colour. The badge is
-		// SQUARE (w == h, both in safezoneH units) so ui\role.paa renders as a
+		// SQUARE (w == h, both in safezoneH units) so ui\role.png renders as a
 		// true circle and stays fully on-screen — the old height used safezoneW,
 		// which stretched it into an off-screen ellipse on widescreen.
 		class controlsBackground {
-			// Drop shadow behind the whole crest, same offset-dark-copy treatment the
-			// shop/debug panels use, so this reads as a mounted badge instead of a
-			// flat sticker floating over the world.
+			// Drop shadow behind the whole crest: a dedicated soft Gaussian-blurred
+			// disc (ui\roleshadow.png), not an offset dark-tinted copy of the fill -
+			// that old technique produced a hard-edged flat silhouette instead of an
+			// actual soft shadow.
 			class roleShadow: RscPicture
 			{
 				idc = -1;
-				text = "ui\rolebg.paa";
+				text = "ui\roleshadow.png";
 				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.008 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.010 * safezoneH);
 				w = 0.15 * safezoneH;
 				h = 0.15 * safezoneH;
-				color = [0,0,0,0.55];
+				color = [0,0,0,0.8];
 			};
 			class roleTextBGBG: RscPicture
 			{
 				idc = 999;
-				text = "ui\rolebg.paa";
+				text = "ui\rolebg.png";
 				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
 				y = (safezoneH + safezoneY) - (0.185 * safezoneH);
 				w = 0.15 * safezoneH;
@@ -47,7 +48,7 @@ class RscTitles
 			class roleTextBG: RscPicture
 			{
 				idc = 1000;
-				text = "ui\role.paa";
+				text = "ui\role.png";
 				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
 				y = (safezoneH + safezoneY) - (0.185 * safezoneH);
 				w = 0.15 * safezoneH;

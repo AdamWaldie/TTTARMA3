@@ -460,6 +460,6 @@ Waldo_debugDump = {
 ["Diagnostics", "Show Arena Info",   "Hint the arena centre / radius",           "local", { hint format ["Arena centre: %1\nRadius: %2", missionNamespace getVariable ["mapPos", []], missionNamespace getVariable ["mapRadius", 0]] }] call Waldo_debugRegister;
 
 // Menu
-["Menu", "Close Menu", "Close this panel (or press \\)", "local", { closeDialog 1 }] call Waldo_debugRegister;
+["Menu", "Close Menu", "Close this panel (or press [)", "local", { closeDialog 1 }] call Waldo_debugRegister;
 
 diag_log format ["[Waldo] debugInit: %1 test actions registered", count Waldo_debugRegistry];

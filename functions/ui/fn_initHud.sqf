@@ -61,7 +61,7 @@ if (_role == "Traitor") then {
 	_hints pushBack "<t color='#F2BE55'>T</t> (hold)  Ping";
 };
 if (missionNamespace getVariable ["TestingFlag", false]) then {
-	_hints pushBack "<t color='#9a2ecc'>\</t>  Dev Menu";
+	_hints pushBack "<t color='#9a2ecc'>[</t>  Dev Menu";
 	_hints pushBack "<t color='#9a2ecc'>]</t>  Cycle Role";
 };
 private _hintBody = "";

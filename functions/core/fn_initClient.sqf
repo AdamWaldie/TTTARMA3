@@ -164,7 +164,10 @@ removeBackpack player;
 						_handled = true;
 					};
 				};
-				case 43: {   // \ - open the dev/test menu (only under Testing Mode)
+				case 26: {   // [ - open the dev/test menu (only under Testing Mode)
+					// Was bound to \ (DIK 43); moved here because \ has a history of
+					// colliding with a default Arma keybind and never reliably reaching
+					// this handler at all, unlike every other key bound in this switch.
 					if (missionNamespace getVariable ["TestingFlag", false]) then {
 						// debugMenu waitUntils on the dialog existing after createDialog -
 						// waitUntil needs a scheduled environment same as sleep does, and

@@ -184,8 +184,8 @@ restarts.
 - **Y** — use your most recently bought activation item.
 - **L** — holster / lower weapon.
 - **K** — toggle the in-round scoreboard.
-- **T** — traitor coordination ping (Traitors only).
-- **\\** — open the dev/test menu (**only** when the **Testing Mode** parameter is on).
+- **T** — hold to pick a ping type (Target / Location / Danger / Regroup Here / Enemy Spotted), release to send it (Traitors only).
+- **[** — open the dev/test menu (**only** when the **Testing Mode** parameter is on).
 - **]** — instantly cycle your own role Innocent → Traitor → Detective → Jester (Testing Mode only).
 
 ## Testing / dev mode
@@ -193,7 +193,7 @@ restarts.
 Set the **Enable Testing Mode** lobby parameter to *Yes* to unlock a solo-friendly
 test framework. Beyond the original behaviour (phase markers echoed to chat and the
 "Traitors win" auto-end suppressed so a lone tester is never kicked out), pressing
-**\\** in-round opens an extensible console (`Waldo_fnc_debugMenu`) that renders a
+**[** in-round opens an extensible console (`Waldo_fnc_debugMenu`) that renders a
 registry of test tools grouped by category. Everything is gated on `TestingFlag`:
 the key does nothing, the server dispatch refuses to run, and the simulated
 player-count override is ignored when Testing Mode is off, so normal games are

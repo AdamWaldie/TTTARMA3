@@ -41,7 +41,15 @@ private _badgeX = (safezoneW + safezoneX) - (0.175 * safezoneH);
 private _badgeY = (safezoneH + safezoneY) - (0.185 * safezoneH);
 private _badgeSize = 0.15 * safezoneH;
 private _textH = ctrlTextHeight _badge;
-_badge ctrlSetPosition [_badgeX, _badgeY + ((_badgeSize - _textH) / 2), _badgeSize, _textH];
+
+// J's hook-shaped tail sits toward the bottom-right of its bounding box, so a
+// geometrically-centred J still reads as drifted right - unlike vertical
+// centring above, there's no engine measurement for "optical" glyph weight,
+// so this is a small eyeballed nudge specific to that one letter, not a
+// general formula.
+private _opticalNudgeX = if (_role == "Jester") then { -0.006 * safezoneH } else { 0 };
+
+_badge ctrlSetPosition [_badgeX + _opticalNudgeX, _badgeY + ((_badgeSize - _textH) / 2), _badgeSize, _textH];
 _badge ctrlCommit 0;
 
 // Credits pill (badge nameplate): only Traitor/Detective have credits at all,

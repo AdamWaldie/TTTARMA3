@@ -86,9 +86,10 @@ class RscTitles
 				// ctrlTextHeight's actual measured value - not another guessed offset.
 				style = ST_CENTER;
 				font = "PuristaBold";
-				// ~43% of the badge box, not 63% (the old 0.095) - leaves real margin
-				// so the glyph can't brush the ring regardless of the font's own metrics.
-				sizeEx = 0.065 * safezoneH;
+				// ~50% of the badge box - bumped up from 0.065 (43%, confirmed too
+				// small once the badge was actually rendering) while still well
+				// short of the old 0.095 (63%, no margin at all against the ring).
+				sizeEx = 0.075 * safezoneH;
 				shadow = false;
 				colorBackground[] = {0,0,0,0};
 			};

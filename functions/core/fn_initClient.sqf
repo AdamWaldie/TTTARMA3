@@ -318,11 +318,16 @@ player addEventHandler ["HandleDamage", {
 //      implementation) - catches a unit stuck INCAPACITATED if the event is
 //      ever missed, or doesn't fire at all under a given ACE medical setting.
 [] spawn {
-	["ace_unconscious", {
-		params ["_unit", "_state"];
-		private _protected = ((_unit getVariable ["role", ""]) == "Jester") || (_unit getVariable ["Waldo_deadRingerTriggered", false]);
-		if (_state && {_unit == player} && {!_protected}) then { player setDamage 1; };
-	}] call CBA_fnc_addEventHandler;
+	// CBA (and therefore ACE) is no longer treated as a hard requirement -
+	// this hook is purely additive on top of the lifeState watchdog below,
+	// which already catches the same case without either mod loaded.
+	if (!isNil "CBA_fnc_addEventHandler") then {
+		["ace_unconscious", {
+			params ["_unit", "_state"];
+			private _protected = ((_unit getVariable ["role", ""]) == "Jester") || (_unit getVariable ["Waldo_deadRingerTriggered", false]);
+			if (_state && {_unit == player} && {!_protected}) then { player setDamage 1; };
+		}] call CBA_fnc_addEventHandler;
+	};
 
 	while { true } do {
 		private _protected = ((player getVariable ["role", ""]) == "Jester") || (player getVariable ["Waldo_deadRingerTriggered", false]);

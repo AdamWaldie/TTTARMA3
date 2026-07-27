@@ -2,15 +2,25 @@
 // Waldo_fnc_detectiveRadar
 // CLIENT: like the traitor radar but shows all units AND corpses as neutral
 // green pulses (position only, not role), recharging every 45s. Both the
-// Draw3D handler and its CBA per-frame recharge replace rather than stack
-// if called again (e.g. the shop item is bought more than once).
+// Draw3D handler and its recharge loop replace rather than stack if called
+// again (e.g. the shop item is bought more than once).
+//
+// Recharge prefers CBA_fnc_addPerFrameHandler when CBA is loaded, falling
+// back to a plain spawn/sleep loop otherwise - CBA is no longer treated as
+// a hard requirement. See Waldo_fnc_traitorRadar for the same pattern.
 //////////////////////////////////////////////////////////////////
 
 private _old = player getVariable ["Waldo_radarEH", -1];
 if (_old >= 0) then { removeMissionEventHandler ["Draw3D", _old]; };
 
-private _oldPfh = player getVariable ["Waldo_radarPFH", -1];
-if (_oldPfh >= 0) then { [_oldPfh] call CBA_fnc_removePerFrameHandler; };
+private _useCBA = !(isNil "CBA_fnc_addPerFrameHandler");
+
+if (_useCBA) then {
+	private _oldPfh = player getVariable ["Waldo_radarPFH", -1];
+	if (_oldPfh >= 0) then { [_oldPfh] call CBA_fnc_removePerFrameHandler; };
+} else {
+	player setVariable ["Waldo_radarToken", (player getVariable ["Waldo_radarToken", 0]) + 1];
+};
 
 player setVariable ["radar", 1];
 
@@ -26,9 +36,20 @@ private _eh = addMissionEventHandler ["Draw3D", {
 }];
 player setVariable ["Waldo_radarEH", _eh];
 
-private _pfh = [{
-	params ["_args", "_handle"];
-	if (!alive player) exitWith { [_handle] call CBA_fnc_removePerFrameHandler; };
-	player setVariable ["radar", 1];
-}, 45] call CBA_fnc_addPerFrameHandler;
-player setVariable ["Waldo_radarPFH", _pfh];
+if (_useCBA) then {
+	private _pfh = [{
+		params ["_args", "_handle"];
+		if (!alive player) exitWith { [_handle] call CBA_fnc_removePerFrameHandler; };
+		player setVariable ["radar", 1];
+	}, 45] call CBA_fnc_addPerFrameHandler;
+	player setVariable ["Waldo_radarPFH", _pfh];
+} else {
+	private _token = player getVariable ["Waldo_radarToken", 0];
+	[_token] spawn {
+		params ["_token"];
+		while { alive player && {(player getVariable ["Waldo_radarToken", 0]) == _token} } do {
+			sleep 45;
+			if ((player getVariable ["Waldo_radarToken", 0]) == _token) then { player setVariable ["radar", 1]; };
+		};
+	};
+};

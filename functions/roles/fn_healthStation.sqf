@@ -35,23 +35,51 @@ _station setVariable ["Waldo_healUntil", time + 120, true];
 // is ACE's own documented way to heal a unit; harmless/idempotent to call
 // repeatedly on someone already at full health, so no extra "are they
 // hurt" check is needed before calling it.
-[{
-	params ["_args", "_handle"];
-	_args params ["_station"];
-	if (isNull _station || {time > (_station getVariable ["Waldo_healUntil", 0])}) exitWith {
-		[_handle] call CBA_fnc_removePerFrameHandler;
-	};
-	{
-		if (alive _x && {(_x distance _station) < 5}) then {
-			if (isNil "ace_medical_treatment_fnc_fullHeal") then {
-				if (damage _x > 0) then {
-					[_x, (((damage _x) - 0.05) max 0)] remoteExec ["setDamage", _x];
+//
+// Tick loop prefers CBA_fnc_addPerFrameHandler when CBA is loaded, falling
+// back to a plain spawn/sleep loop otherwise - CBA is no longer treated as
+// a hard requirement. The heal logic itself is duplicated between the two
+// rather than shared via an outer private: SQF has no closures, so a code
+// block only sees variables from whatever calls it later, never from its
+// own defining scope (both the CBA callback and the spawned loop body run
+// later, called by CBA/the engine, not by this script).
+if (isNil "CBA_fnc_addPerFrameHandler") then {
+	[_station] spawn {
+		params ["_station"];
+		while { !(isNull _station) && {time <= (_station getVariable ["Waldo_healUntil", 0])} } do {
+			{
+				if (alive _x && {(_x distance _station) < 5}) then {
+					if (isNil "ace_medical_treatment_fnc_fullHeal") then {
+						if (damage _x > 0) then {
+							[_x, (((damage _x) - 0.05) max 0)] remoteExec ["setDamage", _x];
+						};
+					} else {
+						[objNull, _x] remoteExec ["ace_medical_treatment_fnc_fullHeal", _x];
+					};
 				};
-			} else {
-				[objNull, _x] remoteExec ["ace_medical_treatment_fnc_fullHeal", _x];
-			};
+			} forEach allPlayers;
+			sleep 2;
 		};
-	} forEach allPlayers;
-}, 2, [_station]] call CBA_fnc_addPerFrameHandler;
+	};
+} else {
+	[{
+		params ["_args", "_handle"];
+		_args params ["_station"];
+		if (isNull _station || {time > (_station getVariable ["Waldo_healUntil", 0])}) exitWith {
+			[_handle] call CBA_fnc_removePerFrameHandler;
+		};
+		{
+			if (alive _x && {(_x distance _station) < 5}) then {
+				if (isNil "ace_medical_treatment_fnc_fullHeal") then {
+					if (damage _x > 0) then {
+						[_x, (((damage _x) - 0.05) max 0)] remoteExec ["setDamage", _x];
+					};
+				} else {
+					[objNull, _x] remoteExec ["ace_medical_treatment_fnc_fullHeal", _x];
+				};
+			};
+		} forEach allPlayers;
+	}, 2, [_station]] call CBA_fnc_addPerFrameHandler;
+};
 
 diag_log format ["[Waldo][server] healthStation deployed at %1", _pos];

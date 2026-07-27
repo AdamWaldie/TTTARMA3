@@ -243,6 +243,11 @@ Waldo_traitorShop = [
 		{},
 		"A medikit + first aid kit to patch yourself up"],
 
+	["Fake Health Station", 2, "weapon",
+		{ [] call Waldo_fnc_fakeHealthStation; },
+		{},
+		"Deploy a decoy - identical to a real Health Station until someone uses it, then it detonates. You're safe from your own trap."],
+
 	["Body Remover", 1, "activation",
 		{},
 		{ [] call Waldo_fnc_removeBody },
@@ -309,7 +314,7 @@ Waldo_detectiveShop = [
 	["Health Station", 1, "weapon",
 		{ [] call Waldo_fnc_healthStation; },
 		{},
-		"Deploy a station that heals nearby players"],
+		"Deploy a station - use its action to fully heal yourself"],
 
 	["Defibrillator", 2, "activation",
 		{},

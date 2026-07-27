@@ -65,7 +65,7 @@ while { missionNamespace getVariable ["gameOn", false] } do {
 
 		// Measured/positioned only when (re)fetched, not every tick - every
 		// value this ever displays is the same handful of fixed-height
-		// characters (digits, a colon, "Round"/"Traitor" labels), so its
+		// characters (digits, a colon, "Round"/"Deadline" labels), so its
 		// rendered height doesn't meaningfully change between ticks, only its
 		// width (traitors see a longer string) - and ST_CENTER already
 		// handles horizontal centring on its own.
@@ -83,13 +83,16 @@ while { missionNamespace getVariable ["gameOn", false] } do {
 	private _civRemaining = _start - _elapsed;
 
 	// Labelled, not just two bare numbers side by side - "3:24 (4:09)" never
-	// said which was which. Traitors get both clocks (their real deadline runs
-	// longer and grows on every death, Waldo_fnc_onKilled); everyone else only
-	// ever sees the one that applies to them.
+	// said which was which. "Deadline", not "Traitor": this second clock is
+	// the round's real hard end time (timelimit - grows on every death, see
+	// Waldo_fnc_onKilled), not a "time left as a Traitor" countdown - only
+	// Traitors are shown it, since only they get the full extended-by-deaths
+	// picture, but the label needs to describe what the number IS, not who
+	// sees it.
 	private _text = "Round  " + (if (_civRemaining <= 0) then { "OVERTIME" } else { [_civRemaining] call _fmt });
 	if ((player getVariable ["role", ""]) == "Traitor") then {
 		private _traitorRemaining = _timelimit - _elapsed;
-		_text = _text + format ["     Traitor  %1", [_traitorRemaining] call _fmt];
+		_text = _text + format ["     Deadline  %1", [_traitorRemaining] call _fmt];
 	};
 	_timerCtrl ctrlSetText _text;
 

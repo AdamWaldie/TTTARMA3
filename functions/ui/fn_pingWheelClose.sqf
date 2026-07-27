@@ -14,7 +14,7 @@ if (!isNil "Waldo_pingWheelEH") then {
 };
 
 disableSerialization;
-private _display = uiNamespace getVariable ["TTTPingWheel", displayNull];
+private _display = uiNamespace getVariable ["TTTHud", displayNull];
 if !(isNull _display) then { (_display displayCtrl 3520) ctrlShow false; };
 
 private _options = missionNamespace getVariable ["Waldo_pingWheelOptions", []];

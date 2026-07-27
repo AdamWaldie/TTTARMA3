@@ -511,12 +511,20 @@ class WaldoShop {
 				// that the group scrolls once a round's purchases run past one screen,
 				// and every runtime row shares its scroll offset as a sibling in the
 				// same group.
+				//
+				// A declared child sitting at the SAME x/y as the runtime rows/buttons
+				// ate every click meant for them - a config-time control apparently
+				// wins hit-testing over a ctrlCreate'd one layered "on top" of it in
+				// the same group. Pushed off to a razor-thin sliver past the row
+				// content's right edge (rows/buttons only ever use x in [0, 0.18*W])
+				// so it still forces the same scroll-triggering height without ever
+				// overlapping anything clickable.
 				class shopPurchSpacer: RscStructuredText {
 					idc = -1;
 					text = "";
-					x = 0;
+					x = 0.181 * safezoneW;
 					y = 0;
-					w = 0.18 * safezoneW;
+					w = 0.001 * safezoneW;
 					h = 2.0 * safezoneH;
 				};
 			};

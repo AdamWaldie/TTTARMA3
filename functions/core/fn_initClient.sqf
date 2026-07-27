@@ -56,21 +56,27 @@ player allowDamage false;
 
 waitUntil { !isNull player && time > 0 };
 
-// Intro music. Started in a guarded thread so it is not swallowed while the
-// client is still on the loading screen (the cause of it not playing for
-// everyone): wait until the main game display exists, then play - unless the
-// round already went live (a JIP mid-round shouldn't restart the intro).
-[] spawn {
-	waitUntil { !isNull (findDisplay 46) && {time > 0} };
-	sleep 0.5;
-	if !(missionNamespace getVariable ["gameOn", false]) then {
-		playMusic ["TTTIntroMusic", 20];
-	};
-};
-
 // --- Pregame: wait until the arena is built ---
 [] call Waldo_fnc_pregameScreen;
 ["arena-ready"] call _logPhase;
+
+// Intro music. Deliberately triggered HERE rather than right after spawn: an
+// elapsed-time heuristic (however generous) can never fully guarantee the
+// client isn't still on a loading screen, which is why this was intermittent
+// rather than reliably broken - time > 0 (or even time > 3) can already be
+// true well before the audio engine is necessarily ready. Waldo_fnc_pregameScreen
+// just spent however long the arena took to build actively looping a hint
+// refresh every 0.25s on THIS client - by the time it returns, this client
+// has provably been running SQF and updating the screen the whole time, not
+// stuck loading. Skipped if the round already went live (a JIP mid-round
+// shouldn't restart the intro); logged either way so a silent failure shows
+// up in the .rpt instead of being another guess.
+if !(missionNamespace getVariable ["gameOn", false]) then {
+	playMusic ["TTTIntroMusic", 20];
+	diag_log "[Waldo][client] intro music: playMusic issued";
+} else {
+	diag_log "[Waldo][client] intro music: skipped, round already live (JIP)";
+};
 
 // Obscure nametags (ACE)
 ACE_NO_RECOGNIZE = true; publicVariable "ACE_NO_RECOGNIZE";
@@ -94,7 +100,6 @@ if !(_empty isEqualTo []) then { _pos = _empty; };
 player setPos _pos;
 player setDir _dir;
 player allowDamage false;
-removeBackpack player;
 ["teleported"] call _logPhase;
 
 // Keep the player inside the arena (single managed loop)
@@ -164,7 +169,10 @@ removeBackpack player;
 						_handled = true;
 					};
 				};
-				case 43: {   // \ - open the dev/test menu (only under Testing Mode)
+				case 26: {   // [ - open the dev/test menu (only under Testing Mode)
+					// Was bound to \ (DIK 43); moved here because \ has a history of
+					// colliding with a default Arma keybind and never reliably reaching
+					// this handler at all, unlike every other key bound in this switch.
 					if (missionNamespace getVariable ["TestingFlag", false]) then {
 						// debugMenu waitUntils on the dialog existing after createDialog -
 						// waitUntil needs a scheduled environment same as sleep does, and
@@ -205,7 +213,6 @@ removeBackpack player;
 waitUntil { missionNamespace getVariable ["gameOn", false] };
 10 fadeMusic 0;
 
-removeBackpack player;
 player allowDamage true;
 
 // HUD (role badge + live credits)

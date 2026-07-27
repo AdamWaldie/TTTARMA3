@@ -49,34 +49,38 @@ Equipment is discovered at runtime, not hand-listed per modpack.
   up) and then by **power** — a primary's default-magazine ammo `hit` and round
   count sort it into low / standard / sniper / LMG;
 - clothing is bucketed by `ItemInfo` type (uniform / vest / headgear);
+  backpacks are a separate scan over `CfgVehicles` (`isKindOf Bag_Base`),
+  since they don't live under `CfgWeapons` like everything else here;
 - thermal optics are auto-detected (via `OpticsModes` `visionMode`) and
   blacklisted from loot.
 
 - gear is discovered too: NVGs (`ItemInfo` type 617), plain binoculars
   (`isKindOf Binocular`, so rangefinders/designators are excluded), the
-  highest-`armor` vest, and the first explosive throwable off the `Throw`
-  weapon's muzzles (frag grenade).
+  highest-`armor` vest that still has some cargo capacity (picking by armour
+  alone can land on a heavy plate-carrier variant with none), and the first
+  explosive throwable off the `Throw` weapon's muzzles (frag grenade).
 
 It then publishes the exact globals the mission consumes (`lootPriWeapons`,
 `lootSecWeapons`, `lootAttachments`, `airdropLoadouts`, `TraitorRifle`/`*Mag`/
 `*Optics`, `TraitorLauncher`/`*Mag`, `ShopPistol`/`*Mag`/`*Suppressor`,
 `ShopArmorVest`, `ShopFrag`, `ShopNVG`, `ShopBinocular`, `uniformsConfig`,
-`headgearsConfig`, `vestsConfig`, `detectiveConfig`) by **intent**:
+`headgearsConfig`, `vestsConfig`, `backpacksConfig`, `detectiveConfig`) by **intent**:
 
 | Intent | Pool |
 |--------|------|
-| Ground loot | low-powered primaries + sidearms (falls back to standard rifles if too few low-powered exist) |
+| Ground loot | low-powered primaries + sidearms (falls back to standard rifles if too few low-powered exist), plus a modest chance of a discovered vest or backpack per building |
 | Airdrops (reward) | snipers + LMGs + standard rifles |
 | Traitor "Long Rifle" | the highest-`hit` sniper found, with a compatible optic |
 | Traitor "Rocket Launcher" | any launcher found |
-| Shop gear | silenced sidearm, highest-`armor` vest, frag grenade, NVG, binoculars |
-| Spawn / detective clothing | discovered uniforms / vests / headgear |
+| Shop gear | silenced sidearm, highest-`armor` vest with cargo space, frag grenade, NVG, binoculars |
+| Spawn / detective clothing | discovered uniforms / vests / headgear (never a backpack - that's loot only) |
 
 Every bucket has a **built-in vanilla classname fallback**, so an empty category
 (e.g. a total-conversion with no pistols) never breaks a round, and consumers
 keep their own `isNil`/`getVariable` guards. Because it is a drop-in for those
-globals, `Waldo_fnc_populateLoot`, `Waldo_fnc_spawnAirdrop`, the shop and the
-spawn/detective loadouts needed **no changes**.
+globals, `Waldo_fnc_spawnAirdrop`, the shop and the spawn/detective loadouts
+needed no changes; `Waldo_fnc_populateLoot` was extended to also place vests
+and backpacks as loot on top of weapons.
 
 ### There are no modpack presets
 
@@ -184,8 +188,8 @@ restarts.
 - **Y** — use your most recently bought activation item.
 - **L** — holster / lower weapon.
 - **K** — toggle the in-round scoreboard.
-- **T** — traitor coordination ping (Traitors only).
-- **\\** — open the dev/test menu (**only** when the **Testing Mode** parameter is on).
+- **T** — hold to pick a ping type (Target / Location / Danger / Regroup Here / Enemy Spotted), release to send it (Traitors only).
+- **[** — open the dev/test menu (**only** when the **Testing Mode** parameter is on).
 - **]** — instantly cycle your own role Innocent → Traitor → Detective → Jester (Testing Mode only).
 
 ## Testing / dev mode
@@ -193,7 +197,7 @@ restarts.
 Set the **Enable Testing Mode** lobby parameter to *Yes* to unlock a solo-friendly
 test framework. Beyond the original behaviour (phase markers echoed to chat and the
 "Traitors win" auto-end suppressed so a lone tester is never kicked out), pressing
-**\\** in-round opens an extensible console (`Waldo_fnc_debugMenu`) that renders a
+**[** in-round opens an extensible console (`Waldo_fnc_debugMenu`) that renders a
 registry of test tools grouped by category. Everything is gated on `TestingFlag`:
 the key does nothing, the server dispatch refuses to run, and the simulated
 player-count override is ignored when Testing Mode is off, so normal games are

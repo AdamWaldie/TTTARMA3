@@ -81,9 +81,9 @@ class RscTitles
 			class roleCreditsShadow: RscText
 			{
 				idc = -1;
-				x = ((safezoneW + safezoneX) - (0.19 * safezoneH)) - (0.004 * safezoneH);
+				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.004 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.225 * safezoneH)) - (0.004 * safezoneH);
-				w = (0.18 * safezoneH) + (0.008 * safezoneH);
+				w = (0.15 * safezoneH) + (0.008 * safezoneH);
 				h = (0.03 * safezoneH) + (0.008 * safezoneH);
 				colorBackground[] = WALDO_SHADOW;
 				style = 0;
@@ -91,9 +91,9 @@ class RscTitles
 			class roleCreditsBG: RscText
 			{
 				idc = -1;
-				x = (safezoneW + safezoneX) - (0.19 * safezoneH);
+				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
 				y = (safezoneH + safezoneY) - (0.225 * safezoneH);
-				w = 0.18 * safezoneH;
+				w = 0.15 * safezoneH;
 				h = 0.03 * safezoneH;
 				colorBackground[] = WALDO_HEADERBG;
 				style = 0;
@@ -101,9 +101,9 @@ class RscTitles
 			class roleCreditsAccent: RscText
 			{
 				idc = 1003;
-				x = (safezoneW + safezoneX) - (0.19 * safezoneH);
+				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.225 * safezoneH)) + (0.03 * safezoneH) - (0.0025 * safezoneH);
-				w = 0.18 * safezoneH;
+				w = 0.15 * safezoneH;
 				h = 0.0025 * safezoneH;
 				colorBackground[] = WALDO_ACCENT;   // tinted to the role colour at runtime
 				style = 0;
@@ -112,15 +112,15 @@ class RscTitles
 			{
 				idc = 1002;
 				text = "";
-				x = (safezoneW + safezoneX) - (0.19 * safezoneH);
+				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
 				y = (safezoneH + safezoneY) - (0.225 * safezoneH);
-				w = 0.18 * safezoneH;
+				w = 0.15 * safezoneH;
 				h = 0.03 * safezoneH;
 				colorBackground[] = {0,0,0,0};
 				colorText[] = {1,1,1,1};
 				style = ST_CENTER;
 				font = "PuristaBold";
-				sizeEx = 0.024 * safezoneH;
+				sizeEx = 0.021 * safezoneH;
 				shadow = 1;
 			};
 
@@ -137,9 +137,9 @@ class RscTitles
 			{
 				idc = 1012;
 				x = (safezoneX + (0.012 * safezoneW)) - (0.004 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.16 * safezoneH)) - (0.004 * safezoneH);
-				w = (0.16 * safezoneW) + (0.008 * safezoneH);
-				h = (0.15 * safezoneH) + (0.008 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.24 * safezoneH)) - (0.004 * safezoneH);
+				w = (0.20 * safezoneW) + (0.008 * safezoneH);
+				h = (0.23 * safezoneH) + (0.008 * safezoneH);
 				colorBackground[] = WALDO_SHADOW;
 				style = 0;
 			};
@@ -147,9 +147,9 @@ class RscTitles
 			{
 				idc = 1013;
 				x = safezoneX + (0.012 * safezoneW);
-				y = (safezoneH + safezoneY) - (0.16 * safezoneH);
-				w = 0.16 * safezoneW;
-				h = 0.15 * safezoneH;
+				y = (safezoneH + safezoneY) - (0.24 * safezoneH);
+				w = 0.20 * safezoneW;
+				h = 0.23 * safezoneH;
 				colorBackground[] = WALDO_CASING;
 				style = 0;
 			};
@@ -158,9 +158,9 @@ class RscTitles
 				idc = 1010;
 				text = "";
 				x = (safezoneX + (0.012 * safezoneW)) + (0.010 * safezoneW);
-				y = ((safezoneH + safezoneY) - (0.16 * safezoneH)) + (0.008 * safezoneH);
-				w = (0.16 * safezoneW) - (0.020 * safezoneW);
-				h = (0.15 * safezoneH) - (0.016 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.24 * safezoneH)) + (0.010 * safezoneH);
+				w = (0.20 * safezoneW) - (0.020 * safezoneW);
+				h = (0.23 * safezoneH) - (0.020 * safezoneH);
 				size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.95);
 				colorBackground[] = {0,0,0,0};
 				class Attributes {

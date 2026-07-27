@@ -85,15 +85,15 @@ Every category has a vanilla classname as a fallback, so a total-conversion mod 
 | Y | Use your most recently bought activation item |
 | L | Holster / lower weapon |
 | K | Toggle the in-round scoreboard |
-| T | Traitor coordination ping (Traitors only) |
-| \\ | Open the dev/test menu (Testing Mode only) |
+| T | Hold to pick a ping type (Target / Location / Danger / Regroup Here / Enemy Spotted), release to send it (Traitors only) |
+| [ | Open the dev/test menu (Testing Mode only) |
 | ] | Instantly cycle your own role (Testing Mode only) |
 
 ---
 
 ## Testing / dev mode
 
-Turn on **Enable Testing Mode** in the lobby to run the whole game solo. It stops the Traitors-win ending from kicking out a lone tester, echoes init progress to chat, and unlocks the dev/test menu (`\`) once you're in-round.
+Turn on **Enable Testing Mode** in the lobby to run the whole game solo. It stops the Traitors-win ending from kicking out a lone tester, echoes init progress to chat, and unlocks the dev/test menu (`[`) once you're in-round.
 
 The menu is built from a registry rather than hardcoded, so anything running at preInit can add a tool with a single `Waldo_debugRegister` call and no UI edits. As shipped, it covers instant role switching (or press `]` for a no-menu cycle), every shop item and role ability fired directly, captive test dummies whose deaths run through the real kill handler, and simulated players that actually count toward the win conditions, so you can build a roster and watch Innocents win, Traitors win, time run out, or the Jester's ending resolve, all without a second person in the server. There's also a simulated lobby-size override for testing how the arena, Traitor count, and starting credits scale, plus the usual godmode/heal/teleport/dump-state utilities.
 

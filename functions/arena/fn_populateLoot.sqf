@@ -17,6 +17,13 @@ private _sec = if (isNil "lootSecWeapons") then { [] } else { lootSecWeapons };
 private _blacklist = if (isNil "lootAttachments") then { [] } else { lootAttachments };
 private _weapons = _pri + _sec + _sec;   // weight secondaries as in the original
 
+// Armour and backpacks: never handed out at spawn or purchase beyond the
+// single starting vest and the shop's one curated "Body Armor" pick - the
+// rest of the discovered pool is loot instead, so upgrading is something you
+// find, not something guaranteed.
+private _vests     = missionNamespace getVariable ["vestsConfig", []];
+private _backpacks = missionNamespace getVariable ["backpacksConfig", []];
+
 if (_weapons isEqualTo []) exitWith {
 	diag_log "[Waldo][server] populateLoot: no loot weapons configured";
 };
@@ -62,7 +69,24 @@ if (_weapons isEqualTo []) exitWith {
 				};
 			};
 
+			// Body armour: a modest independent chance per position - finding a
+			// good vest on the floor should feel like an occasional bonus, not
+			// guaranteed loadout filler.
+			if (count _vests > 0 && {random 1 < 0.12}) then {
+				_holder addItemCargoGlobal [(selectRandom _vests), 1];
+			};
+
 			{ _x addCuratorEditableObjects [[_holder], true]; } forEach allCurators;
 		} forEach _actual;
+
+		// Backpacks are physical objects (CfgVehicles), not cargo items, so they're
+		// placed once per building rather than per position - otherwise every room
+		// in a multi-room building would clutter up with one.
+		if (count _backpacks > 0 && {random 1 < 0.15}) then {
+			private _packPos = selectRandom _lootPos;
+			private _pack = createVehicle [selectRandom _backpacks, _packPos, [], 0, "CAN_COLLIDE"];
+			_pack setPos _packPos;
+			{ _x addCuratorEditableObjects [[_pack], true]; } forEach allCurators;
+		};
 	};
 } forEach (nearestTerrainObjects [_pos, ["Building", "House"], _distance]);

@@ -10,6 +10,14 @@ titleRsc ["TTTHud", "PLAIN", 1, false];
 waitUntil { !isNull (uiNamespace getVariable ["TTTHud", displayNull]) };
 private _display = uiNamespace getVariable "TTTHud";
 
+// The ping picker's controls live inside this same resource (see TTTHud in
+// ui/TTTHud.hpp), which is created fresh for EVERY player at round start
+// regardless of role - nothing ever defaulted it to hidden, so it sat there
+// visible and empty for everyone until their first T hold. Waldo_fnc_pingWheelOpen
+// is the only thing that should ever show it again after this.
+(_display displayCtrl 3520) ctrlShow false;
+Waldo_pingWheelOpen = false;
+
 private _role = player getVariable ["role", "Innocent"];
 private _color = [_role] call Waldo_roleColor;
 
@@ -53,7 +61,7 @@ if (_role == "Traitor") then {
 	_hints pushBack "<t color='#F2BE55'>T</t> (hold)  Ping";
 };
 if (missionNamespace getVariable ["TestingFlag", false]) then {
-	_hints pushBack "<t color='#9a2ecc'>\</t>  Dev Menu";
+	_hints pushBack "<t color='#9a2ecc'>[</t>  Dev Menu";
 	_hints pushBack "<t color='#9a2ecc'>]</t>  Cycle Role";
 };
 private _hintBody = "";
@@ -63,9 +71,22 @@ private _hintBody = "";
 // Testing Mode) instead of a fixed box sized for the worst case and mostly
 // empty the rest of the time - it's anchored by its bottom edge, so it grows
 // upward as lines are added rather than shifting its corner on screen.
-private _lineH = 0.030 * safezoneH;
-private _padV = 0.008 * safezoneH;
-private _panelW = 0.16 * safezoneW;
+//
+// _lineH is the per-line height BUDGET for sizing this box - it does not
+// control actual on-screen line spacing (that's the font's own metric, driven
+// by keyHintText's size), so it has to be measured against that font size, not
+// guessed independently. keyHintText's size resolves to a fixed 0.038*safezoneH
+// on any normal (>=1.2 aspect) display (the formula's `min 1.2` clause caps it
+// there in practice), and real line pitch for readable text runs meaningfully
+// taller than the bare glyph size - sizing the box any tighter than that
+// clips the last line(s) instead of just leaving extra room.
+private _lineH = 0.045 * safezoneH;
+private _padV = 0.010 * safezoneH;
+private _panelW = 0.20 * safezoneW;   // wide enough that "T (hold)  Ping" (the
+                                       // longest line) can't wrap - a structured-
+                                       // text control wraps instead of clipping,
+                                       // which would silently break this same
+                                       // per-line height assumption.
 private _panelH = (_padV * 2) + ((count _hints) * _lineH);
 private _panelX = safezoneX + (0.012 * safezoneW);
 private _panelY = (safezoneH + safezoneY) - _panelH;

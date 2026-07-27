@@ -4,7 +4,7 @@ Turn on **Enable Testing Mode** in the lobby to test the entire game alone, with
 
 ## Opening it
 
-Press **\\** in-round to open the menu, or **]** to instantly cycle your own role (Innocent -> Traitor -> Detective -> Jester -> Innocent) without opening anything. Both only work under Testing Mode.
+Press **[** in-round to open the menu, or **]** to instantly cycle your own role (Innocent -> Traitor -> Detective -> Jester -> Innocent) without opening anything. Both only work under Testing Mode.
 
 ## How the menu is built
 

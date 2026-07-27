@@ -123,6 +123,49 @@ class RscTitles
 				sizeEx = 0.028 * safezoneH;
 				shadow = 1;
 			};
+
+			// Key-hints panel (bottom-left): a normal game gives a player no other
+			// way to learn what's bound, and dev-only binds are even less
+			// discoverable - so this lists whatever's actually relevant to the
+			// current role, plus the dev binds too when Testing Mode is on
+			// (Waldo_fnc_initHud populates idc 1010, re-run on every role change).
+			class keyHintShadow: RscText
+			{
+				idc = -1;
+				x = (safezoneX + (0.012 * safezoneW)) - (0.004 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.20 * safezoneH)) - (0.004 * safezoneH);
+				w = (0.20 * safezoneW) + (0.008 * safezoneH);
+				h = (0.185 * safezoneH) + (0.008 * safezoneH);
+				colorBackground[] = WALDO_SHADOW;
+				style = 0;
+			};
+			class keyHintBG: RscText
+			{
+				idc = -1;
+				x = safezoneX + (0.012 * safezoneW);
+				y = (safezoneH + safezoneY) - (0.20 * safezoneH);
+				w = 0.20 * safezoneW;
+				h = 0.185 * safezoneH;
+				colorBackground[] = WALDO_CASING;
+				style = 0;
+			};
+			class keyHintText: RscStructuredText
+			{
+				idc = 1010;
+				text = "";
+				x = (safezoneX + (0.012 * safezoneW)) + (0.010 * safezoneW);
+				y = ((safezoneH + safezoneY) - (0.20 * safezoneH)) + (0.008 * safezoneH);
+				w = (0.20 * safezoneW) - (0.020 * safezoneW);
+				h = (0.185 * safezoneH) - (0.016 * safezoneH);
+				size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.9);
+				colorBackground[] = {0,0,0,0};
+				class Attributes {
+					font = "PuristaMedium";
+					color = "#D8D5C8";
+					align = "left";
+					shadow = 1;
+				};
+			};
 		};
 	};
 

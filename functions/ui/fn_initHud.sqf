@@ -38,3 +38,24 @@ if (_role in ["Traitor", "Detective"]) then {
 		};
 	};
 };
+
+// Key-hints panel: a normal game gives no other indication of what's bound,
+// so list whatever's actually relevant to this role. Dev-only binds are even
+// less discoverable than gameplay ones, so they're appended too, but only
+// when Testing Mode is actually on - this re-runs on every debug role switch
+// (Waldo_debugSetRole), so it never shows a stale role's binds.
+private _hints = ["<t color='#F2BE55'>L</t>  Holster", "<t color='#F2BE55'>K</t>  Scoreboard"];
+if (_role in ["Traitor", "Detective"]) then {
+	_hints pushBack "<t color='#F2BE55'>B</t>  Buy Menu";
+	_hints pushBack "<t color='#F2BE55'>Y</t>  Use Item";
+};
+if (_role == "Traitor") then {
+	_hints pushBack "<t color='#F2BE55'>T</t> (hold)  Ping";
+};
+if (missionNamespace getVariable ["TestingFlag", false]) then {
+	_hints pushBack "<t color='#9a2ecc'>\</t>  Dev Menu";
+	_hints pushBack "<t color='#9a2ecc'>]</t>  Cycle Role";
+};
+private _hintBody = "";
+{ _hintBody = _hintBody + _x + "<br/>"; } forEach _hints;
+(_display displayCtrl 1010) ctrlSetStructuredText parseText _hintBody;

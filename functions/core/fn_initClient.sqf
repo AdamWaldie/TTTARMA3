@@ -82,8 +82,20 @@ waitUntil { !isNull player && time > 0 };
 // stuck loading. Skipped if the round already went live (a JIP mid-round
 // shouldn't restart the intro); logged either way so a silent failure shows
 // up in the .rpt instead of being another guess.
+//
+// _musicStartedAt is recorded (see the fadeMusic call near the end of this
+// script) because THIS client reaching "arena-ready" is not synchronised to
+// the server's own fixed-length warmup countdown - a client whose own load
+// finishes late in that window has only a few seconds (or less) between
+// their music starting and gameOn flipping true, versus a fast-loading
+// client getting the whole warmup length. That is a real, reproducible
+// "plays for some clients, not others" bug: the fade used to fire off
+// gameOn alone, with zero regard for how much of it a given client had
+// actually heard yet.
+private _musicStartedAt = -1;
 if !(missionNamespace getVariable ["gameOn", false]) then {
 	playMusic ["TTTIntroMusic", 20];
+	_musicStartedAt = time;
 	diag_log "[Waldo][client] intro music: playMusic issued";
 } else {
 	diag_log "[Waldo][client] intro music: skipped, round already live (JIP)";
@@ -223,7 +235,23 @@ player allowDamage false;
 
 // --- Wait for the round to go live ---
 waitUntil { missionNamespace getVariable ["gameOn", false] };
-10 fadeMusic 0;
+
+// Guarantee every client actually HEARD some minimum stretch of the intro
+// track before fading it, rather than fading strictly off gameOn (a single
+// server-wide timestamp with no relationship to when THIS client's own
+// playMusic call happened - see _musicStartedAt above). Spawned rather than
+// inline: a slow-loading client catching up on owed playback here must never
+// delay allowDamage/HUD setup right below - those need to happen exactly at
+// round-live for everyone alike, music notwithstanding.
+[_musicStartedAt] spawn {
+	params ["_musicStartedAt"];
+	if (_musicStartedAt > 0) then {
+		private _minAudible = 12;
+		private _stillOwed = _minAudible - (time - _musicStartedAt);
+		if (_stillOwed > 0) then { sleep _stillOwed; };
+	};
+	10 fadeMusic 0;
+};
 
 player allowDamage true;
 

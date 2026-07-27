@@ -353,8 +353,29 @@ Waldo_debugDump = {
 ["Loadout & Shops", "+100 Credits",       "Add 100 shop credits", "local", { player setVariable ["points", (player getVariable ["points", 0]) + 100, true] }] call Waldo_debugRegister;
 ["Loadout & Shops", "Open Traitor Shop",  "Inspect / buy-test the Traitor shop",   "local", { closeDialog 1; ["Traitor"]   call Waldo_fnc_openBuyMenu }] call Waldo_debugRegister;
 ["Loadout & Shops", "Open Detective Shop","Inspect / buy-test the Detective shop", "local", { closeDialog 1; ["Detective"] call Waldo_fnc_openBuyMenu }] call Waldo_debugRegister;
-["Loadout & Shops", "Give All Traitor Items",   "Run every Traitor shop purchase effect",   "local", { { call (_x select 3) } forEach Waldo_traitorShop }] call Waldo_debugRegister;
-["Loadout & Shops", "Give All Detective Items", "Run every Detective shop purchase effect", "local", { { call (_x select 3) } forEach Waldo_detectiveShop }] call Waldo_debugRegister;
+// Runs every catalog entry's _onBuy AND, for activation items, logs + slots
+// them exactly like a real purchase - _onBuy is an empty {} by design for
+// every activation item (the real effect lives in _onAct), so without this a
+// dev pressing this button would see the passives/weapons land but every
+// activation item would silently do nothing, with no way to press Y/U/J and
+// actually exercise it.
+private _giveAll = {
+	params ["_catalog"];
+	{
+		_x params ["_name", "", "_type", "_onBuy", "_onAct", "_tip"];
+		call _onBuy;
+		if (_type == "activation") then {
+			private _id = player getVariable ["Waldo_purchaseSeq", 0];
+			player setVariable ["Waldo_purchaseSeq", _id + 1];
+			[_id] call Waldo_fnc_registerActivationSlot;
+			private _purchases = player getVariable ["Waldo_purchases", []];
+			_purchases pushBack [_id, _name, _tip, _type, _onAct];
+			player setVariable ["Waldo_purchases", _purchases];
+		};
+	} forEach _catalog;
+};
+["Loadout & Shops", "Give All Traitor Items",   "Run every Traitor shop purchase effect (activation items get slotted to Y/U/J too)",   "local", { [Waldo_traitorShop]   call _giveAll }] call Waldo_debugRegister;
+["Loadout & Shops", "Give All Detective Items", "Run every Detective shop purchase effect (activation items get slotted to Y/U/J too)", "local", { [Waldo_detectiveShop] call _giveAll }] call Waldo_debugRegister;
 
 // Abilities (exercise each role power directly)
 ["Abilities", "Traitor Radar",   "Pulse everyone's position",               "local", { [] call Waldo_fnc_traitorRadar }] call Waldo_debugRegister;

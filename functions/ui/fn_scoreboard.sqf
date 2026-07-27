@@ -88,5 +88,9 @@ private _confirmedDead = { !alive _x && {_x getVariable ["Waldo_roleRevealed", f
 // here since this panel is tall and narrow rather than wide and short.
 private _kbList = [_myRole] call Waldo_keyHintsFor;
 private _kbBody = "";
-{ _x params ["_key", "_label"]; _kbBody = _kbBody + format ["<t color='#F2BE55'>[%1]</t> %2<br/>", _key, _label]; } forEach _kbList;
+// Colon separator, not bracket-wrapped: the dev keys ARE literally "[" and
+// "]", and wrapping them ("[%1]") produces the same "[[]"/"[]]" collision
+// fixed in the top bar's own keybind row (fn_initHud.sqf) - a colon has no
+// such collision with any key label.
+{ _x params ["_key", "_label"]; _kbBody = _kbBody + format ["<t color='#F2BE55'>%1:</t> %2<br/>", _key, _label]; } forEach _kbList;
 (_display displayCtrl 3320) ctrlSetStructuredText parseText _kbBody;

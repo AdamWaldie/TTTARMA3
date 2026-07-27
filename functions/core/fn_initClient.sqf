@@ -65,6 +65,12 @@ waitUntil { !isNull player && time > 0 };
 [] call Waldo_fnc_pregameScreen;
 ["arena-ready"] call _logPhase;
 
+// Warmup "Selecting Roles" bar (same top-bar casing/position as the round
+// timer): mapDone is already true by the time Waldo_fnc_pregameScreen
+// returns, which is exactly the window the server's own warmup loop
+// (Waldo_fnc_initServer) is running in - no extra readiness gating needed.
+[] spawn Waldo_fnc_warmupBar;
+
 // Intro music. Deliberately triggered HERE rather than right after spawn: an
 // elapsed-time heuristic (however generous) can never fully guarantee the
 // client isn't still on a loading screen, which is why this was intermittent

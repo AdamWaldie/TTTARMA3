@@ -6,7 +6,21 @@
 
 disableSerialization;
 
-titleRsc ["TTTHud", "PLAIN", 1, false];
+// titleRsc recreates the display (a NEW object) every time it's called for
+// the same class, rather than reusing whatever's already showing - and this
+// function re-runs on every respawn and every debug role switch. Calling it
+// unconditionally meant every one of those re-runs silently orphaned the
+// PREVIOUS display: this function itself re-fetches _display fresh each time
+// so its own controls (badge/credits/keybind row) kept working, but anything
+// that captured a reference ONCE and kept it across time - the top bar's
+// timer loop (Waldo_fnc_topBarTimer), started once and never re-fetching -
+// was left writing to an orphaned, invisible display while the real one sat
+// at its blank .hpp default forever. Only ever calling titleRsc when the
+// resource doesn't already exist keeps the SAME display alive for the whole
+// round, so every control reference taken anywhere stays valid.
+if (isNull (uiNamespace getVariable ["TTTHud", displayNull])) then {
+	titleRsc ["TTTHud", "PLAIN", 1, false];
+};
 waitUntil { !isNull (uiNamespace getVariable ["TTTHud", displayNull]) };
 private _display = uiNamespace getVariable "TTTHud";
 
@@ -46,8 +60,9 @@ private _textH = ctrlTextHeight _badge;
 // geometrically-centred J still reads as drifted right - unlike vertical
 // centring above, there's no engine measurement for "optical" glyph weight,
 // so this is a small eyeballed nudge specific to that one letter, not a
-// general formula.
-private _opticalNudgeX = if (_role == "Jester") then { -0.006 * safezoneH } else { 0 };
+// general formula. Confirmed live that the first attempt (-0.006) overshot
+// and put it too far left - halved rather than re-guessed from scratch.
+private _opticalNudgeX = if (_role == "Jester") then { -0.003 * safezoneH } else { 0 };
 
 _badge ctrlSetPosition [_badgeX + _opticalNudgeX, _badgeY + ((_badgeSize - _textH) / 2), _badgeSize, _textH];
 _badge ctrlCommit 0;
@@ -81,31 +96,53 @@ if (_hasCredits) then {
 // stale role's binds - each redraw also restarts the fade-out from fully
 // visible, below.
 //
-// Deliberately plain RscText (ctrlSetText), not structured text with coloured
-// <t> spans: this row needs precise single-line centring via ctrlTextHeight
-// (same fix as roleText above), and structured text was never actually
-// verified to interact correctly with that command - safer to keep the two
-// concerns (colour vs. precise centring) apart than risk a repeat of the
-// CT_STRUCTURED_TEXT/ST_VCENTER surprises already hit this session.
+// "%1: %2" (not "[%1] %2"): the dev keys ARE literally "[" and "]", so
+// bracket-wrapping them produced the nonsensical "[[] Dev Menu" / "[]] Cycle
+// Role" - a colon separator has no such collision with any key label.
+//
+// Two lines, not one: CT_STATIC never wraps (just cuts overflow), and 7 items
+// under Testing Mode never fit one line at a readable size - split evenly
+// across topBarHintText/topBarHintText2 (idc 3612/3613).
+//
+// Deliberately plain RscText (ctrlSetText) for both, not structured text with
+// coloured <t> spans: needs precise centring via ctrlTextHeight (same fix as
+// roleText above), and structured text was never verified to interact
+// correctly with that command - safer to keep "needs colour" and "needs
+// precise centring" apart than risk a repeat of this session's
+// CT_STRUCTURED_TEXT/ST_VCENTER surprises.
 private _hintsList = [_role] call Waldo_keyHintsFor;
-private _hintRow = "";
-{ _x params ["_key", "_label"]; _hintRow = _hintRow + format ["[%1] %2     ", _key, _label]; } forEach _hintsList;
-private _hintTextCtrl = _display displayCtrl 3612;
-_hintTextCtrl ctrlSetText _hintRow;
+private _half = ceil ((count _hintsList) / 2);
+private _line1 = "";
+private _line2 = "";
+{
+	_x params ["_key", "_label"];
+	private _entry = format ["%1: %2     ", _key, _label];
+	if (_forEachIndex < _half) then { _line1 = _line1 + _entry; } else { _line2 = _line2 + _entry; };
+} forEach _hintsList;
 
-private _hintBoxX = (safezoneX + (0.5 * safezoneW)) - (0.15 * safezoneW);
-private _hintBoxY = (safezoneY + (0.015 * safezoneH)) + (0.068 * safezoneH);
-private _hintBoxW = 0.30 * safezoneW;
-private _hintBoxH = 0.045 * safezoneH;
-private _hintTextH = ctrlTextHeight _hintTextCtrl;
-_hintTextCtrl ctrlSetPosition [_hintBoxX, _hintBoxY + ((_hintBoxH - _hintTextH) / 2), _hintBoxW, _hintTextH];
-_hintTextCtrl ctrlCommit 0;
+private _hintBoxX = ((safezoneX + (0.5 * safezoneW)) - (0.18 * safezoneW)) + (0.015 * safezoneW);
+private _hintBoxW = (0.36 * safezoneW) - (0.030 * safezoneW);
+private _hintRowH = 0.0375 * safezoneH;
+private _hintRow1Y = (safezoneY + (0.015 * safezoneH)) + (0.068 * safezoneH);
+private _hintRow2Y = _hintRow1Y + _hintRowH;
+
+private _hintTextCtrl = _display displayCtrl 3612;
+private _hintText2Ctrl = _display displayCtrl 3613;
+_hintTextCtrl ctrlSetText _line1;
+_hintText2Ctrl ctrlSetText _line2;
+
+{
+	_x params ["_ctrl", "_rowY"];
+	private _h = ctrlTextHeight _ctrl;
+	_ctrl ctrlSetPosition [_hintBoxX, _rowY + ((_hintRowH - _h) / 2), _hintBoxW, _h];
+	_ctrl ctrlCommit 0;
+} forEach [[_hintTextCtrl, _hintRow1Y], [_hintText2Ctrl, _hintRow2Y]];
 
 // Visible for a few seconds after every (re)draw - a fresh round start or a
 // role change is exactly when this is worth glancing at - then fades out
-// COMPLETELY (box and text alike, not just dimmed to a resting alpha): this
-// is a one-time reminder, not a permanent reference (that's what the
-// scoreboard's own keybind panel is for). A token guard (same idiom as
+// COMPLETELY (box and both text lines alike, not just dimmed to a resting
+// alpha): this is a one-time reminder, not a permanent reference (that's what
+// the scoreboard's own keybind panel is for). A token guard (same idiom as
 // WaldosMissionPack's SafeStart countdown, Waldo_SafeStart_TimerToken) stops
 // an in-flight fade from a PREVIOUS redraw from clobbering a fresh one if
 // this function re-runs again (rapid role changes / quick respawns) before
@@ -118,13 +155,15 @@ _hintBgCtrl ctrlSetBackgroundColor [0.105, 0.11, 0.095, 0.85];
 _hintBgCtrl ctrlCommit 0;
 _hintTextCtrl ctrlSetTextColor [0.95, 0.93, 0.86, 1];
 _hintTextCtrl ctrlCommit 0;
+_hintText2Ctrl ctrlSetTextColor [0.95, 0.93, 0.86, 1];
+_hintText2Ctrl ctrlCommit 0;
 
 private _hintFadeToken = (_display getVariable ["Waldo_hintFadeToken", 0]) + 1;
 _display setVariable ["Waldo_hintFadeToken", _hintFadeToken];
-[_hintShadowCtrl, _hintBgCtrl, _hintTextCtrl, _display, _hintFadeToken] spawn {
-	params ["_shadowCtrl", "_bgCtrl", "_textCtrl", "_display", "_token"];
+[_hintShadowCtrl, _hintBgCtrl, _hintTextCtrl, _hintText2Ctrl, _display, _hintFadeToken] spawn {
+	params ["_shadowCtrl", "_bgCtrl", "_textCtrl", "_text2Ctrl", "_display", "_token"];
 	sleep 8;
-	if (isNull _shadowCtrl || {isNull _bgCtrl} || {isNull _textCtrl}) exitWith {};
+	if (isNull _shadowCtrl || {isNull _bgCtrl} || {isNull _textCtrl} || {isNull _text2Ctrl}) exitWith {};
 	if ((_display getVariable ["Waldo_hintFadeToken", 0]) != _token) exitWith {};   // superseded by a newer redraw
 	_shadowCtrl ctrlSetBackgroundColor [0, 0, 0, 0];
 	_shadowCtrl ctrlCommit 3;
@@ -132,4 +171,6 @@ _display setVariable ["Waldo_hintFadeToken", _hintFadeToken];
 	_bgCtrl ctrlCommit 3;
 	_textCtrl ctrlSetTextColor [0.95, 0.93, 0.86, 0];
 	_textCtrl ctrlCommit 3;
+	_text2Ctrl ctrlSetTextColor [0.95, 0.93, 0.86, 0];
+	_text2Ctrl ctrlCommit 3;
 };

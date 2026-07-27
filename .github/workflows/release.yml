@@ -42,9 +42,14 @@ name: Release
 # actively maintained prebuilt Linux packer exists to depend on instead).
 
 on:
+  # Every tag, not just "v*": this repo's own tag history already mixes v2.6.0,
+  # V2.5.0, and 2.7.0-RC with no consistent prefix, and a tag that doesn't match
+  # the trigger silently builds nothing - the GitHub release UI happily accepts
+  # (and even suggests) a tag like "2.7.0-RC" with no "v", so restricting to a
+  # prefix is a footgun for a one-person release process, not a safety net.
   push:
     tags:
-      - "v*"
+      - "*"
   workflow_dispatch:
     inputs:
       tag:

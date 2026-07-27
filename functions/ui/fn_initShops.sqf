@@ -182,7 +182,7 @@ Waldo_traitorShop = [
 		"Never run out of stamina"],
 
 	["Teleport Grenades", 1, "weapon",
-		{ player addMagazine ["SmokeShellRed", 2]; [] call Waldo_fnc_warpSmoke; },
+		{ player addMagazines ["SmokeShellRed", 2]; [] call Waldo_fnc_warpSmoke; },
 		{},
 		"Throw red smoke to teleport to it (vanilla throw only)"],
 
@@ -269,7 +269,7 @@ Waldo_detectiveShop = [
 		"Pulses all positions for 45s, then refreshes"],
 
 	["Smoke Grenades", 1, "weapon",
-		{ player addMagazine ["SmokeShell", 2]; },
+		{ player addMagazines ["SmokeShell", 2]; },
 		{},
 		"Two smoke grenades"],
 

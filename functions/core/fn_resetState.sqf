@@ -14,6 +14,7 @@ missionNamespace setVariable ["mapRadius",       50,      true];
 missionNamespace setVariable ["Waldo_holdingPos", [],     true];
 missionNamespace setVariable ["timelimit",       0,       true];
 missionNamespace setVariable ["Waldo_startTime", 0,       true];
+missionNamespace setVariable ["Waldo_roundLiveAt", 0,     true];
 missionNamespace setVariable ["JESTERCLEANKILL", false,   true];
 missionNamespace setVariable ["TraitorList",     [],      true];
 missionNamespace setVariable ["DetectiveList",   [],      true];

@@ -225,6 +225,12 @@ player allowDamage true;
 [] call Waldo_fnc_initHud;
 ["round-live"] call _logPhase;
 
+// Top bar round-timer loop: started exactly once here (never from
+// fn_initHud.sqf, which re-runs on every respawn/role change) - gameOn is
+// already confirmed true by the waitUntil above, so Waldo_startTime/timelimit
+// are already broadcast too; no extra readiness gating needed.
+[] spawn Waldo_fnc_topBarTimer;
+
 // --- Kill handling (server-authoritative logic lives in Waldo_fnc_onKilled) ---
 player addMPEventHandler ["MPKilled", {
 	params ["_unit"];

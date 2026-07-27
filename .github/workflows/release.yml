@@ -60,12 +60,14 @@ permissions:
   contents: write
 
 env:
-  # Terrains this mission is packaged for. Tanoa needs Apex on the host's
-  # end, the mission itself doesn't care which one is loaded. Add a name
-  # here (and, ideally, a terrains/<Terrain>/mission.sqm or a
-  # .github/terrains.json entry) to ship another terrain. Livonia removed
-  # for now (no verified mission.sqm or anchor currently maintained for it).
-  TERRAINS: "Altis Tanoa Stratis"
+  # Terrains this mission is packaged for. Tanoa needs Apex and Enoch needs
+  # Contact on the host's end; the mission itself doesn't care which one is
+  # loaded. Add a name here (and, ideally, a terrains/<Terrain>/mission.sqm or
+  # a .github/terrains.json entry) to ship another terrain. Note: "Enoch" is
+  # Livonia's actual internal terrain classname (its CDLC's marketing name,
+  # not the classname Arma's own "MissionName.TerrainName" folder convention
+  # needs) - Malden's classname matches its marketing name, no such gap there.
+  TERRAINS: "Altis Tanoa Stratis Enoch Malden"
 
 jobs:
   package:

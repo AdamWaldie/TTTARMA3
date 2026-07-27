@@ -41,7 +41,15 @@ private _badgeX = (safezoneW + safezoneX) - (0.175 * safezoneH);
 private _badgeY = (safezoneH + safezoneY) - (0.185 * safezoneH);
 private _badgeSize = 0.15 * safezoneH;
 private _textH = ctrlTextHeight _badge;
-_badge ctrlSetPosition [_badgeX, _badgeY + ((_badgeSize - _textH) / 2), _badgeSize, _textH];
+
+// J's hook-shaped tail sits toward the bottom-right of its bounding box, so a
+// geometrically-centred J still reads as drifted right - unlike vertical
+// centring above, there's no engine measurement for "optical" glyph weight,
+// so this is a small eyeballed nudge specific to that one letter, not a
+// general formula.
+private _opticalNudgeX = if (_role == "Jester") then { -0.006 * safezoneH } else { 0 };
+
+_badge ctrlSetPosition [_badgeX + _opticalNudgeX, _badgeY + ((_badgeSize - _textH) / 2), _badgeSize, _textH];
 _badge ctrlCommit 0;
 
 // Credits pill (badge nameplate): only Traitor/Detective have credits at all,
@@ -66,88 +74,62 @@ if (_hasCredits) then {
 	};
 };
 
-// Key-hints panel: a normal game gives no other indication of what's bound,
-// so list whatever's actually relevant to this role. Dev-only binds are even
-// less discoverable than gameplay ones, so they're appended too, but only
-// when Testing Mode is actually on - this re-runs on every debug role switch
-// (Waldo_debugSetRole), so it never shows a stale role's binds.
-private _hints = ["<t color='#F2BE55'>L</t>  Holster", "<t color='#F2BE55'>K</t>  Scoreboard"];
-if (_role in ["Traitor", "Detective"]) then {
-	_hints pushBack "<t color='#F2BE55'>B</t>  Buy Menu";
-	// "Y U J  Use Item" (15 visible chars) stays within the panel's existing
-	// width budget (sized around "T (hold)  Ping", 14 chars) - which key does
-	// what for a given owned item is shown live in the Purchased panel instead
-	// of spelled out here.
-	_hints pushBack "<t color='#F2BE55'>Y U J</t>  Use Item";
-};
-if (_role == "Traitor") then {
-	_hints pushBack "<t color='#F2BE55'>T</t> (hold)  Ping";
-};
-if (missionNamespace getVariable ["TestingFlag", false]) then {
-	_hints pushBack "<t color='#9a2ecc'>[</t>  Dev Menu";
-	_hints pushBack "<t color='#9a2ecc'>]</t>  Cycle Role";
-};
-private _hintBody = "";
-{ _hintBody = _hintBody + _x + "<br/>"; } forEach _hints;
-
-// Size the panel to how many lines actually apply (5 normally, up to 7 under
-// Testing Mode) instead of a fixed box sized for the worst case and mostly
-// empty the rest of the time - it's anchored by its bottom edge, so it grows
-// upward as lines are added rather than shifting its corner on screen.
+// Top bar keybind row: a normal game gives no other indication of what's
+// bound, so list whatever's actually relevant to this role (Waldo_keyHintsFor,
+// shared with the scoreboard's own keybind panel). This re-runs on every
+// debug role switch / respawn (same as the badge above), so it never shows a
+// stale role's binds - each redraw also restarts the fade-out from fully
+// visible, below.
 //
-// _lineH is the per-line height BUDGET for sizing this box - it does not
-// control actual on-screen line spacing (that's the font's own metric, driven
-// by keyHintText's size), so it has to be measured against that font size, not
-// guessed independently. keyHintText's size resolves to a fixed 0.024*safezoneH
-// on any normal (>=1.2 aspect) display (the formula's `min 1.2` clause caps it
-// there in practice), and real line pitch for readable text runs meaningfully
-// taller than the bare glyph size - sizing the box any tighter than that
-// clips the last line(s) instead of just leaving extra room.
-private _lineH = 0.032 * safezoneH;
-private _padV = 0.007 * safezoneH;
-private _panelW = 0.13 * safezoneW;   // wide enough that "T (hold)  Ping" (the
-                                       // longest line) can't wrap - a structured-
-                                       // text control wraps instead of clipping,
-                                       // which would silently break this same
-                                       // per-line height assumption.
-private _panelH = (_padV * 2) + ((count _hints) * _lineH);
-private _panelX = safezoneX + (0.012 * safezoneW);
-private _panelY = (safezoneH + safezoneY) - _panelH;
+// Deliberately plain RscText (ctrlSetText), not structured text with coloured
+// <t> spans: this row needs precise single-line centring via ctrlTextHeight
+// (same fix as roleText above), and structured text was never actually
+// verified to interact correctly with that command - safer to keep the two
+// concerns (colour vs. precise centring) apart than risk a repeat of the
+// CT_STRUCTURED_TEXT/ST_VCENTER surprises already hit this session.
+private _hintsList = [_role] call Waldo_keyHintsFor;
+private _hintRow = "";
+{ _x params ["_key", "_label"]; _hintRow = _hintRow + format ["[%1] %2     ", _key, _label]; } forEach _hintsList;
+private _hintTextCtrl = _display displayCtrl 3612;
+_hintTextCtrl ctrlSetText _hintRow;
 
-private _shadowCtrl = _display displayCtrl 1012;
-_shadowCtrl ctrlSetPosition [
-	_panelX - (0.004 * safezoneH), _panelY - (0.004 * safezoneH),
-	_panelW + (0.008 * safezoneH), _panelH + (0.008 * safezoneH)
-];
-_shadowCtrl ctrlCommit 0;
+private _hintBoxX = (safezoneX + (0.5 * safezoneW)) - (0.15 * safezoneW);
+private _hintBoxY = (safezoneY + (0.015 * safezoneH)) + (0.068 * safezoneH);
+private _hintBoxW = 0.30 * safezoneW;
+private _hintBoxH = 0.045 * safezoneH;
+private _hintTextH = ctrlTextHeight _hintTextCtrl;
+_hintTextCtrl ctrlSetPosition [_hintBoxX, _hintBoxY + ((_hintBoxH - _hintTextH) / 2), _hintBoxW, _hintTextH];
+_hintTextCtrl ctrlCommit 0;
 
-private _bgCtrl = _display displayCtrl 1013;
-_bgCtrl ctrlSetPosition [_panelX, _panelY, _panelW, _panelH];
-_bgCtrl ctrlCommit 0;
+// Visible for a few seconds after every (re)draw - a fresh round start or a
+// role change is exactly when this is worth glancing at - then fades out
+// COMPLETELY (box and text alike, not just dimmed to a resting alpha): this
+// is a one-time reminder, not a permanent reference (that's what the
+// scoreboard's own keybind panel is for). A token guard (same idiom as
+// WaldosMissionPack's SafeStart countdown, Waldo_SafeStart_TimerToken) stops
+// an in-flight fade from a PREVIOUS redraw from clobbering a fresh one if
+// this function re-runs again (rapid role changes / quick respawns) before
+// the last fade finished.
+private _hintShadowCtrl = _display displayCtrl 3610;
+private _hintBgCtrl = _display displayCtrl 3611;
+_hintShadowCtrl ctrlSetBackgroundColor [0, 0, 0, 0.55];
+_hintShadowCtrl ctrlCommit 0;
+_hintBgCtrl ctrlSetBackgroundColor [0.105, 0.11, 0.095, 0.85];
+_hintBgCtrl ctrlCommit 0;
+_hintTextCtrl ctrlSetTextColor [0.95, 0.93, 0.86, 1];
+_hintTextCtrl ctrlCommit 0;
 
-private _textCtrl = _display displayCtrl 1010;
-_textCtrl ctrlSetPosition [
-	_panelX + (0.008 * safezoneW), _panelY + _padV,
-	_panelW - (0.016 * safezoneW), _panelH - (_padV * 2)
-];
-_textCtrl ctrlCommit 0;
-_textCtrl ctrlSetStructuredText parseText _hintBody;
-
-// Visible and easy to read for a few seconds after every (re)draw - a fresh
-// round start or a role change is exactly when this is actually worth
-// glancing at - then fades to a small, unobtrusive corner reference rather
-// than sitting fully opaque for the whole round. ctrlCommit with a duration
-// (not 0) animates the transition instead of snapping to it.
-_shadowCtrl ctrlSetBackgroundColor [0, 0, 0, 0.55];
-_shadowCtrl ctrlCommit 0;
-_bgCtrl ctrlSetBackgroundColor [0.105, 0.11, 0.095, 0.85];
-_bgCtrl ctrlCommit 0;
-[_shadowCtrl, _bgCtrl] spawn {
-	params ["_shadowCtrl", "_bgCtrl"];
-	sleep 6;
-	if (isNull _shadowCtrl || {isNull _bgCtrl}) exitWith {};
-	_shadowCtrl ctrlSetBackgroundColor [0, 0, 0, 0.18];
-	_shadowCtrl ctrlCommit 2;
-	_bgCtrl ctrlSetBackgroundColor [0.105, 0.11, 0.095, 0.28];
-	_bgCtrl ctrlCommit 2;
+private _hintFadeToken = (_display getVariable ["Waldo_hintFadeToken", 0]) + 1;
+_display setVariable ["Waldo_hintFadeToken", _hintFadeToken];
+[_hintShadowCtrl, _hintBgCtrl, _hintTextCtrl, _display, _hintFadeToken] spawn {
+	params ["_shadowCtrl", "_bgCtrl", "_textCtrl", "_display", "_token"];
+	sleep 8;
+	if (isNull _shadowCtrl || {isNull _bgCtrl} || {isNull _textCtrl}) exitWith {};
+	if ((_display getVariable ["Waldo_hintFadeToken", 0]) != _token) exitWith {};   // superseded by a newer redraw
+	_shadowCtrl ctrlSetBackgroundColor [0, 0, 0, 0];
+	_shadowCtrl ctrlCommit 3;
+	_bgCtrl ctrlSetBackgroundColor [0.105, 0.11, 0.095, 0];
+	_bgCtrl ctrlCommit 3;
+	_textCtrl ctrlSetTextColor [0.95, 0.93, 0.86, 0];
+	_textCtrl ctrlCommit 3;
 };

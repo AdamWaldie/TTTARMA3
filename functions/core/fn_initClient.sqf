@@ -250,8 +250,19 @@ player allowDamage true;
 // actually revealed to them - the intro music should die right here, not on
 // some fixed delay afterward, so fade it out gently as the badge appears
 // instead of leaving it running under the round proper.
+//
+// Logged on both sides of the call (not just "issued"): fadeMusic itself
+// never throws and never reports failure, so a diag_log placed only before
+// it would look identical whether the ramp actually engaged or not. Having
+// both lines land in the .rpt confirms the call was reached and returned,
+// which is the only way to tell "never ran" apart from "ran but the engine
+// didn't audibly honour it" from the log alone.
 if (_musicStarted) then {
+	diag_log "[Waldo][client] intro music: fade-out issued (6 fadeMusic 0)";
 	6 fadeMusic 0;
+	diag_log "[Waldo][client] intro music: fade-out call returned";
+} else {
+	diag_log "[Waldo][client] intro music: fade-out skipped, music never started";
 };
 
 [] call Waldo_fnc_initHud;

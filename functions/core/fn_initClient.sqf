@@ -254,9 +254,13 @@ player allowDamage true;
 // Logged on both sides of the call (not just "issued"): fadeMusic itself
 // never throws and never reports failure, so a diag_log placed only before
 // it would look identical whether the ramp actually engaged or not. Having
-// both lines land in the .rpt confirms the call was reached and returned,
-// which is the only way to tell "never ran" apart from "ran but the engine
-// didn't audibly honour it" from the log alone.
+// both lines land in the .rpt confirmed the call was reached and returned -
+// and a live dedicated-server test with ACE loaded still had the track
+// playing at full volume for the rest of the round regardless. Root cause:
+// ACE's hearing module periodically calls fadeMusic itself to duck music
+// under hearing damage/suppression, fighting this call every time it fired.
+// init.sqf now sets ace_hearing_disableVolumeUpdate = true so ACE leaves
+// fadeMusic alone and this call actually takes effect.
 if (_musicStarted) then {
 	diag_log "[Waldo][client] intro music: fade-out issued (6 fadeMusic 0)";
 	6 fadeMusic 0;

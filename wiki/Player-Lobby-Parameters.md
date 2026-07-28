@@ -2,6 +2,8 @@
 
 All lobby parameters are read by index in `Waldo_fnc_loadParams`, matching the order they're declared in `description.ext`'s `class Params`. If you're editing that file, appending a new parameter after the existing ones keeps every other index stable; inserting one in the middle shifts everything after it and will silently break the read.
 
+![The lobby parameters screen](Images/parameters.jpg)
+
 ## Round
 
 | Parameter | What it controls |

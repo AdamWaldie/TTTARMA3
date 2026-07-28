@@ -254,13 +254,24 @@ player allowDamage true;
 // Logged on both sides of the call (not just "issued"): fadeMusic itself
 // never throws and never reports failure, so a diag_log placed only before
 // it would look identical whether the ramp actually engaged or not. Having
-// both lines land in the .rpt confirms the call was reached and returned,
-// which is the only way to tell "never ran" apart from "ran but the engine
-// didn't audibly honour it" from the log alone.
+// both lines land in the .rpt confirmed the call was reached and returned -
+// and a live dedicated-server test with CBA+ACE loaded still had the track
+// playing at full volume for the rest of the round regardless. That matches
+// a documented engine bug (acemod/ACE3#4029): fadeMusic silently no-ops
+// with CBA and ACE3 both loaded - it returns cleanly, but never actually
+// touches the audible volume. Keeping the fadeMusic attempt (harmless, and
+// still the real gentle fade on a setup without that mod combo), but
+// following it with a hard playMusic "" stop a few seconds later guarantees
+// the track actually ends even when the fade itself did nothing.
 if (_musicStarted) then {
 	diag_log "[Waldo][client] intro music: fade-out issued (6 fadeMusic 0)";
 	6 fadeMusic 0;
 	diag_log "[Waldo][client] intro music: fade-out call returned";
+	[] spawn {
+		sleep 6;
+		playMusic "";
+		diag_log "[Waldo][client] intro music: hard stop (playMusic \"\") issued as a fadeMusic fallback";
+	};
 } else {
 	diag_log "[Waldo][client] intro music: fade-out skipped, music never started";
 };

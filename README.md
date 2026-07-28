@@ -8,16 +8,21 @@ Trouble In Terrorist Town, rebuilt in Arma 3. Same hidden-role deduction loop as
 
 ---
 
-## About
+## Four roles, one deduction game
 
-Each round, players are assigned one of four roles and dropped into a town-sized arena the mission builds and walls off on the fly.
+Each round, players are assigned one of four roles and dropped into a town-sized arena the mission builds and walls off on the fly, a different one every round, on any of five stock terrains.
 
-- **Innocent** - the majority. No powers, no information. Wins when every Traitor is dead.
-- **Traitor** - a hidden minority who know each other, share a credit shop, and win by killing everyone who isn't one of them.
-- **Detective** - a publicly known Innocent with an investigation shop (testing, DNA forensics, radar). Wins alongside the Innocents.
-- **Jester** - deals no damage, can't win the normal way. Traitors are told who the Jester is. If a non-Traitor kills them, the Jester wins instead, and nobody else does.
+- **Innocent.** The majority. No powers, no information. Wins when every Traitor is dead.
+- **Traitor.** A hidden minority who know each other, share a credit shop, and win by killing everyone who isn't one of them.
+- **Detective.** A publicly known Innocent with an investigation shop: testing, DNA forensics, radar. Wins alongside the Innocents.
+- **Jester.** Deals no damage and can't win the normal way. Traitors are told who the Jester is. If a non-Traitor kills them, the Jester wins instead, and nobody else does.
 
 The round ends when the Innocents wipe out the Traitors, the Traitors wipe out everyone else, time runs out, or the Jester gets themselves killed by the wrong person. A body has to be identified before its role becomes public knowledge, which is where the investigation side of the game actually lives.
+
+<p align="center">
+  <img src="https://github.com/AdamWaldie/TTTARMA3/blob/main/wiki/Images/RoleTraitor.jpg?raw=true" alt="Traitor HUD" width="49%">
+  <img src="https://github.com/AdamWaldie/TTTARMA3/blob/main/wiki/Images/BuyMenuTraitor.jpg?raw=true" alt="Traitor shop" width="49%">
+</p>
 
 For mechanics in more depth than fits here, see the [wiki](https://github.com/AdamWaldie/TTTARMA3/wiki): win-condition priority, the full shop catalogs, DNA contamination math, the dynamic arsenal, every lobby parameter, and the dev/test framework.
 
@@ -25,37 +30,43 @@ For mechanics in more depth than fits here, see the [wiki](https://github.com/Ad
 
 ## What's in it
 
-**Arena generation.** The server scores candidate town locations by how many enterable, loot-bearing buildings sit inside the play radius, and picks the best one it finds rather than centering on an empty field. A circular wall goes up around it (measured at runtime against the actual wall asset, so it doesn't develop gaps as the radius grows), and anyone who wanders too close to the edge gets warned back in.
+**Arena generation.** The server scores candidate town locations by how many enterable, loot-bearing buildings sit inside the play radius, and picks the best one it finds rather than centering on an empty field. A circular wall goes up around it, measured at runtime against the actual wall asset so it doesn't develop gaps as the radius grows, and anyone who wanders too close to the edge gets warned back in.
 
-**Investigation and counter-investigation.** DNA left at a kill can be sampled and tracked, but the trace decays with age and every different player who walks near the scene raises the odds the reading points at an innocent bystander instead of the real killer. A Detective's Enhanced Scanner passive cuts that risk in half and adds forensic detail (time of death, weapon used). Traitors get their own answer to it: Dead Ringer fakes a death outright (a ragdoll, a decoy corpse, twenty seconds face-down before getting back up), and False Flag redirects a kill's DNA onto a random bystander instead of the Traitor who pulled the trigger. Calling in a body confirms the death to everyone, but only a Detective's identification reveals who they were.
+**Investigation and counter-investigation.** DNA left at a kill can be sampled and tracked, but the trace decays with age, and every different player who walks near the scene raises the odds the reading points at an innocent bystander instead of the real killer. A Detective's Enhanced Scanner passive cuts that risk in half and adds forensic detail: time of death, weapon used. Traitors get their own answer to it. Dead Ringer fakes a death outright, a ragdoll, a decoy corpse, twenty seconds face-down before getting back up. False Flag redirects a kill's DNA onto a random bystander instead of the Traitor who pulled the trigger. Calling in a body confirms the death to everyone, but only a Detective's identification reveals who they were.
 
-**Shops.** Traitors and Detectives each get roughly fourteen items, split between weapons, passives, and one-press activation items (defibrillator, C4, body removal, the DNA scanner itself). A Purchased panel in the shop keeps a running log of what you've bought and how to use it, so you're never stuck trying to remember what an item does three purchases later.
+**Shops.** Traitors and Detectives each get roughly fourteen items, split between weapons, passives, and one-press activation items: defibrillator, C4, body removal, the DNA scanner itself. A Purchased panel keeps a running log of what you've bought and how to use it, so you're never stuck trying to remember what an item does three purchases later.
 
-**Traitor coordination.** A silent ping (T) tells every fellow Traitor where to look, no chat or voice an Innocent could overhear. Aim at a living player and it's a tracked target marker; aim at anything else and it's a static location pin.
+**Traitor coordination.** A silent ping tells every fellow Traitor where to look, no chat or voice an Innocent could overhear. Aim at a living player and it's a tracked target marker. Aim at anything else and it's a static location pin.
 
 **Airdrops.** Regular supply crates drop on a timer built from the lobby settings, plus a rare golden variant in three flavors (weapons, medical, ammo) that gets announced to the whole server the moment it's in the air.
 
-**Revive.** Both shops carry a defibrillator. A Traitor's revives the target onto the Traitor team; a Detective's brings them back as whatever they were. Arma has no real "undo death," so a revive is actually a forced early respawn: the mission rebuilds the player's role, credits, kill count, and kit onto the new unit the moment it exists.
+**Revive.** Both shops carry a defibrillator. A Traitor's revives the target onto the Traitor team. A Detective's brings them back as whatever they were. Arma has no real "undo death," so a revive is a forced early respawn under the hood: the mission rebuilds the player's role, credits, kill count, and kit onto the new unit the moment it exists.
 
 **Karma.** Killing your own side is remembered across rounds, stored per player rather than per mission, since the mission itself restarts every round. Low karma costs you your starting credits next round and gets announced to the lobby, then decays back toward neutral over time.
 
 **Round MVP.** Whoever has the most kills gets a short celebration at round end: the intro music again, a burst of colored smoke over the arena, a banner with their name on it.
 
+<p align="center">
+  <img src="https://github.com/AdamWaldie/TTTARMA3/blob/main/wiki/Images/Scoreboard.jpg?raw=true" alt="In-round scoreboard" width="70%">
+</p>
+
 ---
 
 ## Installation
 
-1. Grab a release from this repo. Each release ships one zip per terrain (Altis, Tanoa, Stratis, Livonia, Malden), named `TroubleInArmaville_<version>.<Terrain>`, since Arma needs the folder name to match the terrain to list it correctly (Livonia's is `.Enoch` - that's Livonia's actual internal terrain classname). Pick the one matching the map you want to run.
-2. Unzip it into your Arma 3 missions directory.
+1. Subscribe on the Steam Workshop, or grab a release from this repo instead. Each GitHub release ships one zip per terrain (Altis, Tanoa, Stratis, Livonia, Malden), named `TroubleInArmaville_<version>.<Terrain>`, since Arma needs the folder name to match the terrain to list it correctly. Livonia's is `.Enoch`, that's Livonia's actual internal terrain classname. Pick the one matching the map you want to run.
+2. A Workshop subscription places the mission automatically. A manual zip needs unzipping into your Arma 3 missions directory yourself.
 3. Host it or launch it in multiplayer.
 
-The mission doesn't hardcode anything to a specific map: the arena, its loot, and where players start are all picked at runtime, not read from fixed positions. Any of the four terrains above works the same way.
+The mission doesn't hardcode anything to a specific map: the arena, its loot, and where players start are all picked at runtime, not read from fixed positions. Any of the five terrains above works the same way.
 
 ---
 
 ## One server setting you must change
 
-Turn **Kill Messages** off in your server's difficulty settings. Every player slot in this mission is `side="Civilian"`, so as far as the engine is concerned every Traitor/Detective/Innocent kill is one civilian killing another civilian on the "same side" - and with Kill Messages on, Arma broadcasts who killed whom to everyone's system chat the instant it happens. That names the killer in plain text and blows the round's entire hidden-role premise. This is a difficulty preset the server hosts, not a mission setting, so there's nothing in `description.ext` or the lobby parameters below that can turn it off for you.
+Turn **Kill Messages** off in your server's difficulty settings before your first round. Every player slot in this mission is `side="Civilian"`, so as far as the engine is concerned every Traitor, Detective, or Innocent kill is just one civilian killing another civilian on the "same side." With Kill Messages on, Arma broadcasts who killed whom to everyone's system chat the instant it happens, naming the killer in plain text and ending the round's entire premise on the spot.
+
+This lives in Arma's own difficulty settings, not in this mission's `description.ext` or its lobby parameters, so nothing here can switch it off for you. If you're hosting yourself, it's in the Difficulty panel on the Host screen under the Custom preset, set it once and it sticks for future sessions on that machine. If someone else runs the server, ask them to check before your first round together.
 
 ---
 
@@ -70,6 +81,10 @@ Turn **Kill Messages** off in your server's difficulty settings. Every player sl
 | Environment | Rain on/off + chance, fog on/off + chance, time of day (random / dawn / day / dusk / night) |
 | Arena | Size (small / normal / large) |
 | Testing | Enable Testing Mode, which unlocks the dev/test menu below |
+
+<p align="center">
+  <img src="https://github.com/AdamWaldie/TTTARMA3/blob/main/wiki/Images/parameters.jpg?raw=true" alt="Lobby parameters screen" width="70%">
+</p>
 
 The boolean toggles read as a numeric `{0,1}` value rather than a `{False,True}` one, because the engine silently ignores a bool-typed lobby parameter with a bool default. That was a real bug in an earlier version of this mission and it's fixed now.
 
@@ -109,10 +124,7 @@ Everything here is gated on the Testing Mode parameter. With it off, the key doe
 
 ## Dependencies
 
-- Arma 3
-- CBA_A3
-
-ACE isn't officially supported. It mostly works if you turn off the medical or unconscious rule so a downed player doesn't end up stuck in limbo instead of dead.
+Arma 3, and nothing else. CBA_A3, ACE3, ACRE2, and TFAR are all optional: the mission checks for each at runtime and uses the modded version when it's loaded (ACE Medical's full-heal call, ACE Advanced Throwing compatibility on the Teleport Grenade, ACRE2/TFAR radios instead of vanilla) but falls back to a plain-vanilla equivalent when it isn't. Nothing here ever gets bolted onto your modlist as a requirement.
 
 ---
 

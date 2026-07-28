@@ -4,11 +4,19 @@
 
 **Innocent.** The majority. No powers, no information beyond what they can deduce. Wins when every Traitor is dead.
 
+![Innocent HUD](Images/RoleInnocent.jpg)
+
 **Traitor.** A hidden minority who know each other's identities from the start. They share a credit shop with sabotage and counter-investigation tools, and win by killing everyone who isn't a Traitor.
+
+![Traitor HUD](Images/RoleTraitor.jpg)
 
 **Detective.** A publicly known Innocent (everyone can see who the Detective is) with their own investigation-focused shop: testing, DNA scanning, radar. Wins alongside the Innocents.
 
+![Detective HUD](Images/RoleDetective.jpg)
+
 **Jester.** Deals no damage (a `Fired` event handler deletes their own projectiles) and cannot win the normal way. Traitors are told who the Jester is. If a non-Traitor kills them, the Jester wins instead and nobody else does; being killed by a Traitor accomplishes nothing for the Jester.
+
+![Jester HUD](Images/RoleJester.jpg)
 
 Role assignment (`Waldo_fnc_assignRoles`) resets every player to Innocent, then picks Traitors from a shuffled pool sized by the lobby's Traitor chance range (clamped by Min/Max Traitors), then a Detective if the lobby size clears `DetectiveMinPlayers`, then a Jester if enabled and either "Always Appears" or a chance roll succeeds.
 

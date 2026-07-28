@@ -16,9 +16,13 @@ Activation items get 3 key slots (Y/U/J), not one - the first activation item yo
 
 Suicide Bomb, Radar (pulses everyone's position, recharges), Rocket Launcher, Stamina, Teleport Grenades (red smoke that warps you to where it lands), Long Rifle, Defibrillator (revives a body onto the Traitor team), Silenced Pistol, Frag Grenades, Body Armor, Body Remover (destroys a corpse outright, denying the Detective evidence), C4 Charge, Night Vision, Dead Ringer, False Flag.
 
+![The Traitor shop](Images/BuyMenuTraitor.jpg)
+
 ## Detective shop
 
 Portable Tester (reveals a role at close range), DNA Scanner, Enhanced Scanner (upgrades the DNA Scanner), Radar, Smoke Grenades, Stamina, Flower Power (a novelty round-turns-into-flowers effect), Health Station, Defibrillator (revives a body as whatever it was), Frag Grenades, Body Armor, Medical Kit, Binoculars, Night Vision.
+
+![The Detective shop](Images/BuyMenuDetective.jpg)
 
 Weapon and gear classnames in both catalogs are read from `missionNamespace` at click time (`TraitorRifle`, `ShopArmorVest`, `ShopFrag`, and so on), which is what makes the shop follow whatever mods the dynamic arsenal discovered rather than hardcoding classnames. See [Equipment System](Dev-Equipment-System).
 

@@ -92,7 +92,7 @@ waitUntil { !isNull player && time > 0 };
 // NOT track-specific or reset by playMusic - it just stays wherever the
 // LAST fadeMusic call left it. This mission restarts a fresh round (and
 // calls playMusic again) many times in the same server session, and
-// fn_initClient.sqf's own fade-out at round-live (`10 fadeMusic 0;`, near
+// fn_initClient.sqf's own fade-out at round-live (`6 fadeMusic 0;`, near
 // the end of this script) leaves that multiplier at 0 - silently muting
 // every playMusic call for the rest of the server's life (this round's MVP
 // replay, Waldo_fnc_mvpCelebrate, and every later round's intro alike) with
@@ -244,29 +244,16 @@ player allowDamage false;
 // --- Wait for the round to go live ---
 waitUntil { missionNamespace getVariable ["gameOn", false] };
 
-// Fade out relative to the round's actual start (Waldo_roundLiveAt - the
-// server `time` the round went live, already broadcast for the round timer,
-// Waldo_fnc_topBarTimer) rather than the instant THIS client's script
-// notices gameOn: every client reaches "arena-ready" (and starts the music)
-// at a different point in the server's fixed warmup countdown depending on
-// its own load speed, so fading strictly off gameOn gave a fast-loading
-// client the whole warmup length of music but a slow-loading one almost
-// none. Anchoring the fade to the shared round-start moment instead means
-// everyone's music dies at the same real moment, a fixed stretch into the
-// round, regardless of when their own playback happened to begin. Spawned
-// so this wait can never delay allowDamage/HUD setup right below, which
-// still need to happen exactly at round-live for everyone alike.
-if (_musicStarted) then {
-	[] spawn {
-		private _fadeAt = (missionNamespace getVariable ["Waldo_roundLiveAt", time]) + 12;
-		waitUntil { time >= _fadeAt };
-		10 fadeMusic 0;
-	};
-};
-
 player allowDamage true;
 
-// HUD (role badge + live credits)
+// HUD (role badge + live credits). This is the moment a player's role is
+// actually revealed to them - the intro music should die right here, not on
+// some fixed delay afterward, so fade it out gently as the badge appears
+// instead of leaving it running under the round proper.
+if (_musicStarted) then {
+	6 fadeMusic 0;
+};
+
 [] call Waldo_fnc_initHud;
 ["round-live"] call _logPhase;
 

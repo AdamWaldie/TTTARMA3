@@ -458,9 +458,15 @@ class Params {
 	// single letter) never changes - only the surrounding credits/decoration
 	// treatment differs per style. 0 is the shipped default, so servers that
 	// never touch this param see no visual change at all.
+	// 8 (Player Choice) hands the decision to each player individually - see
+	// Waldo_fnc_initHud, which then reads Waldo_roleCrestStylePref from that
+	// player's own profileNamespace (set via the H key, saved across
+	// sessions) instead of this value. Any other value here always wins over
+	// a player's saved preference, on every redraw (respawn, role switch) -
+	// this is a server-admin override, not a one-time default.
 	class RoleCrestStyle {                  // 30
 		title = "Role Crest Style";
-		values[] = {0, 1, 2, 3, 4, 5, 6, 7};
+		values[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 		texts[]  = {
 			"Original",
 			"Signal Ring",
@@ -469,7 +475,8 @@ class Params {
 			"Wallet Chip",
 			"Satellite Chip",
 			"IFF Transponder",
-			"Contact Blip"
+			"Contact Blip",
+			"Player Choice (H key, per-player)"
 		};
 		default  = 0;
 	};

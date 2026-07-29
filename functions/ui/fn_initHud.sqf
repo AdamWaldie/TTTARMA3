@@ -82,8 +82,20 @@ private _hasCredits = _role in ["Traitor", "Detective"];
 // control across every style is shown/hidden exactly once per call: first
 // pass hides every style except the selected one, second pass then re-hides
 // the selected style's credit-only controls if this role has none.
+//
+// A server value of 8 ("Player Choice") hands the decision to each player
+// individually - Waldo_roleCrestStylePref lives in THIS client's own
+// profileNamespace (set via the H key, functions/core/fn_initClient.sqf),
+// so it's saved across sessions and never broadcast. Any other server value
+// always wins over that saved preference, on every redraw - a server admin
+// forcing a style is meant to actually stick, not just be a default.
 // ============================================================================
-private _style = missionNamespace getVariable ["Waldo_roleCrestStyle", 0];
+private _serverCrestStyle = missionNamespace getVariable ["Waldo_roleCrestStyle", 0];
+private _style = if (_serverCrestStyle == 8) then {
+	profileNamespace getVariable ["Waldo_roleCrestStylePref", 0]
+} else {
+	_serverCrestStyle
+};
 
 private _styleAlways = [
 	[],                                             // 0 - original: nothing beyond the credits pill below

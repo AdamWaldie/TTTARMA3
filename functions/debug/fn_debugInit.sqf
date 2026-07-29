@@ -406,6 +406,43 @@ private _setCrestStyle = {
 ["HUD", "Role Crest: IFF Transponder",       "RoleCrestStyle 6 (this client only)", "local", { [6] call _setCrestStyle }] call Waldo_debugRegister;
 ["HUD", "Role Crest: Contact Blip",          "RoleCrestStyle 7 (this client only)", "local", { [7] call _setCrestStyle }] call Waldo_debugRegister;
 
+// HUD - notification-card system (functions/uinotify/) previews. All fire
+// real Waldo_fnc_ShowUiNotification calls, not mockups, so what's on screen
+// after clicking one of these is exactly what a player would see - just
+// without needing to actually die mid-round, wait for an airdrop timer, or
+// end a round to trigger the real event.
+["HUD", "UI: Preview All Placements", "One sample card in each of the 5 placement zones (TOP/TOP_RIGHT/CENTER/BOTTOM_LEFT/BOTTOM_RIGHT)", "local", {
+	{
+		[
+			format ["PLACEMENT: %1", _x], "Sample card for this zone - checking spacing/overlap.",
+			"INFO", 8, _x, format ["PREVIEW_PLACEMENT_%1", _x], "UI TEST"
+		] call Waldo_fnc_ShowUiNotification;
+	} forEach ["TOP", "TOP_RIGHT", "CENTER", "BOTTOM_LEFT", "BOTTOM_RIGHT"];
+}] call Waldo_debugRegister;
+["HUD", "UI: Preview All States", "One card per state (INFO/SUCCESS/WARNING/ERROR) stacked in BOTTOM_LEFT", "local", {
+	{
+		_x params ["_state", "_msg"];
+		[
+			format ["STATE: %1", _state], _msg,
+			_state, 8, "BOTTOM_LEFT", format ["PREVIEW_STATE_%1", _state], "UI TEST"
+		] call Waldo_fnc_ShowUiNotification;
+	} forEach [
+		["INFO", "This is an info card."],
+		["SUCCESS", "This is a success card."],
+		["WARNING", "This is a warning card."],
+		["ERROR", "This is an error card."]
+	];
+}] call Waldo_debugRegister;
+["HUD", "UI: Simulate MVP Banner", "Plays the real round-end MVP celebration (music + fireworks + card) without ending the round", "local", {
+	["Test Player", player getVariable ["role", "Innocent"], 5] call Waldo_fnc_mvpCelebrate;
+}] call Waldo_debugRegister;
+["HUD", "UI: Simulate Airdrop (Golden)", "Fires the exact card a real golden airdrop shows, without spawning one", "local", {
+	["GOLDEN AIRDROP", "A GOLDEN WEAPONS airdrop is falling!", "WARNING", 6, "TOP", "AIRDROP", "SUPPLY"] call Waldo_fnc_ShowUiNotification;
+}] call Waldo_debugRegister;
+["HUD", "UI: Simulate Airdrop (Supply)", "Fires the exact card a real supply airdrop shows, without spawning one", "local", {
+	["AIRDROP INBOUND", "A supply airdrop is falling!", "INFO", 5, "TOP", "AIRDROP", "SUPPLY"] call Waldo_fnc_ShowUiNotification;
+}] call Waldo_debugRegister;
+
 // Test Dummies
 ["Test Dummies", "Spawn Innocent Dummy",  "Captive dummy; death runs the kill handler", "server", { [_this, "Innocent"]  call Waldo_debugSpawnDummy }] call Waldo_debugRegister;
 ["Test Dummies", "Spawn Traitor Dummy",   "Kill it to test detective kill-credit",      "server", { [_this, "Traitor"]   call Waldo_debugSpawnDummy }] call Waldo_debugRegister;

@@ -386,6 +386,26 @@ private _giveAll = {
 ["Abilities", "Suicide Bomb",    "Detonate yourself (test the traitor bomb)","local", { [] call Waldo_fnc_suicideBomb }] call Waldo_debugRegister;
 ["Abilities", "Holster",         "Holster / lower weapon toggle",           "local", { [] call Waldo_fnc_holster }] call Waldo_debugRegister;
 
+// HUD - role crest style preview. A LOCAL-only override (missionNamespace
+// setVariable without the broadcast flag): only this client's own copy of
+// Waldo_roleCrestStyle changes, everyone else keeps whatever the lobby
+// RoleCrestStyle param actually set, and re-running Waldo_fnc_initHud
+// redraws the crest immediately against the current role so there's no need
+// to respawn/role-switch to see it.
+private _setCrestStyle = {
+	params ["_style"];
+	missionNamespace setVariable ["Waldo_roleCrestStyle", _style];
+	[] call Waldo_fnc_initHud;
+};
+["HUD", "Role Crest: Original",              "RoleCrestStyle 0 (this client only)", "local", { [0] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Signal Ring",           "RoleCrestStyle 1 (this client only)", "local", { [1] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Corner Bracket Frame",  "RoleCrestStyle 2 (this client only)", "local", { [2] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Fused Tag",             "RoleCrestStyle 3 (this client only)", "local", { [3] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Wallet Chip",           "RoleCrestStyle 4 (this client only)", "local", { [4] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Satellite Chip",        "RoleCrestStyle 5 (this client only)", "local", { [5] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: IFF Transponder",       "RoleCrestStyle 6 (this client only)", "local", { [6] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Contact Blip",          "RoleCrestStyle 7 (this client only)", "local", { [7] call _setCrestStyle }] call Waldo_debugRegister;
+
 // Test Dummies
 ["Test Dummies", "Spawn Innocent Dummy",  "Captive dummy; death runs the kill handler", "server", { [_this, "Innocent"]  call Waldo_debugSpawnDummy }] call Waldo_debugRegister;
 ["Test Dummies", "Spawn Traitor Dummy",   "Kill it to test detective kill-credit",      "server", { [_this, "Traitor"]   call Waldo_debugSpawnDummy }] call Waldo_debugRegister;

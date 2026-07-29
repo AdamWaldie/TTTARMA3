@@ -289,7 +289,8 @@ Waldo_detectiveShop = [
 	["Enhanced Scanner", 3, "passive",
 		{ player setVariable ["Waldo_enhancedScanner", true, true]; },
 		{},
-		"Upgrades the DNA Scanner: longer/steadier tracking, half the contamination risk, and reveals time-of-death + weapon"],
+		"Upgrades the DNA Scanner: longer/steadier tracking, half the contamination risk, and reveals time-of-death + weapon",
+		"DNA Scanner"],   // _requires: does nothing without the base scanner - greyed out in the shop until owned
 
 	["Radar", 1, "passive",
 		{ [] call Waldo_fnc_detectiveRadar; },

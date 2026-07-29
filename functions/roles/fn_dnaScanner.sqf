@@ -59,6 +59,13 @@ if (_target isKindOf "CAManBase" && {alive _target}) exitWith { ["Aim at a body,
 private _source = _target getVariable ["Waldo_killerDNA", objNull];
 if (isNull _source) exitWith { ["No usable DNA here."] call _warn; false };
 
+// One sample per piece of evidence, full stop - global (not per-detective),
+// so re-aiming at the same corpse can't be used to re-roll contamination/
+// misdirection for a better outcome, and two different detectives can't
+// each burn a charge on the same body for two independent rolls either.
+if (_target getVariable ["Waldo_dnaSampled", false]) exitWith { ["Already sampled - no new information here."] call _warn; false };
+_target setVariable ["Waldo_dnaSampled", true, true];
+
 private _charges = (player getVariable ["Waldo_dnaScannerCharges", 3]) - 1;
 player setVariable ["Waldo_dnaScannerCharges", _charges, true];
 [
@@ -90,9 +97,21 @@ player setVariable ["Waldo_dnaScannerCharges", _charges, true];
 		private _decoyPool = allPlayers select { alive _x && {_x != _source} && {_x != player} };
 		if (count _decoyPool > 0) then { _tracked = selectRandom _decoyPool; };
 	};
-	if (_contam > 1) then {
+	// A raw witness count means nothing to a player without context for what
+	// it does to their odds - show the actual risk tier (derived from
+	// _misChance, so it already reflects Enhanced Scanner's halving) plus the
+	// count, instead of just the count alone.
+	if (_contam > 0) then {
+		private _tier = ["Low", "Moderate", "High", "Severe"] select (
+			if (_misChance < 0.15) then {0} else { if (_misChance < 0.4) then {1} else { if (_misChance < 0.7) then {2} else {3} } }
+		);
+		private _tierColour = ["#6CE5A8", "#FFD166", "#FF9F5A", "#FF6161"] select (
+			if (_misChance < 0.15) then {0} else { if (_misChance < 0.4) then {1} else { if (_misChance < 0.7) then {2} else {3} } }
+		);
 		[
-			"DNA SCANNER", format ["Sample contaminated (%1 people were near the scene) - the reading may be unreliable.", _contam],
+			"DNA SCANNER",
+			format ["<t color='%1'>%2 contamination</t> (%3 nearby witness%4) - reading may be unreliable.",
+				_tierColour, _tier, _contam, ["es", ""] select (_contam == 1)],
 			"WARNING", 4, "BOTTOM_LEFT", "DNA_CONTAM", "DNA SCANNER"
 		] call Waldo_fnc_ShowUiNotification;
 		sleep 1.5;

@@ -169,6 +169,7 @@ class CfgFunctions
 			file = "functions\ui";
 			class initShops { preInit = 1; }; // defines shop catalogs on every machine
 			class initHud {};           // Waldo_fnc_initHud
+			class openStylePicker {};   // Waldo_fnc_openStylePicker (H: role crest style picker dialog)
 			class topBarTimer {};       // Waldo_fnc_topBarTimer (top bar's round-timer loop, started once)
 			class warmupBar {};         // Waldo_fnc_warmupBar (top-bar "Selecting Roles" countdown during warmup)
 			class topBarAnnounce {};    // Waldo_fnc_topBarAnnounce (top-bar fade in/out announcement banner)

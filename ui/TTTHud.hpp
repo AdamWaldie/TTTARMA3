@@ -97,46 +97,49 @@ class RscTitles
 			// (github.com/woozymasta/paa) rather than a hand-rolled one, since a
 			// subtly wrong PAA would just trade one silent load failure for
 			// another.
-			// Style 7 (Contact Blip) only: two static concentric rings, tinted to
-			// the role colour at low alpha, standing in for a radar "pulse" without
-			// an animation loop. These MUST be declared before roleShadow/the rest
-			// of the badge below - Arma draws sibling controls in declaration
-			// order, later on top of earlier - so they sit BEHIND the badge ring
-			// instead of covering the letter. Reuses ui\rolebg.paa (the same soft
-			// backing-disc asset the default style already uses) rather than a new
-			// texture, just scaled up around the same badge centre. Hidden
-			// whenever RoleCrestStyle != 7 (see Waldo_fnc_initHud).
-			// Sizes were 0.24H (outer) / 0.195H (mid), both centred on the ring's
-			// own centre (0.075H from RX/RY) - the outer ring's right/bottom
-			// edges landed at 0.195H, 0.02H past the 0.175H/0.185H budget on
-			// each axis respectively (a soft low-alpha glow, so less visually
-			// jarring than a hard-edged element overflowing, but still genuinely
-			// off the edge of the safe area). Shrunk both, still centred, so
-			// ring (0.15H) < mid (0.165H) < outer (0.19H) stays a readable pulse
-			// gradient while every edge keeps real margin inside the budget.
-			class s7RingOuter: RscPicture
+			// "Rank Disc" shared backing for styles 1-7 (style 0 stays exactly as
+			// shipped - homage to the original; style 8 doesn't use the ring at
+			// all). A dark casing-coloured rim plus a thin gold accent ring
+			// behind the existing badge, so it reads as a coin struck in metal
+			// instead of a flat sticker. MUST be declared before roleShadow/the
+			// rest of the badge below - Arma draws sibling controls in
+			// declaration order, later on top of earlier - so this sits BEHIND
+			// the badge ring instead of covering the letter. Reuses ui\rolebg.paa
+			// (the same filled backing-disc asset the default style already
+			// uses for its own white face) rather than a new texture, just
+			// scaled up around the same badge centre and tinted flat instead of
+			// role-coloured (this is a fixed materials choice, not per-role).
+			// Hidden for styles 0 and 8 (see Waldo_fnc_initHud). These sizes
+			// were originally Style 7 (Contact Blip)'s own bespoke pulse-ring
+			// effect at the same dimensions - retired in favour of every
+			// non-original style sharing this one backing, Contact Blip
+			// included, rather than layering two similar ring treatments.
+			class rankDiscRim: RscPicture
 			{
-				idc = 1260;
+				idc = 1270;
 				text = "ui\rolebg.paa";
 				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.02 * safezoneH);
 				w = 0.19 * safezoneH;
 				h = 0.19 * safezoneH;
-				color[] = {1, 1, 1, 0.22};   // retinted to the role colour at runtime
+				color[] = {0.105, 0.11, 0.095, 1};   // WALDO_CASING, flat - not role-tinted
 			};
-			class s7RingMid: RscPicture
+			class rankDiscAccent: RscPicture
 			{
-				idc = 1261;
+				idc = 1271;
 				text = "ui\rolebg.paa";
 				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.0075 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.0075 * safezoneH);
 				w = 0.165 * safezoneH;
 				h = 0.165 * safezoneH;
-				color[] = {1, 1, 1, 0.4};   // retinted to the role colour at runtime
+				color[] = {0.85, 0.62, 0.20, 1};   // WALDO_ACCENT gold, flat - not role-tinted
 			};
+			// idc 1272, not -1: style 8 (Stamped Tag) doesn't use the ring at
+			// all and needs to hide this too, or its soft shadow blob would
+			// linger behind style 8's own plate with nothing left to belong to.
 			class roleShadow: RscPicture
 			{
-				idc = -1;
+				idc = 1272;
 				text = "ui\roleshadow.paa";
 				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.008 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.010 * safezoneH);
@@ -321,6 +324,21 @@ class RscTitles
 			// spilling past the visible safe area. Above has the same room the
 			// original style's credits pill already proved out (it sits at
 			// RY - 0.04H).
+			//
+			// s2CreditBG: this was bare floating text with just a drop shadow -
+			// the only credit readout in the whole crest with nothing solid
+			// behind it, so against a bright terrain background it washed out
+			// unlike every other style's pill/tab/chip. Same WALDO_HEADERBG
+			// plate every other credit readout uses, sized to the text.
+			class s2CreditBG: RscText {
+				idc = 1219;
+				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.05 * safezoneH);
+				w = 0.19 * safezoneH;
+				h = 0.022 * safezoneH;
+				colorBackground[] = WALDO_HEADERBG;
+				style = 0;
+			};
 			class s2CreditText: RscText {
 				idc = 1218;
 				text = "";
@@ -367,6 +385,15 @@ class RscTitles
 				colorBackground[] = WALDO_ACCENT;   // tinted to the role colour at runtime
 				style = 0;
 			};
+			// ST_LEFT alone, NOT "+ ST_VCENTER" - see the long-documented reason
+			// above roleText (this file's own BIKI-sourced note: ST_VCENTER is a
+			// vertical/rotated TEXT ORIENTATION flag, not "centre vertically",
+			// and "should not be mixed with any other styles"). This control and
+			// its siblings below (s3Credits/s4RoleName/s4Credits) were the only
+			// ones in the whole crest that combined ST_VCENTER with another
+			// style and rendered fully blank in testing - real vertical
+			// centring is done in script instead (Waldo_fnc_initHud), the same
+			// ctrlTextHeight technique roleText already uses.
 			class s3RoleName: RscText {
 				idc = 1223;
 				text = "";
@@ -376,7 +403,7 @@ class RscTitles
 				h = 0.024 * safezoneH;
 				colorBackground[] = {0,0,0,0};
 				colorText[] = {0.95, 0.93, 0.86, 1};
-				style = ST_LEFT + ST_VCENTER;
+				style = ST_LEFT;
 				font = "PuristaBold";
 				sizeEx = 0.018 * safezoneH;
 				shadow = 1;
@@ -390,7 +417,7 @@ class RscTitles
 				h = 0.018 * safezoneH;
 				colorBackground[] = {0,0,0,0};
 				colorText[] = WALDO_ACCENT;   // tinted to the role colour at runtime
-				style = ST_LEFT + ST_VCENTER;
+				style = ST_LEFT;
 				font = "PuristaMedium";
 				sizeEx = 0.015 * safezoneH;
 				shadow = 1;
@@ -417,6 +444,7 @@ class RscTitles
 				colorBackground[] = WALDO_CASING;
 				style = 0;
 			};
+			// ST_LEFT alone - see s3RoleName's comment above, same bug.
 			class s4RoleName: RscText {
 				idc = 1232;
 				text = "";
@@ -426,7 +454,7 @@ class RscTitles
 				h = 0.024 * safezoneH;
 				colorBackground[] = {0,0,0,0};
 				colorText[] = {0.95, 0.93, 0.86, 1};
-				style = ST_LEFT + ST_VCENTER;
+				style = ST_LEFT;
 				font = "PuristaBold";
 				sizeEx = 0.018 * safezoneH;
 				shadow = 1;
@@ -440,7 +468,7 @@ class RscTitles
 				h = 0.02 * safezoneH;
 				colorBackground[] = {0,0,0,0};
 				colorText[] = WALDO_ACCENT;   // tinted to the role colour at runtime
-				style = ST_LEFT + ST_VCENTER;
+				style = ST_LEFT;
 				font = "PuristaMedium";
 				sizeEx = 0.015 * safezoneH;
 				shadow = 1;
@@ -511,11 +539,29 @@ class RscTitles
 				shadow = 1;
 			};
 
-			// ---- Style 7: Contact Blip credits readout. The pulse rings
-			// themselves (idc 1260/1261) are declared up near roleShadow, above,
-			// since they need to draw BEHIND the badge. This is just the muted
-			// grid-reference-style text underneath, echoing the ping wheel's own
-			// text colour (#BFBCAF) rather than the gold accent. ----
+			// ---- Style 7: Contact Blip credits readout. Now shares the Rank
+			// Disc backing (idc 1270/1271, declared up near roleShadow above)
+			// with every other non-original style instead of its own bespoke
+			// pulse rings. This is just the muted grid-reference-style text
+			// underneath, echoing the ping wheel's own text colour (#BFBCAF)
+			// rather than the gold accent. ----
+			//
+			// s7CoordBG: same fix as s2CreditBG above - this was the other
+			// credit readout with nothing solid behind it, and its text is
+			// deliberately muted/desaturated on top of that, so it had the
+			// worst contrast of any style against a bright terrain
+			// background. A subtle translucent backing (not the full-opaque
+			// WALDO_HEADERBG the pill styles use) keeps the "minimal grid
+			// readout" feel while still guaranteeing it's readable.
+			class s7CoordBG: RscText {
+				idc = 1263;
+				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.16 * safezoneH);
+				w = 0.15 * safezoneH;
+				h = 0.022 * safezoneH;
+				colorBackground[] = {0, 0, 0, 0.55};
+				style = 0;
+			};
 			class s7CoordText: RscText {
 				idc = 1262;
 				text = "";
@@ -524,10 +570,100 @@ class RscTitles
 				w = 0.15 * safezoneH;
 				h = 0.022 * safezoneH;
 				colorBackground[] = {0,0,0,0};
-				colorText[] = {0.75, 0.74, 0.69, 1};
+				colorText[] = {0.95, 0.93, 0.86, 1};
 				style = ST_CENTER;
 				font = "PuristaMedium";
 				sizeEx = 0.016 * safezoneH;
+				shadow = 1;
+			};
+
+			// ---- Style 8: Stamped Tag - the one style that drops role.paa/
+			// rolebg.paa/roleshadow.paa entirely (idc 999/1000/1001/roleShadow
+			// all hidden for this style, see Waldo_fnc_initHud) in favour of a
+			// flat square plate in this HUD's own casing material, same recipe
+			// as the shop panel/timer bar/notification cards. No dependency on
+			// the badge texture's baked-in oval proportions at all. Arma's
+			// RscText only draws rectangles - there's no clip-path equivalent -
+			// so the diagonal corner flash from the original concept mockup is
+			// a small square accent block instead of a diagonal cut; everything
+			// else (border, divider, flash, credits strip) is flat rects, same
+			// materials as Rank Disc. Letter and credits text both use real
+			// ctrlTextHeight centring in script (ST_CENTER alone, no VCENTER -
+			// same documented reason as roleText/s3RoleName above), not the
+			// ST_VCENTER combo that rendered blank on styles 3/4.
+			class s8Shadow: RscText {
+				idc = 1280;
+				x = (((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH)) - (0.004 * safezoneH);
+				y = (((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.044 * safezoneH)) - (0.004 * safezoneH);
+				w = (0.17 * safezoneH) + (0.008 * safezoneH);
+				h = (0.194 * safezoneH) + (0.008 * safezoneH);
+				colorBackground[] = WALDO_SHADOW;
+				style = 0;
+			};
+			class s8Border: RscText {
+				idc = 1281;
+				x = (((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH)) - (0.006 * safezoneH);
+				y = (((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.044 * safezoneH)) - (0.006 * safezoneH);
+				w = (0.17 * safezoneH) + (0.012 * safezoneH);
+				h = (0.194 * safezoneH) + (0.012 * safezoneH);
+				colorBackground[] = WALDO_ACCENT;   // tinted to the role colour at runtime
+				style = 0;
+			};
+			class s8Plate: RscText {
+				idc = 1282;
+				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.044 * safezoneH);
+				w = 0.17 * safezoneH;
+				h = 0.194 * safezoneH;
+				colorBackground[] = WALDO_CASING;
+				style = 0;
+			};
+			class s8Divider: RscText {
+				idc = 1283;
+				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH);
+				y = (((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.044 * safezoneH)) + (0.17 * safezoneH);
+				w = 0.17 * safezoneH;
+				h = 0.003 * safezoneH;
+				colorBackground[] = WALDO_ACCENT;   // tinted to the role colour at runtime
+				style = 0;
+			};
+			// Declared after s8Plate so it renders on top, sitting right in the
+			// plate's own top-right corner.
+			class s8Flash: RscText {
+				idc = 1284;
+				x = (((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH)) + (0.144 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.044 * safezoneH);
+				w = 0.026 * safezoneH;
+				h = 0.026 * safezoneH;
+				colorBackground[] = WALDO_ACCENT;   // tinted to the role colour at runtime
+				style = 0;
+			};
+			class s8Letter: RscText {
+				idc = 1285;
+				text = "";
+				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.044 * safezoneH);
+				w = 0.17 * safezoneH;
+				h = 0.17 * safezoneH;
+				colorBackground[] = {0,0,0,0};
+				colorText[] = {0.95, 0.93, 0.86, 1};   // tinted to the role colour at runtime
+				style = ST_CENTER;
+				font = "PuristaBold";
+				sizeEx = 0.1 * safezoneH;
+				shadow = false;
+			};
+			class s8Credits: RscText {
+				idc = 1286;
+				text = "";
+				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH);
+				y = (((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.044 * safezoneH)) + (0.173 * safezoneH);
+				w = 0.17 * safezoneH;
+				h = 0.02 * safezoneH;
+				colorBackground[] = {0,0,0,0};
+				colorText[] = {0.95, 0.93, 0.86, 1};
+				style = ST_CENTER;
+				font = "PuristaBold";
+				sizeEx = 0.015 * safezoneH;
 				shadow = 1;
 			};
 
@@ -1088,6 +1224,185 @@ class WaldoShop {
 		};
 	};
 };
+
+// ============================================================================
+// WaldoStylePicker - opened with H (Waldo_fnc_openStylePicker). Replaces the
+// old cycle-through-styles-on-keypress behaviour with an actual picker: a 3x3
+// grid of preview cards (one per Style 0-8), each showing that style's badge
+// shape tinted to the player's own role colour plus its name, so the player
+// can see before they commit rather than tabbing blind. Same shadow/casing/
+// header/accent-stripe recipe as WaldoShop/WaldoScore. Card layout is
+// declared, not generated, because hpp has no loops - the shared base
+// coordinates are local #defines, undef'd right after this class so they
+// don't leak into anything declared later in the file.
+// ============================================================================
+#define SP_BASEX (safezoneX + (0.32 * safezoneW))
+#define SP_BASEY (safezoneY + (0.274 * safezoneH))
+#define SP_CARDW (0.11 * safezoneW)
+#define SP_CARDH (0.13 * safezoneH)
+#define SP_COLSTEP (0.125 * safezoneW)
+#define SP_ROWSTEP (0.145 * safezoneH)
+class WaldoStylePicker {
+	idd = -1;
+	fadeout = 0.15;
+	fadein = 0.15;
+	movingEnable = false;
+	enableSimulation = true;
+	duration = 99999;
+	onLoad = "with uiNamespace do { WaldoStylePicker = _this select 0 }";
+
+	class controlsBackground {
+		class spDim: RscText {
+			idc = -1;
+			x = safezoneX; y = safezoneY; w = safezoneW; h = safezoneH;
+			colorBackground[] = WALDO_DIM;
+			style = 0;
+		};
+		class spShadow: RscText {
+			idc = -1;
+			x = (safezoneX + (0.30 * safezoneW)) - (0.006 * safezoneW);
+			y = (safezoneY + (0.20 * safezoneH)) - (0.006 * safezoneH);
+			w = (0.40 * safezoneW) + (0.012 * safezoneW);
+			h = (0.58 * safezoneH) + (0.012 * safezoneH);
+			colorBackground[] = WALDO_SHADOW;
+			style = 0;
+		};
+		class spBG: RscText {
+			idc = -1;
+			x = safezoneX + (0.30 * safezoneW);
+			y = safezoneY + (0.20 * safezoneH);
+			w = 0.40 * safezoneW;
+			h = 0.58 * safezoneH;
+			colorBackground[] = WALDO_CASING;
+			style = 0;
+		};
+		class spHeader: RscText {
+			idc = -1;
+			x = safezoneX + (0.30 * safezoneW);
+			y = safezoneY + (0.20 * safezoneH);
+			w = 0.40 * safezoneW;
+			h = 0.05 * safezoneH;
+			colorBackground[] = WALDO_HEADERBG;
+			style = 0;
+		};
+		class spAccentBar: RscText {
+			idc = 1591;
+			x = safezoneX + (0.30 * safezoneW);
+			y = (safezoneY + (0.20 * safezoneH)) + (0.05 * safezoneH);
+			w = 0.40 * safezoneW;
+			h = 0.004 * safezoneH;
+			colorBackground[] = WALDO_ACCENT;   // tinted to the role colour at runtime
+			style = 0;
+		};
+		class spTitle: RscText {
+			idc = 1590;
+			text = "Select Role UI Style";
+			x = safezoneX + (0.315 * safezoneW);
+			y = safezoneY + (0.20 * safezoneH);
+			w = 0.37 * safezoneW;
+			h = 0.05 * safezoneH;
+			colorBackground[] = {0,0,0,0};
+			colorText[] = {0.95,0.93,0.86,1};
+			style = ST_LEFT + ST_VCENTER;
+			font = "PuristaBold";
+			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.4);
+			shadow = 1;
+		};
+
+		// ---- Card 0: Original ----
+		class sp0Border: RscText { idc = 1600; x = SP_BASEX; y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_ACCENT; style = 0; };
+		class sp0Plate: RscText { idc = 1610; x = SP_BASEX + (0.002 * safezoneW); y = SP_BASEY + (0.002 * safezoneH); w = SP_CARDW - (0.004 * safezoneW); h = SP_CARDH - (0.004 * safezoneH); colorBackground[] = WALDO_HEADERBG; style = 0; };
+		class sp0Preview: RscPicture { idc = 1620; text = "ui\role.paa"; x = (SP_BASEX + (0.5 * SP_CARDW)) - (0.026 * safezoneH); y = SP_BASEY + (0.012 * safezoneH); w = 0.052 * safezoneH; h = 0.052 * safezoneH; colorText[] = {0.75,0.21,0.21,1}; };
+		class sp0Label: RscText { idc = 1630; text = "Original"; x = SP_BASEX; y = SP_BASEY + (0.10 * safezoneH); w = SP_CARDW; h = 0.024 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.016 * safezoneH; shadow = 1; };
+
+		// ---- Card 1: Signal Ring ----
+		class sp1Border: RscText { idc = 1601; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_CASING; style = 0; };
+		class sp1Plate: RscText { idc = 1611; x = SP_BASEX + SP_COLSTEP + (0.002 * safezoneW); y = SP_BASEY + (0.002 * safezoneH); w = SP_CARDW - (0.004 * safezoneW); h = SP_CARDH - (0.004 * safezoneH); colorBackground[] = WALDO_HEADERBG; style = 0; };
+		class sp1Preview: RscPicture { idc = 1621; text = "ui\role.paa"; x = (SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW)) - (0.026 * safezoneH); y = SP_BASEY + (0.012 * safezoneH); w = 0.052 * safezoneH; h = 0.052 * safezoneH; colorText[] = {0.75,0.21,0.21,1}; };
+		class sp1Label: RscText { idc = 1631; text = "Signal Ring"; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY + (0.10 * safezoneH); w = SP_CARDW; h = 0.024 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.016 * safezoneH; shadow = 1; };
+
+		// ---- Card 2: Corner Bracket Frame ----
+		class sp2Border: RscText { idc = 1602; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_CASING; style = 0; };
+		class sp2Plate: RscText { idc = 1612; x = SP_BASEX + (2 * SP_COLSTEP) + (0.002 * safezoneW); y = SP_BASEY + (0.002 * safezoneH); w = SP_CARDW - (0.004 * safezoneW); h = SP_CARDH - (0.004 * safezoneH); colorBackground[] = WALDO_HEADERBG; style = 0; };
+		class sp2Preview: RscPicture { idc = 1622; text = "ui\role.paa"; x = (SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW)) - (0.026 * safezoneH); y = SP_BASEY + (0.012 * safezoneH); w = 0.052 * safezoneH; h = 0.052 * safezoneH; colorText[] = {0.75,0.21,0.21,1}; };
+		class sp2Label: RscText { idc = 1632; text = "Corner Bracket"; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY + (0.10 * safezoneH); w = SP_CARDW; h = 0.024 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.016 * safezoneH; shadow = 1; };
+
+		// ---- Card 3: Fused Tag ----
+		class sp3Border: RscText { idc = 1603; x = SP_BASEX; y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_CASING; style = 0; };
+		class sp3Plate: RscText { idc = 1613; x = SP_BASEX + (0.002 * safezoneW); y = SP_BASEY + SP_ROWSTEP + (0.002 * safezoneH); w = SP_CARDW - (0.004 * safezoneW); h = SP_CARDH - (0.004 * safezoneH); colorBackground[] = WALDO_HEADERBG; style = 0; };
+		class sp3Preview: RscPicture { idc = 1623; text = "ui\role.paa"; x = (SP_BASEX + (0.5 * SP_CARDW)) - (0.026 * safezoneH); y = SP_BASEY + SP_ROWSTEP + (0.012 * safezoneH); w = 0.052 * safezoneH; h = 0.052 * safezoneH; colorText[] = {0.75,0.21,0.21,1}; };
+		class sp3Label: RscText { idc = 1633; text = "Fused Tag"; x = SP_BASEX; y = SP_BASEY + SP_ROWSTEP + (0.10 * safezoneH); w = SP_CARDW; h = 0.024 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.016 * safezoneH; shadow = 1; };
+
+		// ---- Card 4: Wallet Chip ----
+		class sp4Border: RscText { idc = 1604; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_CASING; style = 0; };
+		class sp4Plate: RscText { idc = 1614; x = SP_BASEX + SP_COLSTEP + (0.002 * safezoneW); y = SP_BASEY + SP_ROWSTEP + (0.002 * safezoneH); w = SP_CARDW - (0.004 * safezoneW); h = SP_CARDH - (0.004 * safezoneH); colorBackground[] = WALDO_HEADERBG; style = 0; };
+		class sp4Preview: RscPicture { idc = 1624; text = "ui\role.paa"; x = (SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW)) - (0.026 * safezoneH); y = SP_BASEY + SP_ROWSTEP + (0.012 * safezoneH); w = 0.052 * safezoneH; h = 0.052 * safezoneH; colorText[] = {0.75,0.21,0.21,1}; };
+		class sp4Label: RscText { idc = 1634; text = "Wallet Chip"; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY + SP_ROWSTEP + (0.10 * safezoneH); w = SP_CARDW; h = 0.024 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.016 * safezoneH; shadow = 1; };
+
+		// ---- Card 5: Satellite Chip ----
+		class sp5Border: RscText { idc = 1605; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_CASING; style = 0; };
+		class sp5Plate: RscText { idc = 1615; x = SP_BASEX + (2 * SP_COLSTEP) + (0.002 * safezoneW); y = SP_BASEY + SP_ROWSTEP + (0.002 * safezoneH); w = SP_CARDW - (0.004 * safezoneW); h = SP_CARDH - (0.004 * safezoneH); colorBackground[] = WALDO_HEADERBG; style = 0; };
+		class sp5Preview: RscPicture { idc = 1625; text = "ui\role.paa"; x = (SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW)) - (0.026 * safezoneH); y = SP_BASEY + SP_ROWSTEP + (0.012 * safezoneH); w = 0.052 * safezoneH; h = 0.052 * safezoneH; colorText[] = {0.75,0.21,0.21,1}; };
+		class sp5Label: RscText { idc = 1635; text = "Satellite Chip"; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY + SP_ROWSTEP + (0.10 * safezoneH); w = SP_CARDW; h = 0.024 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.016 * safezoneH; shadow = 1; };
+
+		// ---- Card 6: IFF Transponder ----
+		class sp6Border: RscText { idc = 1606; x = SP_BASEX; y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_CASING; style = 0; };
+		class sp6Plate: RscText { idc = 1616; x = SP_BASEX + (0.002 * safezoneW); y = SP_BASEY + (2 * SP_ROWSTEP) + (0.002 * safezoneH); w = SP_CARDW - (0.004 * safezoneW); h = SP_CARDH - (0.004 * safezoneH); colorBackground[] = WALDO_HEADERBG; style = 0; };
+		class sp6Preview: RscPicture { idc = 1626; text = "ui\role.paa"; x = (SP_BASEX + (0.5 * SP_CARDW)) - (0.026 * safezoneH); y = SP_BASEY + (2 * SP_ROWSTEP) + (0.012 * safezoneH); w = 0.052 * safezoneH; h = 0.052 * safezoneH; colorText[] = {0.75,0.21,0.21,1}; };
+		class sp6Label: RscText { idc = 1636; text = "IFF Transponder"; x = SP_BASEX; y = SP_BASEY + (2 * SP_ROWSTEP) + (0.10 * safezoneH); w = SP_CARDW; h = 0.024 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.016 * safezoneH; shadow = 1; };
+
+		// ---- Card 7: Contact Blip ----
+		class sp7Border: RscText { idc = 1607; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_CASING; style = 0; };
+		class sp7Plate: RscText { idc = 1617; x = SP_BASEX + SP_COLSTEP + (0.002 * safezoneW); y = SP_BASEY + (2 * SP_ROWSTEP) + (0.002 * safezoneH); w = SP_CARDW - (0.004 * safezoneW); h = SP_CARDH - (0.004 * safezoneH); colorBackground[] = WALDO_HEADERBG; style = 0; };
+		class sp7Preview: RscPicture { idc = 1627; text = "ui\role.paa"; x = (SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW)) - (0.026 * safezoneH); y = SP_BASEY + (2 * SP_ROWSTEP) + (0.012 * safezoneH); w = 0.052 * safezoneH; h = 0.052 * safezoneH; colorText[] = {0.75,0.21,0.21,1}; };
+		class sp7Label: RscText { idc = 1637; text = "Contact Blip"; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY + (2 * SP_ROWSTEP) + (0.10 * safezoneH); w = SP_CARDW; h = 0.024 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.016 * safezoneH; shadow = 1; };
+
+		// ---- Card 8: Stamped Tag - no oval texture, so its preview is a
+		// flat square swatch (RscText) instead of an RscPicture, matching
+		// what the style itself actually looks like in the corner HUD. ----
+		class sp8Border: RscText { idc = 1608; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_CASING; style = 0; };
+		class sp8Plate: RscText { idc = 1618; x = SP_BASEX + (2 * SP_COLSTEP) + (0.002 * safezoneW); y = SP_BASEY + (2 * SP_ROWSTEP) + (0.002 * safezoneH); w = SP_CARDW - (0.004 * safezoneW); h = SP_CARDH - (0.004 * safezoneH); colorBackground[] = WALDO_HEADERBG; style = 0; };
+		class sp8Preview: RscText { idc = 1628; x = (SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW)) - (0.026 * safezoneH); y = SP_BASEY + (2 * SP_ROWSTEP) + (0.012 * safezoneH); w = 0.052 * safezoneH; h = 0.052 * safezoneH; colorBackground[] = {0.75,0.21,0.21,1}; style = 0; };
+		class sp8Label: RscText { idc = 1638; text = "Stamped Tag"; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY + (2 * SP_ROWSTEP) + (0.10 * safezoneH); w = SP_CARDW; h = 0.024 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.016 * safezoneH; shadow = 1; };
+	};
+
+	class Controls {
+		// Click targets, declared LAST (after the whole controlsBackground
+		// group) so they sit on top and actually receive the click - a
+		// config-declared control earlier in z-order has been seen to eat
+		// clicks meant for whatever's layered under it elsewhere in this
+		// HUD (see the shopPurchSpacer comment above), so the interactive
+		// layer has to be the one on top here, not the decoration.
+		class sp0Btn: RscButton { idc = 1640; text = ""; x = SP_BASEX; y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorBackgroundActive[] = {1,1,1,0.08}; colorBackgroundDisabled[] = {0,0,0,0}; colorText[] = {0,0,0,0}; };
+		class sp1Btn: RscButton { idc = 1641; text = ""; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorBackgroundActive[] = {1,1,1,0.08}; colorBackgroundDisabled[] = {0,0,0,0}; colorText[] = {0,0,0,0}; };
+		class sp2Btn: RscButton { idc = 1642; text = ""; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorBackgroundActive[] = {1,1,1,0.08}; colorBackgroundDisabled[] = {0,0,0,0}; colorText[] = {0,0,0,0}; };
+		class sp3Btn: RscButton { idc = 1643; text = ""; x = SP_BASEX; y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorBackgroundActive[] = {1,1,1,0.08}; colorBackgroundDisabled[] = {0,0,0,0}; colorText[] = {0,0,0,0}; };
+		class sp4Btn: RscButton { idc = 1644; text = ""; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorBackgroundActive[] = {1,1,1,0.08}; colorBackgroundDisabled[] = {0,0,0,0}; colorText[] = {0,0,0,0}; };
+		class sp5Btn: RscButton { idc = 1645; text = ""; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorBackgroundActive[] = {1,1,1,0.08}; colorBackgroundDisabled[] = {0,0,0,0}; colorText[] = {0,0,0,0}; };
+		class sp6Btn: RscButton { idc = 1646; text = ""; x = SP_BASEX; y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorBackgroundActive[] = {1,1,1,0.08}; colorBackgroundDisabled[] = {0,0,0,0}; colorText[] = {0,0,0,0}; };
+		class sp7Btn: RscButton { idc = 1647; text = ""; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorBackgroundActive[] = {1,1,1,0.08}; colorBackgroundDisabled[] = {0,0,0,0}; colorText[] = {0,0,0,0}; };
+		class sp8Btn: RscButton { idc = 1648; text = ""; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorBackgroundActive[] = {1,1,1,0.08}; colorBackgroundDisabled[] = {0,0,0,0}; colorText[] = {0,0,0,0}; };
+		class spClose: RscButton {
+			idc = 1599;
+			text = "CLOSE [ESC]";
+			x = safezoneX + (0.60 * safezoneW);
+			y = (safezoneY + (0.20 * safezoneH)) + (0.53 * safezoneH);
+			w = 0.10 * safezoneW;
+			h = 0.04 * safezoneH;
+			colorBackground[] = WALDO_BTN;
+			colorBackgroundActive[] = WALDO_BTNACTIVE;
+			colorText[] = {0.95,0.93,0.86,1};
+			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1);
+			action = "closeDialog 1";
+		};
+	};
+};
+#undef SP_BASEX
+#undef SP_BASEY
+#undef SP_CARDW
+#undef SP_CARDH
+#undef SP_COLSTEP
+#undef SP_ROWSTEP
 
 // ============================================================================
 // WaldoDebug - the dev / test menu (opened with '\' when Testing Mode is on).

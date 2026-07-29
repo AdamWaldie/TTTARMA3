@@ -62,6 +62,9 @@ missionNamespace setVariable ["Waldo_arenaScale", param [27, 100], true];
 // --- Testing ---
 missionNamespace setVariable ["TestingFlag", (param [28, 0]) != 0, true];
 
+// --- HUD ---
+missionNamespace setVariable ["Waldo_roleCrestStyle", param [30, 0], true];
+
 // --- Equipment (synchronous) ---
 // The SOLE equipment source is dynamic, intent-aware discovery. Built AFTER the
 // params above so it can honour Waldo_lootPower; it publishes loot/airdrop/shop/

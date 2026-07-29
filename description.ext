@@ -408,4 +408,25 @@ class Params {
 		texts[]  = {"0 (off)", "1", "2", "3"};
 		default  = 1;
 	};
+
+	// === HUD ===
+	// Bottom-right role crest look. The badge itself (ring + role colour +
+	// single letter) never changes - only the surrounding credits/decoration
+	// treatment differs per style. 0 is the shipped default, so servers that
+	// never touch this param see no visual change at all.
+	class RoleCrestStyle {                  // 30
+		title = "Role Crest Style";
+		values[] = {0, 1, 2, 3, 4, 5, 6, 7};
+		texts[]  = {
+			"Original",
+			"Signal Ring",
+			"Corner Bracket Frame",
+			"Fused Tag",
+			"Wallet Chip",
+			"Satellite Chip",
+			"IFF Transponder",
+			"Contact Blip"
+		};
+		default  = 0;
+	};
 };

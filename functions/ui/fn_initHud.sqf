@@ -67,27 +67,106 @@ private _opticalNudgeX = if (_role == "Jester") then { -0.003 * safezoneH } else
 _badge ctrlSetPosition [_badgeX + _opticalNudgeX, _badgeY + ((_badgeSize - _textH) / 2), _badgeSize, _textH];
 _badge ctrlCommit 0;
 
-// Credits pill (badge nameplate): only Traitor/Detective have credits at all,
-// so the whole pill - not just its text - is hidden for everyone else instead
-// of sitting there as an empty black bar with nothing to show.
+// Only Traitor/Detective have credits at all, so every style's credit-only
+// controls (not just their text) are hidden for everyone else instead of
+// sitting there empty.
 private _hasCredits = _role in ["Traitor", "Detective"];
-{ (_display displayCtrl _x) ctrlShow _hasCredits; } forEach [1002, 1003, 1004, 1005];
 
+// ============================================================================
+// Selectable role crest style (RoleCrestStyle mission param). Style 0 is the
+// shipped default (roleShadow/roleTextBG*/roleCredits* in TTTHud.hpp,
+// untouched); styles 1-7 are the alternate treatments added around the same
+// badge ring (see the big comment block above s1TickN in TTTHud.hpp).
+//
+// _styleAlways/_styleCredits are idc's grouped by style index (0..7). Every
+// control across every style is shown/hidden exactly once per call: first
+// pass hides every style except the selected one, second pass then re-hides
+// the selected style's credit-only controls if this role has none.
+// ============================================================================
+private _style = missionNamespace getVariable ["Waldo_roleCrestStyle", 0];
+
+private _styleAlways = [
+	[],                                             // 0 - original: nothing beyond the credits pill below
+	[1200, 1201, 1202, 1203],                       // 1 - Signal Ring: compass ticks
+	[1210, 1211, 1212, 1213, 1214, 1215, 1216, 1217],// 2 - Corner Bracket Frame
+	[1220, 1221, 1222, 1223],                        // 3 - Fused Tag: tab + role name
+	[1230, 1231, 1232],                              // 4 - Wallet Chip: chip + role name
+	[],                                              // 5 - Satellite Chip: nothing beyond the pill below
+	[1250, 1251, 1252, 1253, 1254, 1255, 1256, 1257],// 6 - IFF Transponder: ticks
+	[1260, 1261]                                     // 7 - Contact Blip: pulse rings
+];
+private _styleCredits = [
+	[1002, 1003, 1004, 1005],   // 0 - full credits pill (shadow/bg/accent/text)
+	[1204, 1205],                // 1 - Signal Ring tag
+	[1218],                      // 2 - Corner Bracket credit text
+	[1224],                      // 3 - Fused Tag credits line
+	[1233],                      // 4 - Wallet Chip credits line
+	[1240, 1241],                // 5 - Satellite Chip pill
+	[1258, 1259],                // 6 - IFF Transponder squawk tab
+	[1262]                       // 7 - Contact Blip coord text
+];
+
+{
+	private _isActiveStyle = (_forEachIndex == _style);
+	{ (_display displayCtrl _x) ctrlShow _isActiveStyle; } forEach _x;
+} forEach _styleAlways;
+{
+	private _show = (_forEachIndex == _style) && _hasCredits;
+	{ (_display displayCtrl _x) ctrlShow _show; } forEach _x;
+} forEach _styleCredits;
+
+// Elements that always need the role tint regardless of credits, per style
+// (the badge ring itself is already tinted above and is common to every
+// style). Contact Blip's two pulse rings are RscPicture, so they're retinted
+// with ctrlSetTextColor like the badge ring, not ctrlSetBackgroundColor.
+switch (_style) do {
+	case 3: {   // Fused Tag: accent strip along the top of the tab
+		(_display displayCtrl 1222) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
+	};
+	case 7: {   // Contact Blip: both pulse rings, low alpha so they read as a glow, not a solid disc
+		(_display displayCtrl 1260) ctrlSetTextColor [_color select 0, _color select 1, _color select 2, 0.22];
+		(_display displayCtrl 1261) ctrlSetTextColor [_color select 0, _color select 1, _color select 2, 0.4];
+	};
+};
+
+// Credits text/tint per style - only runs for roles that actually have
+// credits (_hasCredits), matching the idc's shown by the pass above.
 if (_hasCredits) then {
-	// Accent line under the credits pill, tinted to match (same treatment as
-	// the shop panel's accent bar).
-	(_display displayCtrl 1003) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
+	// idc of the control that actually displays "<n> credits" text for the
+	// active style, and whether that text itself gets tinted to the role
+	// colour (some styles keep it neutral ink instead, per the mockups).
+	private _creditTextIdc = [1002, 1205, 1218, 1224, 1233, 1241, 1259, 1262] select _style;
+	private _tintCreditText = [true, true, false, true, true, false, false, false] select _style;
 
-	private _credits = _display displayCtrl 1002;
-	_credits ctrlSetTextColor _color;
-	[_credits] spawn {
-		params ["_credits"];
+	private _credits = _display displayCtrl _creditTextIdc;
+	if (_tintCreditText) then { _credits ctrlSetTextColor _color; };
+
+	// Style 0's pill also has its own accent line, tinted the same way it
+	// always was.
+	if (_style == 0) then {
+		(_display displayCtrl 1003) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
+	};
+
+	[_credits, _style] spawn {
+		params ["_credits", "_style"];
 		while { !isNull ctrlParent _credits && {alive player} } do {
-			_credits ctrlSetText format ["%1 credits", player getVariable ["points", 0]];
+			private _pts = player getVariable ["points", 0];
+			private _text = switch (_style) do {
+				case 1: { format ["%1 cr", _pts] };        // Signal Ring tag
+				case 6: { format ["%1", _pts] };            // IFF squawk code
+				case 7: { format ["%1 CR", _pts] };          // Contact Blip coord readout
+				default { format ["%1 credits", _pts] };
+			};
+			_credits ctrlSetText _text;
 			sleep 0.5;
 		};
 	};
 };
+
+// Style 3/4 always show the role's name (identity, not shop status) - set
+// once here since it never changes for the lifetime of this HUD instance.
+if (_style == 3) then { (_display displayCtrl 1223) ctrlSetText _role; };
+if (_style == 4) then { (_display displayCtrl 1232) ctrlSetText _role; };
 
 // Top bar keybind row: a normal game gives no other indication of what's
 // bound, so list whatever's actually relevant to this role (Waldo_keyHintsFor,

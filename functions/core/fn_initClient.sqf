@@ -246,14 +246,15 @@ player allowDamage false;
 					};
 					_handled = true;
 				};
-				case 35: {   // H - cycle YOUR OWN role crest style preference, saved across sessions
+				case 35: {   // H - cycle YOUR OWN role crest style, saved across sessions/servers
 					// profileNamespace (not missionNamespace/player variables): a
 					// purely personal, client-side display preference, the same kind
 					// of thing as a keybind or a graphics setting - it has no
-					// gameplay effect and no other player should ever see or be
-					// affected by it. saveProfileNamespace flushes it to disk
-					// immediately rather than waiting for the profile's next
-					// natural save point, so it survives even a crash right after.
+					// gameplay effect, no server ever overrides it, and no other
+					// player should ever see or be affected by it. saveProfileNamespace
+					// flushes it to disk immediately rather than waiting for the
+					// profile's next natural save point, so it survives even a crash
+					// right after.
 					private _styleNames = [
 						"Original", "Signal Ring", "Corner Bracket Frame", "Fused Tag",
 						"Wallet Chip", "Satellite Chip", "IFF Transponder", "Contact Blip"
@@ -262,14 +263,7 @@ player allowDamage false;
 					profileNamespace setVariable ["Waldo_roleCrestStylePref", _pref];
 					saveProfileNamespace;
 					[] call Waldo_fnc_initHud;
-
-					private _serverStyle = missionNamespace getVariable ["Waldo_roleCrestStyle", 0];
-					private _msg = if (_serverStyle == 8) then {
-						format ["%1 (saved)", _styleNames select _pref]
-					} else {
-						format ["%1 saved, but the server is forcing %2 right now - won't show until that changes.", _styleNames select _pref, _styleNames select _serverStyle]
-					};
-					["ROLE CREST", _msg, "INFO", 4, "BOTTOM_LEFT", "CRESTPREF", "HUD"] call Waldo_fnc_ShowUiNotification;
+					["ROLE CREST", format ["%1 (saved)", _styleNames select _pref], "INFO", 4, "BOTTOM_LEFT", "CRESTPREF", "HUD"] call Waldo_fnc_ShowUiNotification;
 					_handled = true;
 				};
 			};

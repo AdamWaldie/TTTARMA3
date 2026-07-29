@@ -537,8 +537,8 @@ class RscTitles
 			// current role, plus the dev binds too when Testing Mode is on
 			// (Waldo_fnc_initHud populates idc 1010, re-run on every role change).
 			// Sizes here are placeholders - Waldo_fnc_initHud resizes all three
-			// via ctrlSetPosition to fit however many lines actually apply (5
-			// without Testing Mode, up to 7 with it), so this never sits around
+			// via ctrlSetPosition to fit however many lines actually apply (6
+			// without Testing Mode, up to 8 with it), so this never sits around
 			// as a fixed box mostly empty.
 			// ====================================================================
 			// Top bar: round timer (counts down, always visible while the round is
@@ -550,9 +550,9 @@ class RscTitles
 			// already-broadcast timelimit/Waldo_startTime, see Waldo_fnc_topBarTimer).
 			// Centred top, matching this mission pack's shared WALDO_CASING look.
 			// 3600-3603: timer shadow/casing/accent/text. 3610-3614: keybind row
-			// shadow/casing/2 text lines (7 items under Testing Mode don't fit one
-			// line without clipping - CT_STATIC never wraps, it just cuts overflow
-			// - so the row is genuinely two stacked lines, not one).
+			// shadow/casing/2 text lines (up to 8 items under Testing Mode don't
+			// fit one line without clipping - CT_STATIC never wraps, it just cuts
+			// overflow - so the row is genuinely two stacked lines, not one).
 			// ====================================================================
 			class topBarTimerShadow: RscText
 			{

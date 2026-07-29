@@ -73,29 +73,23 @@ _badge ctrlCommit 0;
 private _hasCredits = _role in ["Traitor", "Detective"];
 
 // ============================================================================
-// Selectable role crest style (RoleCrestStyle mission param). Style 0 is the
-// shipped default (roleShadow/roleTextBG*/roleCredits* in TTTHud.hpp,
-// untouched); styles 1-7 are the alternate treatments added around the same
-// badge ring (see the big comment block above s1TickN in TTTHud.hpp).
+// Selectable role crest style - entirely a per-player preference, not a
+// server/lobby setting (there is no RoleCrestStyle mission param). Style 0
+// (roleShadow/roleTextBG*/roleCredits* in TTTHud.hpp, untouched) is the
+// default for anyone who's never pressed H; styles 1-7 are the alternate
+// treatments added around the same badge ring (see the big comment block
+// above s1TickN in TTTHud.hpp). Waldo_roleCrestStylePref lives in THIS
+// client's own profileNamespace (set via the H key,
+// functions/core/fn_initClient.sqf, and by the dev menu's HUD-category
+// buttons via the same mechanism), so it's saved across sessions/servers
+// and never broadcast or read from anywhere else.
 //
 // _styleAlways/_styleCredits are idc's grouped by style index (0..7). Every
 // control across every style is shown/hidden exactly once per call: first
 // pass hides every style except the selected one, second pass then re-hides
 // the selected style's credit-only controls if this role has none.
-//
-// A server value of 8 ("Player Choice") hands the decision to each player
-// individually - Waldo_roleCrestStylePref lives in THIS client's own
-// profileNamespace (set via the H key, functions/core/fn_initClient.sqf),
-// so it's saved across sessions and never broadcast. Any other server value
-// always wins over that saved preference, on every redraw - a server admin
-// forcing a style is meant to actually stick, not just be a default.
 // ============================================================================
-private _serverCrestStyle = missionNamespace getVariable ["Waldo_roleCrestStyle", 0];
-private _style = if (_serverCrestStyle == 8) then {
-	profileNamespace getVariable ["Waldo_roleCrestStylePref", 0]
-} else {
-	_serverCrestStyle
-};
+private _style = profileNamespace getVariable ["Waldo_roleCrestStylePref", 0];
 
 private _styleAlways = [
 	[],                                             // 0 - original: nothing beyond the credits pill below

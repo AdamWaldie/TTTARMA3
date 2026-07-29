@@ -130,7 +130,7 @@ Waldo_shopRenderPurchased = {
 // stacked). Dev-only binds are appended only when Testing Mode is actually on.
 Waldo_keyHintsFor = {
 	params ["_role"];
-	private _hints = [["L", "Holster"], ["K", "Scoreboard"]];
+	private _hints = [["L", "Holster"], ["K", "Scoreboard"], ["H", "Role Crest Style"]];
 	if (_role in ["Traitor", "Detective"]) then {
 		_hints pushBack ["B", "Buy Menu"];
 		_hints pushBack ["Y U J", "Use Item"];

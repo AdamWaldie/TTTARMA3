@@ -386,25 +386,25 @@ private _giveAll = {
 ["Abilities", "Suicide Bomb",    "Detonate yourself (test the traitor bomb)","local", { [] call Waldo_fnc_suicideBomb }] call Waldo_debugRegister;
 ["Abilities", "Holster",         "Holster / lower weapon toggle",           "local", { [] call Waldo_fnc_holster }] call Waldo_debugRegister;
 
-// HUD - role crest style preview. A LOCAL-only override (missionNamespace
-// setVariable without the broadcast flag): only this client's own copy of
-// Waldo_roleCrestStyle changes, everyone else keeps whatever the lobby
-// RoleCrestStyle param actually set, and re-running Waldo_fnc_initHud
-// redraws the crest immediately against the current role so there's no need
-// to respawn/role-switch to see it.
+// HUD - role crest style preview. Goes through the exact same mechanism the
+// H key does (profileNamespace, Waldo_roleCrestStylePref) rather than a
+// separate override path, since that IS the only mechanism now - role crest
+// style is a per-player preference, not a lobby setting. Saved immediately,
+// same as H, so testing one of these really does stick for this profile.
 private _setCrestStyle = {
 	params ["_style"];
-	missionNamespace setVariable ["Waldo_roleCrestStyle", _style];
+	profileNamespace setVariable ["Waldo_roleCrestStylePref", _style];
+	saveProfileNamespace;
 	[] call Waldo_fnc_initHud;
 };
-["HUD", "Role Crest: Original",              "RoleCrestStyle 0 (this client only)", "local", { [0] call _setCrestStyle }] call Waldo_debugRegister;
-["HUD", "Role Crest: Signal Ring",           "RoleCrestStyle 1 (this client only)", "local", { [1] call _setCrestStyle }] call Waldo_debugRegister;
-["HUD", "Role Crest: Corner Bracket Frame",  "RoleCrestStyle 2 (this client only)", "local", { [2] call _setCrestStyle }] call Waldo_debugRegister;
-["HUD", "Role Crest: Fused Tag",             "RoleCrestStyle 3 (this client only)", "local", { [3] call _setCrestStyle }] call Waldo_debugRegister;
-["HUD", "Role Crest: Wallet Chip",           "RoleCrestStyle 4 (this client only)", "local", { [4] call _setCrestStyle }] call Waldo_debugRegister;
-["HUD", "Role Crest: Satellite Chip",        "RoleCrestStyle 5 (this client only)", "local", { [5] call _setCrestStyle }] call Waldo_debugRegister;
-["HUD", "Role Crest: IFF Transponder",       "RoleCrestStyle 6 (this client only)", "local", { [6] call _setCrestStyle }] call Waldo_debugRegister;
-["HUD", "Role Crest: Contact Blip",          "RoleCrestStyle 7 (this client only)", "local", { [7] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Original",              "Sets your saved role crest preference to this style (same as pressing H)", "local", { [0] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Signal Ring",           "Sets your saved role crest preference to this style (same as pressing H)", "local", { [1] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Corner Bracket Frame",  "Sets your saved role crest preference to this style (same as pressing H)", "local", { [2] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Fused Tag",             "Sets your saved role crest preference to this style (same as pressing H)", "local", { [3] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Wallet Chip",           "Sets your saved role crest preference to this style (same as pressing H)", "local", { [4] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Satellite Chip",        "Sets your saved role crest preference to this style (same as pressing H)", "local", { [5] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: IFF Transponder",       "Sets your saved role crest preference to this style (same as pressing H)", "local", { [6] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Contact Blip",          "Sets your saved role crest preference to this style (same as pressing H)", "local", { [7] call _setCrestStyle }] call Waldo_debugRegister;
 
 // HUD - notification-card system (functions/uinotify/) previews. All fire
 // real Waldo_fnc_ShowUiNotification calls, not mockups, so what's on screen

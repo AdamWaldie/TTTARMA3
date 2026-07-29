@@ -7,12 +7,13 @@ private _gap = safeZoneH * 0.008;
     private _entries = _registry select {(_x param [3, "TOP"]) isEqualTo _placement};
     private _cursor = switch (_placement) do {
         // Pulled up further than the WMP default (0.187) - the role crest
-        // (TTTHud.hpp, all 8 RoleCrestStyle variants) lives bottom-right and
-        // some styles' decoration reaches up to ~0.30 of safezoneH above the
-        // very bottom edge (Fused Tag/Wallet Chip's name tab, the widest of
-        // the eight). Nothing in this mission currently uses BOTTOM_RIGHT for
-        // anything, but reserving real clearance here means it stays true if
-        // that ever changes, instead of only being true by coincidence.
+        // (TTTHud.hpp, all 8 RoleCrestStyle variants) lives bottom-right, and
+        // the tallest any style's decoration reaches above the very bottom
+        // edge is Style 2's credit text at ~0.235 of safezoneH (it sits above
+        // the corner brackets, not below - see s2CreditText's own comment).
+        // Nothing in this mission currently uses BOTTOM_RIGHT for anything,
+        // but reserving clearance past that here means it stays true if that
+        // ever changes, instead of only being true by coincidence.
         case "BOTTOM_RIGHT": {safeZoneY + safeZoneH - (safeZoneH * 0.32)};
         case "BOTTOM_LEFT": {safeZoneY + safeZoneH - (safeZoneH * 0.05)};
         // TroubleInArmaville-specific: TTTHud.hpp already owns the top-centre

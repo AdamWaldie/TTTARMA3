@@ -86,9 +86,11 @@ if (_existingIndex >= 0) then {
 // scoreboard, ping wheel, the round-timer bar, the credits pill) - the WMP
 // pack's own frame+accent (no shadow, near-black-blue casing) worked but
 // visibly didn't belong here. Colours are this mission's own WALDO_* values
-// (see ui/common.hpp) and this mission's role palette (fn_roleColor.sqf),
-// not the WMP defaults, so a card never gets mistaken for a Detective-blue
-// "info" state next to an actual Detective-blue role crest.
+// (see ui/common.hpp) and its role palette (Waldo_roleColor in
+// fn_initShops.sqf: Traitor red, Detective blue, Jester purple, Innocent
+// green), not the WMP defaults - the INFO state deliberately isn't blue, so
+// a card is never mistaken for a Detective-blue "info" state next to an
+// actual Detective-blue role crest.
 private _shadow = _display ctrlCreate ["RscText", -1];
 private _frame = _display ctrlCreate ["RscText", -1];
 private _accent = _display ctrlCreate ["RscText", -1];

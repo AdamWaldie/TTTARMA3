@@ -106,24 +106,32 @@ class RscTitles
 			// backing-disc asset the default style already uses) rather than a new
 			// texture, just scaled up around the same badge centre. Hidden
 			// whenever RoleCrestStyle != 7 (see Waldo_fnc_initHud).
+			// Sizes were 0.24H (outer) / 0.195H (mid), both centred on the ring's
+			// own centre (0.075H from RX/RY) - the outer ring's right/bottom
+			// edges landed at 0.195H, 0.02H past the 0.175H/0.185H budget on
+			// each axis respectively (a soft low-alpha glow, so less visually
+			// jarring than a hard-edged element overflowing, but still genuinely
+			// off the edge of the safe area). Shrunk both, still centred, so
+			// ring (0.15H) < mid (0.165H) < outer (0.19H) stays a readable pulse
+			// gradient while every edge keeps real margin inside the budget.
 			class s7RingOuter: RscPicture
 			{
 				idc = 1260;
 				text = "ui\rolebg.paa";
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.045 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.045 * safezoneH);
-				w = 0.24 * safezoneH;
-				h = 0.24 * safezoneH;
+				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.02 * safezoneH);
+				w = 0.19 * safezoneH;
+				h = 0.19 * safezoneH;
 				color[] = {1, 1, 1, 0.22};   // retinted to the role colour at runtime
 			};
 			class s7RingMid: RscPicture
 			{
 				idc = 1261;
 				text = "ui\rolebg.paa";
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.0225 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.0225 * safezoneH);
-				w = 0.195 * safezoneH;
-				h = 0.195 * safezoneH;
+				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.0075 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.0075 * safezoneH);
+				w = 0.165 * safezoneH;
+				h = 0.165 * safezoneH;
 				color[] = {1, 1, 1, 0.4};   // retinted to the role colour at runtime
 			};
 			class roleShadow: RscPicture
@@ -266,9 +274,14 @@ class RscTitles
 			class s1TickS: RscText { idc = 1201; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.073 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.153 * safezoneH); w = 0.004 * safezoneH; h = 0.014 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
 			class s1TickE: RscText { idc = 1202; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.153 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.073 * safezoneH); w = 0.014 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
 			class s1TickW: RscText { idc = 1203; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.017 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.073 * safezoneH); w = 0.014 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
+			// x offset was 0.09H (right edge at 0.19H) - the ring itself only has
+			// a 0.175H budget from its own left edge before hitting the true
+			// right edge of the safe area (RX = right_edge - 0.175H), so that
+			// pushed the tag 0.015H past the edge of the screen. 0.07H (right
+			// edge at 0.17H) keeps a small margin instead.
 			class s1TagBG: RscText {
 				idc = 1204;
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.09 * safezoneH);
+				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.07 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.128 * safezoneH);
 				w = 0.10 * safezoneH;
 				h = 0.026 * safezoneH;
@@ -278,7 +291,7 @@ class RscTitles
 			class s1TagText: RscText {
 				idc = 1205;
 				text = "";
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.09 * safezoneH);
+				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.07 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.128 * safezoneH);
 				w = 0.10 * safezoneH;
 				h = 0.026 * safezoneH;
@@ -472,10 +485,12 @@ class RscTitles
 			class s6TickSE: RscText { idc = 1255; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.152 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.158 * safezoneH); w = 0.006 * safezoneH; h = 0.006 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
 			class s6TickSW: RscText { idc = 1256; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.014 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.158 * safezoneH); w = 0.006 * safezoneH; h = 0.006 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
 			class s6TickNW: RscText { idc = 1257; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.014 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.014 * safezoneH); w = 0.006 * safezoneH; h = 0.006 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
+			// y offset was 0.16H (bottom edge at 0.186H) - 0.001H past the 0.185H
+			// budget below the ring. 0.157H gives a small margin instead.
 			class s6SquawkBG: RscText {
 				idc = 1258;
 				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.02 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.16 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.157 * safezoneH);
 				w = 0.11 * safezoneH;
 				h = 0.026 * safezoneH;
 				colorBackground[] = WALDO_HEADERBG;
@@ -485,7 +500,7 @@ class RscTitles
 				idc = 1259;
 				text = "";
 				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.02 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.16 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.157 * safezoneH);
 				w = 0.11 * safezoneH;
 				h = 0.026 * safezoneH;
 				colorBackground[] = {0,0,0,0};

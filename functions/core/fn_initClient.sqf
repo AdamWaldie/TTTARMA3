@@ -305,8 +305,12 @@ player addMPEventHandler ["MPKilled", {
 	// Nothing clears a hint/hintSilent on death - a scanner readout, "Reviving...",
 	// "Charge armed", whatever happened to be up at the moment of death, was
 	// otherwise left on screen bleeding into the Spectator view with no way to
-	// dismiss it.
-	if (_unit == player) then { hint ""; hintSilent ""; };
+	// dismiss it. Waldo_fnc_ClearUiPanels covers the same thing for every tool
+	// now on the notification system (functions/uinotify/) - without it, a
+	// card like DNA_TRACK or REVIVE would just sit there on its own duration
+	// timer, the exact bleed-into-Spectator bug this was already guarding
+	// against for the old hint/hintSilent channel.
+	if (_unit == player) then { hint ""; hintSilent ""; [] call Waldo_fnc_ClearUiPanels; };
 }];
 
 // Dead Ringer guard: while armed (Waldo_fnc_deadRinger sets Waldo_deadRingerArmed),

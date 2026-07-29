@@ -45,14 +45,13 @@ while { !_found && {_tries < 40} } do {
 };
 
 _unit setPosATL _safePos;
-hintSilent parseText "<t color='#bf3636' size='1.1'>DEAD RINGER</t><br/><t size='0.9'>Playing dead...</t>";
+["DEAD RINGER", "Playing dead...", "WARNING", 0, "BOTTOM_LEFT", "DEADRINGER", "TRAITOR"] call Waldo_fnc_ShowUiNotification;
 
 [_unit] spawn {
 	params ["_unit"];
 	sleep 20;
 	if (alive _unit) then {
 		_unit setVariable ["Waldo_deadRingerTriggered", false];
-		hintSilent "";
-		hint "You're back up.";
+		["DEAD RINGER", "You're back up.", "SUCCESS", 4, "BOTTOM_LEFT", "DEADRINGER", "TRAITOR"] call Waldo_fnc_ShowUiNotification;
 	};
 };

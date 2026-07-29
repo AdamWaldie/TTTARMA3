@@ -301,13 +301,20 @@ class RscTitles
 			class s2BrBLv: RscText { idc = 1215; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.14 * safezoneH); w = 0.004 * safezoneH; h = 0.03 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
 			class s2BrBRh: RscText { idc = 1216; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.14 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.166 * safezoneH); w = 0.03 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
 			class s2BrBRv: RscText { idc = 1217; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.166 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.14 * safezoneH); w = 0.004 * safezoneH; h = 0.03 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			// Above the brackets, not below: the badge anchor only leaves 0.035H
+			// of headroom below the ring before the safezone's own bottom edge,
+			// and the brackets alone (0.02H pad + 0.03H arm) already use all but
+			// 0.015H of that - nowhere near enough room for a text row without
+			// spilling past the visible safe area. Above has the same room the
+			// original style's credits pill already proved out (it sits at
+			// RY - 0.04H).
 			class s2CreditText: RscText {
 				idc = 1218;
 				text = "";
 				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.19 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.05 * safezoneH);
 				w = 0.19 * safezoneH;
-				h = 0.024 * safezoneH;
+				h = 0.022 * safezoneH;
 				colorBackground[] = {0,0,0,0};
 				colorText[] = {0.95, 0.93, 0.86, 1};
 				style = ST_CENTER;

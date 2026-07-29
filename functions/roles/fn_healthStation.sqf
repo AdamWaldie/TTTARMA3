@@ -48,7 +48,7 @@ clearBackpackCargoGlobal _station;
 		} else {
 			[objNull, _caller] call ace_medical_treatment_fnc_fullHeal;
 		};
-		hint "You have been treated.";
+		["HEALTH STATION", "You have been treated.", "SUCCESS", 4, "BOTTOM_LEFT", "HEALTHSTATION", "HEALTH STATION"] call Waldo_fnc_ShowUiNotification;
 	},
 	nil, 1.5, false, false, "",
 	"alive _this",

@@ -81,23 +81,33 @@ if (_existingIndex >= 0) then {
     {if (!isNull _x) then {ctrlDelete _x;};} forEach (_old param [1, []]);
 };
 
+// TroubleInArmaville reskin: shadow + casing + accent-stripe is the one
+// material recipe every other panel in this HUD is built from (shop,
+// scoreboard, ping wheel, the round-timer bar, the credits pill) - the WMP
+// pack's own frame+accent (no shadow, near-black-blue casing) worked but
+// visibly didn't belong here. Colours are this mission's own WALDO_* values
+// (see ui/common.hpp) and this mission's role palette (fn_roleColor.sqf),
+// not the WMP defaults, so a card never gets mistaken for a Detective-blue
+// "info" state next to an actual Detective-blue role crest.
+private _shadow = _display ctrlCreate ["RscText", -1];
 private _frame = _display ctrlCreate ["RscText", -1];
 private _accent = _display ctrlCreate ["RscText", -1];
 private _content = _display ctrlCreate ["RscStructuredText", -1];
-_frame ctrlSetBackgroundColor [0.012, 0.020, 0.028, 0.94];
+_shadow ctrlSetBackgroundColor [0, 0, 0, 0.82];
+_frame ctrlSetBackgroundColor [0.105, 0.11, 0.095, 0.96];
 _accent ctrlSetBackgroundColor (switch (_state) do {
-    case "SUCCESS": {[0.18, 0.66, 0.45, 1]};
-    case "WARNING": {[0.88, 0.60, 0.12, 1]};
-    case "ERROR": {[0.78, 0.15, 0.20, 1]};
-    default {[0.10, 0.38, 0.66, 1]};
+    case "SUCCESS": {[0.435, 0.796, 0.455, 1]};   // matches the shop's existing "[OK] PURCHASED" green
+    case "WARNING": {[0.85, 0.62, 0.20, 1]};      // WALDO_ACCENT gold
+    case "ERROR":   {[0.894, 0.318, 0.294, 1]};   // matches the shop's existing "[X] NOT ENOUGH CREDITS" red
+    default         {[0.62, 0.60, 0.53, 1]};      // muted neutral - deliberately NOT Detective blue
 });
 _content ctrlSetBackgroundColor [0, 0, 0, 0];
 
 private _messageText = if ((typeName _message) isEqualTo "TEXT") then {str _message} else {_message};
 _content ctrlSetStructuredText parseText format [
-    "<t align='left' color='#9FB3C8' size='0.72'>%1</t><br/>" +
-    "<t align='left' color='%2' size='1.12' shadow='1'>%3 %4</t><br/>" +
-    "<t align='left' color='#FFFFFF' size='0.88'>%5</t>",
+    "<t align='left' font='PuristaMedium' color='#9FB3C8' size='0.72'>%1</t><br/>" +
+    "<t align='left' font='PuristaBold' color='%2' size='1.12' shadow='1'>%3 %4</t><br/>" +
+    "<t align='left' font='PuristaMedium' color='#F2EFE3' size='0.88'>%5</t>",
     toUpper _source,
     _colour,
     _symbol,
@@ -122,10 +132,10 @@ _content ctrlCommit 0;
 private _contentH = (((ctrlTextHeight _content) + (_visibleH * 0.006)) max (_visibleH * 0.07)) min _maximumContentH;
 private _panelH = _contentH + (2 * _padY);
 private _accentH = (_visibleH * 0.004) max 0.002;
-{_x ctrlShow true;} forEach [_frame, _accent, _content];
+{_x ctrlShow true;} forEach [_shadow, _frame, _accent, _content];
 
 private _token = format ["%1_%2", diag_tickTime, random 1e9];
-private _controls = [_frame, _accent, _content];
+private _controls = [_shadow, _frame, _accent, _content];
 _registry pushBack [_channel, _controls, _token, _placement, _panelW, _panelH, _padX, _padY, _accentH, _contentH, _priority, diag_tickTime];
 uiNamespace setVariable ["Waldo_UiPanelRegistry", _registry];
 [] call Waldo_fnc_ReflowUiPanels;

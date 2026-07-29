@@ -9,23 +9,16 @@
 private _target = cursorTarget;
 
 if (isNull _target || {!(_target isKindOf "CAManBase")}) exitWith {
-	hint "No valid target.";
+	["PORTABLE TESTER", "No valid target.", "WARNING", 3, "BOTTOM_LEFT", "TESTER", "TESTER"] call Waldo_fnc_ShowUiNotification;
 	false
 };
 
 if ((player distance _target) > 3) exitWith {
-	hint "Move closer to test.";
+	["PORTABLE TESTER", "Move closer to test.", "WARNING", 3, "BOTTOM_LEFT", "TESTER", "TESTER"] call Waldo_fnc_ShowUiNotification;
 	false
 };
 
 _target setVariable ["tested", true, true];
-hint "Testing...";
-
-// Y is handled unscheduled (called directly from the KeyDown handler), so the
-// delay has to live in its own scheduled thread - sleep is illegal here otherwise.
-[] spawn {
-	sleep 2;
-	hint "";
-};
+["PORTABLE TESTER", "Testing...", "INFO", 2, "BOTTOM_LEFT", "TESTER", "TESTER"] call Waldo_fnc_ShowUiNotification;
 
 true

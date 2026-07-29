@@ -35,71 +35,114 @@ Waldo_pingWheelOpen = false;
 private _role = player getVariable ["role", "Innocent"];
 private _color = [_role] call Waldo_roleColor;
 
-// GMod-style role crest: tint the circular badge and centre the role's letter
-// (T / D / I / J) in it.
-(_display displayCtrl 1000) ctrlSetTextColor _color;
-private _badge = _display displayCtrl 1001;
-_badge ctrlSetTextColor _color;
-_badge ctrlSetText toUpper (_role select [0, 1]);
+// ============================================================================
+// Selectable role crest style - entirely a per-player preference, not a
+// server/lobby setting (there is no RoleCrestStyle mission param). 0 =
+// Original (roleShadow/roleTextBG*/roleCredits* in TTTHud.hpp, untouched -
+// kept exactly as shipped, a deliberate homage to the classic GMod-TTT
+// badge); 1-7 share the "Rank Disc" backing (rankDiscRim/rankDiscAccent,
+// idc 1270/1271 - a dark casing rim + gold accent ring behind the same
+// tuned badge ring every style always used) around their own distinguishing
+// decoration; 8 (Stamped Tag) replaces the ring entirely with a flat casing
+// plate (see the big comment blocks in TTTHud.hpp for each). The letter and
+// role colour are the one thing every single style keeps without exception -
+// only the material/backing around them changes.
+//
+// Waldo_roleCrestStylePref lives in THIS client's own profileNamespace (set
+// via the H key -> Waldo_fnc_openStylePicker, functions/ui/fn_openStylePicker.sqf),
+// so it's saved across sessions/servers and never broadcast or read from
+// anywhere else.
+// ============================================================================
+private _style = profileNamespace getVariable ["Waldo_roleCrestStylePref", 0];
+private _usesRing = (_style >= 0 && _style <= 7);
+private _usesRankDisc = (_style >= 1 && _style <= 7);
 
-// Real measured vertical centring, not a guessed offset: ST_VCENTER does NOT
-// mean "centre vertically" despite the name - BIKI documents it (with
-// ST_UP/ST_DOWN) as a vertical/rotated TEXT ORIENTATION mode that "should
-// not be mixed with any other styles", which is exactly what this control
-// used to do (ST_CENTER + ST_VCENTER) and almost certainly why the letter
-// rendered badly off-position rather than just high/low by a few pixels.
-// ctrlTextHeight reads back the engine's own actual rendered height for the
-// text just set, so this centres correctly regardless of the font's real
-// metrics instead of assuming a line-height ratio.
-private _badgeX = (safezoneW + safezoneX) - (0.175 * safezoneH);
-private _badgeY = (safezoneH + safezoneY) - (0.185 * safezoneH);
-private _badgeSize = 0.15 * safezoneH;
-private _textH = ctrlTextHeight _badge;
+{ (_display displayCtrl _x) ctrlShow _usesRankDisc; } forEach [1270, 1271];
+{ (_display displayCtrl _x) ctrlShow _usesRing; } forEach [1272, 999, 1000, 1001];
 
-// J's hook-shaped tail sits toward the bottom-right of its bounding box, so a
-// geometrically-centred J still reads as drifted right - unlike vertical
-// centring above, there's no engine measurement for "optical" glyph weight,
-// so this is a small eyeballed nudge specific to that one letter, not a
-// general formula. Confirmed live that the first attempt (-0.006) overshot
-// and put it too far left - halved rather than re-guessed from scratch.
-private _opticalNudgeX = if (_role == "Jester") then { -0.003 * safezoneH } else { 0 };
+if (_usesRing) then {
+	// GMod-style role crest: tint the circular badge and centre the role's
+	// letter (T / D / I / J) in it.
+	(_display displayCtrl 1000) ctrlSetTextColor _color;
+	private _badge = _display displayCtrl 1001;
+	_badge ctrlSetTextColor _color;
+	_badge ctrlSetText toUpper (_role select [0, 1]);
 
-_badge ctrlSetPosition [_badgeX + _opticalNudgeX, _badgeY + ((_badgeSize - _textH) / 2), _badgeSize, _textH];
-_badge ctrlCommit 0;
+	// Letter scale suits the backing it's sitting on: Rank Disc's extra rim/
+	// accent rings make the Original's exact letter size read as lost inside
+	// a visibly bigger medallion, so styles 1-7 get a modest bump. ctrlSetFontHeight
+	// (not a hardcoded hpp sizeEx) is what makes a per-style size possible on
+	// one shared control - already a proven command in this codebase
+	// (fn_openBuyMenu.sqf's shop cards use it the same way). Must run before
+	// ctrlTextHeight below, since that measurement reflects whatever size was
+	// actually just set.
+	_badge ctrlSetFontHeight ((if (_style == 0) then { 0.088 } else { 0.098 }) * safezoneH);
+
+	// Real measured vertical centring, not a guessed offset: ST_VCENTER does NOT
+	// mean "centre vertically" despite the name - BIKI documents it (with
+	// ST_UP/ST_DOWN) as a vertical/rotated TEXT ORIENTATION mode that "should
+	// not be mixed with any other styles", which is exactly what this control
+	// used to do (ST_CENTER + ST_VCENTER) and almost certainly why the letter
+	// rendered badly off-position rather than just high/low by a few pixels.
+	// ctrlTextHeight reads back the engine's own actual rendered height for the
+	// text just set, so this centres correctly regardless of the font's real
+	// metrics instead of assuming a line-height ratio.
+	private _badgeX = (safezoneW + safezoneX) - (0.175 * safezoneH);
+	private _badgeY = (safezoneH + safezoneY) - (0.185 * safezoneH);
+	private _badgeSize = 0.15 * safezoneH;
+	private _textH = ctrlTextHeight _badge;
+
+	// J's hook-shaped tail sits toward the bottom-right of its bounding box, so a
+	// geometrically-centred J still reads as drifted right - unlike vertical
+	// centring above, there's no engine measurement for "optical" glyph weight,
+	// so this is a small eyeballed nudge specific to that one letter, not a
+	// general formula. Confirmed live that the first attempt (-0.006) overshot
+	// and put it too far left - halved rather than re-guessed from scratch.
+	private _opticalNudgeX = if (_role == "Jester") then { -0.003 * safezoneH } else { 0 };
+
+	_badge ctrlSetPosition [_badgeX + _opticalNudgeX, _badgeY + ((_badgeSize - _textH) / 2), _badgeSize, _textH];
+	_badge ctrlCommit 0;
+};
+
+// Style 8 (Stamped Tag) doesn't use the shared ring at all - its own big
+// letter, tinted the same way, on its own flat plate. Border/divider/flash
+// are all this style's own role-tinted rects (WALDO_ACCENT gold is just the
+// hpp default/placeholder, retinted here every time like the shop's own
+// accent bar).
+if (_style == 8) then {
+	{ (_display displayCtrl _x) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1]; } forEach [1281, 1283, 1284];
+
+	private _s8Letter = _display displayCtrl 1285;
+	_s8Letter ctrlSetTextColor _color;
+	_s8Letter ctrlSetText toUpper (_role select [0, 1]);
+	private _s8H = ctrlTextHeight _s8Letter;
+	private _s8ZoneX = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH);
+	private _s8ZoneY = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.044 * safezoneH);
+	private _s8ZoneH = 0.17 * safezoneH;
+	private _s8OpticalNudgeX = if (_role == "Jester") then { -0.003 * safezoneH } else { 0 };
+	_s8Letter ctrlSetPosition [_s8ZoneX + _s8OpticalNudgeX, _s8ZoneY + ((_s8ZoneH - _s8H) / 2), 0.17 * safezoneH, _s8H];
+	_s8Letter ctrlCommit 0;
+};
 
 // Only Traitor/Detective have credits at all, so every style's credit-only
 // controls (not just their text) are hidden for everyone else instead of
 // sitting there empty.
 private _hasCredits = _role in ["Traitor", "Detective"];
 
-// ============================================================================
-// Selectable role crest style - entirely a per-player preference, not a
-// server/lobby setting (there is no RoleCrestStyle mission param). Style 0
-// (roleShadow/roleTextBG*/roleCredits* in TTTHud.hpp, untouched) is the
-// default for anyone who's never pressed H; styles 1-7 are the alternate
-// treatments added around the same badge ring (see the big comment block
-// above s1TickN in TTTHud.hpp). Waldo_roleCrestStylePref lives in THIS
-// client's own profileNamespace (set via the H key,
-// functions/core/fn_initClient.sqf, and by the dev menu's HUD-category
-// buttons via the same mechanism), so it's saved across sessions/servers
-// and never broadcast or read from anywhere else.
-//
-// _styleAlways/_styleCredits are idc's grouped by style index (0..7). Every
+// _styleAlways/_styleCredits are idc's grouped by style index (0..8). Every
 // control across every style is shown/hidden exactly once per call: first
 // pass hides every style except the selected one, second pass then re-hides
 // the selected style's credit-only controls if this role has none.
-// ============================================================================
-private _style = profileNamespace getVariable ["Waldo_roleCrestStylePref", 0];
-
 private _styleAlways = [
-	[],                                             // 0 - original: nothing beyond the credits pill below
+	[],                                             // 0 - Original: nothing beyond the credits pill below
 	[1200, 1201, 1202, 1203],                       // 1 - Signal Ring: compass ticks
 	[1210, 1211, 1212, 1213, 1214, 1215, 1216, 1217],// 2 - Corner Bracket Frame
 	[1220, 1221, 1222, 1223],                        // 3 - Fused Tag: tab + role name
 	[1230, 1231, 1232],                              // 4 - Wallet Chip: chip + role name
 	[],                                              // 5 - Satellite Chip: nothing beyond the pill below
 	[1250, 1251, 1252, 1253, 1254, 1255, 1256, 1257],// 6 - IFF Transponder: ticks
-	[1260, 1261]                                     // 7 - Contact Blip: pulse rings
+	[],                                              // 7 - Contact Blip: shares Rank Disc now, no style-specific extras of its own
+	[1280, 1281, 1282, 1283, 1284, 1285]             // 8 - Stamped Tag: shadow/border/plate/divider/flash/letter
 ];
 private _styleCredits = [
 	[1002, 1003, 1004, 1005],   // 0 - full credits pill (shadow/bg/accent/text)
@@ -109,7 +152,8 @@ private _styleCredits = [
 	[1233],                      // 4 - Wallet Chip credits line
 	[1240, 1241],                // 5 - Satellite Chip pill
 	[1258, 1259],                // 6 - IFF Transponder squawk tab
-	[1262]                       // 7 - Contact Blip coord text
+	[1262],                      // 7 - Contact Blip coord text
+	[1286]                       // 8 - Stamped Tag credits strip
 ];
 
 {
@@ -122,16 +166,13 @@ private _styleCredits = [
 } forEach _styleCredits;
 
 // Elements that always need the role tint regardless of credits, per style
-// (the badge ring itself is already tinted above and is common to every
-// style). Contact Blip's two pulse rings are RscPicture, so they're retinted
-// with ctrlSetTextColor like the badge ring, not ctrlSetBackgroundColor.
+// (the badge ring itself, and style 8's border/divider/flash, are already
+// tinted above and common to every style/style-8-specific block
+// respectively). Rank Disc (1270/1271) is deliberately NOT role-tinted - a
+// fixed dark-casing-and-gold material, same on every role, per direction.
 switch (_style) do {
 	case 3: {   // Fused Tag: accent strip along the top of the tab
 		(_display displayCtrl 1222) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
-	};
-	case 7: {   // Contact Blip: both pulse rings, low alpha so they read as a glow, not a solid disc
-		(_display displayCtrl 1260) ctrlSetTextColor [_color select 0, _color select 1, _color select 2, 0.22];
-		(_display displayCtrl 1261) ctrlSetTextColor [_color select 0, _color select 1, _color select 2, 0.4];
 	};
 };
 
@@ -141,8 +182,8 @@ if (_hasCredits) then {
 	// idc of the control that actually displays "<n> credits" text for the
 	// active style, and whether that text itself gets tinted to the role
 	// colour (some styles keep it neutral ink instead, per the mockups).
-	private _creditTextIdc = [1002, 1205, 1218, 1224, 1233, 1241, 1259, 1262] select _style;
-	private _tintCreditText = [true, true, false, true, true, false, false, false] select _style;
+	private _creditTextIdc = [1002, 1205, 1218, 1224, 1233, 1241, 1259, 1262, 1286] select _style;
+	private _tintCreditText = [true, true, false, true, true, false, false, false, true] select _style;
 
 	private _credits = _display displayCtrl _creditTextIdc;
 	if (_tintCreditText) then { _credits ctrlSetTextColor _color; };
@@ -195,6 +236,7 @@ if (_hasCredits) then {
 				case 5: { format ["%1", _pts] };            // Satellite Chip pill - narrow, no room for "credits"
 				case 6: { format ["%1", _pts] };            // IFF squawk code
 				case 7: { format ["%1 CR", _pts] };          // Contact Blip coord readout
+				case 8: { format ["%1 CR", _pts] };          // Stamped Tag credits strip
 				default { format ["%1 credits", _pts] };
 			};
 			_credits ctrlSetText _text;

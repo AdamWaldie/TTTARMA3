@@ -28,7 +28,22 @@ Saving = 0;
 
 respawn = 2;
 respawnDelay = 5800;
-respawnTemplates[] = {"Spectator"}; 
+respawnTemplates[] = {"Spectator"};
+
+// Corpses carry the "Identify Body" scroll action (Waldo_fnc_onKilled /
+// Waldo_fnc_identifyBody) and are a core part of this gamemode's actual
+// deduction gameplay - the engine's own corpse-cleanup defaults are tuned
+// for a normal shooter (a handful of seconds after a low corpseLimit is
+// exceeded) and were silently deleting bodies, action and all, well before
+// anyone could realistically reach and use them. Nothing in this mission
+// ever overrode these, so it was running on those defaults the whole time.
+// corpseLimit comfortably exceeds maxPlayers (128) so the count-based
+// trigger never fires; the min/max removal times give a corpse the length
+// of a full round (base + bonuses can run several minutes) before the
+// engine's own timer-based cleanup can claim it either.
+corpseLimit = 150;
+corpseRemovalMinTime = 900;
+corpseRemovalMaxTime = 1200;
 
 class CfgDebriefing
 {  
@@ -146,6 +161,7 @@ class CfgFunctions
 			class identifyBody {};      // Waldo_fnc_identifyBody (server: call in a corpse)
 			class dnaContaminate {};    // Waldo_fnc_dnaContaminate (server: witness/contamination tracking)
 			class spawnDecoyCorpse {};  // Waldo_fnc_spawnDecoyCorpse (server: Dead Ringer decoy)
+			class flowerSpawn {};       // Waldo_fnc_flowerSpawn (server: creates one networked flower)
 		};
 
 		class ui
@@ -169,6 +185,34 @@ class CfgFunctions
 			class useActivationSlot {};    // Waldo_fnc_useActivationSlot (fires the item bound to Y/U/J)
 			class assignActivationSlot {}; // Waldo_fnc_assignActivationSlot (buy menu: rebind an item to a key)
 			class registerActivationSlot {}; // Waldo_fnc_registerActivationSlot (shared: slot/backlog assignment)
+		};
+
+		// Vendored from AdamWaldie/WaldosMissionPack (MissionScripts/MissionFlowAndUi,
+		// commit 3109e52) - the reusable WMP notification-card system, unmodified.
+		// Deliberately its own class/folder (not merged into `ui` above) so future
+		// pulls from the source repo are a clean file copy, not a merge against
+		// this mission's own UI code. Class names keep the source's PascalCase
+		// Waldo_fnc_* API exactly (SQF identifiers are case-insensitive, so this
+		// doesn't collide with this mission's own lowerCamelCase convention) so
+		// they match that pack's own documentation/wiki. Only the two files that
+		// are pure vanilla SQF with no CBA/ACE calls at all were worth pulling in
+		// for what this mission actually needs (queued/placed notification
+		// cards); fn_setupUiCleanupAction.sqf is the one exception and is safe
+		// regardless - it already detects ACE's absence and falls back to a
+		// vanilla addAction on its own.
+		class uinotify
+		{
+			file = "functions\uinotify";
+			class ShowUiNotification {};        // Waldo_fnc_ShowUiNotification
+			class DismissUiNotification {};     // Waldo_fnc_DismissUiNotification
+			class DrainUiNotificationQueue {};  // Waldo_fnc_DrainUiNotificationQueue
+			class ResolveUiPanelPlacement {};   // Waldo_fnc_ResolveUiPanelPlacement
+			class ReflowUiPanels {};            // Waldo_fnc_ReflowUiPanels
+			class SetUiPanelPlacement {};       // Waldo_fnc_SetUiPanelPlacement
+			class SetLocalUiPanelPlacement {};  // Waldo_fnc_SetLocalUiPanelPlacement
+			class ClearUiPanels {};             // Waldo_fnc_ClearUiPanels
+			class CleanupTransientUi {};        // Waldo_fnc_CleanupTransientUi
+			class SetupUiCleanupAction {};      // Waldo_fnc_SetupUiCleanupAction (ACE self-action, vanilla addAction fallback)
 		};
 
 		class debug
@@ -408,4 +452,11 @@ class Params {
 		texts[]  = {"0 (off)", "1", "2", "3"};
 		default  = 1;
 	};
+
+	// No HUD/role-crest-style param on purpose: that's entirely a per-player
+	// preference now (H key, see Waldo_fnc_initHud/fn_initClient.sqf), not
+	// something a server admin sets for everyone. Index 30 stays retired
+	// rather than reused, so a stale saved server config (or a JIP still
+	// running an older cached lobby state) never resurrects it as a
+	// different param by accident.
 };

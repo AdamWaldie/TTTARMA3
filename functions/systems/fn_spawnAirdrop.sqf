@@ -67,7 +67,10 @@ if (_golden) then {
 			_label = "WEAPONS";
 		};
 	};
-	[format ["A GOLDEN %1 airdrop is falling!", _label], [1, 0.82, 0.25], 5] remoteExec ["Waldo_fnc_topBarAnnounce", 0];
+	[
+		"GOLDEN AIRDROP", format ["A GOLDEN %1 airdrop is falling!", _label],
+		"WARNING", 6, "TOP", "AIRDROP", "SUPPLY"
+	] remoteExec ["Waldo_fnc_ShowUiNotification", 0];
 } else {
 	for "_i" from 1 to _limit do {
 		private _loadout = selectRandom _loadouts;
@@ -79,7 +82,10 @@ if (_golden) then {
 			{ _crate addItemCargoGlobal [_x, 1]; } forEach (_loadout select 3);
 		};
 	};
-	["A supply airdrop is falling!", [0.85, 0.62, 0.20], 4] remoteExec ["Waldo_fnc_topBarAnnounce", 0];
+	[
+		"AIRDROP INBOUND", "A supply airdrop is falling!",
+		"INFO", 5, "TOP", "AIRDROP", "SUPPLY"
+	] remoteExec ["Waldo_fnc_ShowUiNotification", 0];
 };
 
 _crate attachTo [_parachute, [0, 0, 1]];

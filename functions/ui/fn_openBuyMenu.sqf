@@ -70,17 +70,23 @@ private _bh   = 0.048 * safezoneH;
 private _gapX = 0.012 * safezoneW;
 private _gapY = 0.008 * safezoneH;
 
+private _owned = player getVariable ["Waldo_purchases", []];
 {
-	_x params ["_name", "_cost", "_type", "_onBuy", "_onAct", "_tip"];
+	_x params ["_name", "_cost", "_type", "_onBuy", "_onAct", "_tip", ["_requires", ""]];
 	private _i  = _forEachIndex;
 	private _cx = _i mod _cols;
 	private _cy = floor (_i / _cols);
-	private _afford = _credits >= _cost;
+	// A _requires item that isn't owned yet blocks the buy the same way not
+	// having enough credits does - Enhanced Scanner does nothing without the
+	// DNA Scanner it upgrades, so letting it be bought first just wastes
+	// credits on a passive with nothing to attach to.
+	private _hasRequirement = (_requires == "") || { (_owned findIf { (_x select 1) == _requires }) >= 0 };
+	private _afford = (_credits >= _cost) && _hasRequirement;
 
 	private _btn = _display ctrlCreate ["RscButton", 2000 + _i, _group];
 	_btn ctrlSetPosition [_cx * (_bw + _gapX), _cy * (_bh + _gapY), _bw, _bh];
 	_btn ctrlSetText (format ["%1      %2 cr", _name, _cost]);
-	_btn ctrlSetTooltip _tip;
+	_btn ctrlSetTooltip (if (_hasRequirement) then { _tip } else { format ["Requires %1 - %2", _requires, _tip] });
 	_btn ctrlSetFontHeight (0.85 * (_bh min (0.04 * safezoneH)));
 
 	if (_afford) then {
@@ -93,9 +99,12 @@ private _gapY = 0.008 * safezoneH;
 
 	// Pre-format the hover description shown in the footer (idc 1103).
 	private _afHex = ["#F2BE55", "#E4514B"] select (!_afford);
+	private _reqLine = if (_hasRequirement) then { "" } else {
+		format ["<br/><t size='0.9' color='#E4514B'>Requires %1 first</t>", _requires]
+	};
 	_btn setVariable ["descText", format [
-		"<t size='1.3' color='%1'>%2</t>   <t size='1.1' color='%3'>%4 cr</t>   <t size='0.9' color='#9EA290'>%5</t><br/><br/><t size='1.05'>%6</t>",
-		_colorHex, _name, _afHex, _cost, ([_type] call _typeLabel), _tip
+		"<t size='1.3' color='%1'>%2</t>   <t size='1.1' color='%3'>%4 cr</t>   <t size='0.9' color='#9EA290'>%5</t><br/><br/><t size='1.05'>%6</t>%7",
+		_colorHex, _name, _afHex, _cost, ([_type] call _typeLabel), _tip, _reqLine
 	]];
 	_btn setVariable ["role", _role];
 	_btn setVariable ["itemIndex", _i];

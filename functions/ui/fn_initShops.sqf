@@ -130,7 +130,7 @@ Waldo_shopRenderPurchased = {
 // stacked). Dev-only binds are appended only when Testing Mode is actually on.
 Waldo_keyHintsFor = {
 	params ["_role"];
-	private _hints = [["L", "Holster"], ["K", "Scoreboard"]];
+	private _hints = [["L", "Holster"], ["K", "Scoreboard"], ["H", "Role Crest Style"]];
 	if (_role in ["Traitor", "Detective"]) then {
 		_hints pushBack ["B", "Buy Menu"];
 		_hints pushBack ["Y U J", "Use Item"];
@@ -282,14 +282,15 @@ Waldo_detectiveShop = [
 		"Aim at a player or body within 3m and press your assigned key to reveal their role"],
 
 	["DNA Scanner", 2, "activation",
-		{},
+		{ player setVariable ["Waldo_dnaScannerCharges", 3, true]; },
 		{ [] call Waldo_fnc_dnaScanner },
-		"Aim at a body and press your assigned key to sample the killer's DNA, then track them down"],
+		"Aim at a body and press your assigned key to sample the killer's DNA, then track them down (3 uses)"],
 
 	["Enhanced Scanner", 3, "passive",
 		{ player setVariable ["Waldo_enhancedScanner", true, true]; },
 		{},
-		"Upgrades the DNA Scanner: longer/steadier tracking, half the contamination risk, and reveals time-of-death + weapon"],
+		"Upgrades the DNA Scanner: longer/steadier tracking, half the contamination risk, and reveals time-of-death + weapon",
+		"DNA Scanner"],   // _requires: does nothing without the base scanner - greyed out in the shop until owned
 
 	["Radar", 1, "passive",
 		{ [] call Waldo_fnc_detectiveRadar; },

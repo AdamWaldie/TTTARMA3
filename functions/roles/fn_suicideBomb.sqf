@@ -14,7 +14,9 @@ playSound3D [getMissionPath "audio\suicide.ogg", player];
 	sleep 2;
 
 	if (alive player) then {
-		private _ied = createVehicle ["Bo_Mk82", getPos player, [], 0, "NONE"];
+		// DemoCharge_Remote_Ammo, not Bo_Mk82 (a full 500lb aerial bomb) - see
+		// fn_c4Charge.sqf, which shares this same blast.
+		private _ied = createVehicle ["DemoCharge_Remote_Ammo", getPos player, [], 0, "NONE"];
 		_ied setPos (getPos player);
 		// setShotParents is server/HC-only in MP and would silently be ignored if
 		// called here on the bomber's own client - remoteExec it to the server so

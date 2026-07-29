@@ -16,31 +16,34 @@
 //////////////////////////////////////////////////////////////////
 
 private _target = cursorTarget;
+private _warn = {
+	params ["_msg"];
+	["REVIVE", _msg, "WARNING", 3, "BOTTOM_LEFT", "REVIVE", "REVIVE"] call Waldo_fnc_ShowUiNotification;
+};
 
 if (isNull _target || {!(_target isKindOf "CAManBase")} || {alive _target}) exitWith {
-	hint "Aim at a body.";
+	["Aim at a body."] call _warn;
 	false
 };
 if (isNil { _target getVariable "player" }) exitWith {
-	hint "That body cannot be revived.";
+	["That body cannot be revived."] call _warn;
 	false
 };
 if ((player distance _target) > 3) exitWith {
-	hint "Move closer to the body.";
+	["Move closer to the body."] call _warn;
 	false
 };
 
 private _revived = _target getVariable "player";
-if (isNull _revived) exitWith { hint "Revive failed."; false };
+if (isNull _revived) exitWith { ["Revive failed."] call _warn; false };
 
-hint "Reviving...";
+["REVIVE", "Reviving...", "INFO", 3, "BOTTOM_LEFT", "REVIVE", "REVIVE"] call Waldo_fnc_ShowUiNotification;
 
 // Y is handled unscheduled (called directly from the KeyDown handler), so
 // both delays below have to live in their own scheduled thread.
 [_revived] spawn {
 	params ["_revived"];
 	sleep 3;
-	hint "";
 
 	// Stash the revive intent on the corpse - onPlayerRespawn.sqf runs on the
 	// revived player's own machine and gets the same object directly as
@@ -55,7 +58,7 @@ hint "Reviving...";
 	sleep 0.5;
 	[2400] remoteExec ["setPlayerRespawnTime", _revived];
 
-	hint "Revive complete.";
+	["REVIVE", "Revive complete.", "SUCCESS", 4, "BOTTOM_LEFT", "REVIVE", "REVIVE"] call Waldo_fnc_ShowUiNotification;
 };
 
 true

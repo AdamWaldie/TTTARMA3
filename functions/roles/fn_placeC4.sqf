@@ -10,5 +10,5 @@
 if (!alive player) exitWith { false };
 
 [player, getPosATL player] remoteExec ["Waldo_fnc_c4Charge", 2];
-hint "Charge armed - 15 seconds.";
+["C4 CHARGE", "Armed - 15 seconds.", "WARNING", 3, "BOTTOM_LEFT", "C4", "TRAITOR"] call Waldo_fnc_ShowUiNotification;
 true

@@ -20,7 +20,7 @@ private _catalog = if (_role == "Traitor") then { Waldo_traitorShop } else { Wal
 if (_index < 0 || _index >= count _catalog) exitWith {};
 
 private _item = _catalog select _index;
-_item params ["_name", "_cost", "_type", "_onBuy", "_onAct", "_tip"];
+_item params ["_name", "_cost", "_type", "_onBuy", "_onAct", "_tip", ["_requires", ""]];
 
 private _pts  = player getVariable ["points", 0];
 private _disp = uiNamespace getVariable ["WaldoShop", displayNull];
@@ -32,6 +32,20 @@ if (_pts < _cost) exitWith {
 		(_disp displayCtrl 1103) ctrlSetStructuredText parseText (format [
 			"<t size='1.15' color='#E4514B'>[X] NOT ENOUGH CREDITS</t><br/><t size='0.95' color='#F2EFE3'>%1 costs %2 - you have %3.</t>",
 			_name, _cost, _pts
+		]);
+	};
+};
+
+// Defense in depth: the shop UI already greys this button out and explains
+// why, but block it here too rather than trusting the client not to have
+// clicked a button that was disabled for a reason.
+if (_requires != "" && {((player getVariable ["Waldo_purchases", []]) findIf { (_x select 1) == _requires }) < 0}) exitWith {
+	if (isNull _disp) then {
+		hint format ["[X] Requires %1 first.", _requires];
+	} else {
+		(_disp displayCtrl 1103) ctrlSetStructuredText parseText (format [
+			"<t size='1.15' color='#E4514B'>[X] REQUIRES %1</t><br/><t size='0.95' color='#F2EFE3'>Buy %1 before %2.</t>",
+			toUpper _requires, _name
 		]);
 	};
 };
@@ -70,11 +84,13 @@ if (isNull _disp) exitWith {
 (_disp displayCtrl 1101) ctrlSetText (format ["%1 CREDITS", _new]);
 
 private _color = [_role] call Waldo_roleColor;
+private _nowOwned = _purchases;
 {
-	_x params ["", "_c"];
+	_x params ["", "_c", "", "", "", "", ["_req", ""]];
 	private _btn = _disp displayCtrl (2000 + _forEachIndex);
 	if (!isNull _btn) then {
-		if (_new >= _c) then {
+		private _hasReq = (_req == "") || { (_nowOwned findIf { (_x select 1) == _req }) >= 0 };
+		if (_new >= _c && _hasReq) then {
 			_btn ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 0.85];
 			_btn ctrlSetTextColor [0.95, 0.93, 0.86, 1];
 		} else {

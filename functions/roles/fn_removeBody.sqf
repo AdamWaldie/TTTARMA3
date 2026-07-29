@@ -12,16 +12,16 @@
 private _target = cursorTarget;
 
 if (isNull _target || {!(_target isKindOf "CAManBase")} || {alive _target}) exitWith {
-	hint "Aim at a body.";
+	["REMOVE BODY", "Aim at a body.", "WARNING", 3, "BOTTOM_LEFT", "REMOVEBODY", "REMOVE BODY"] call Waldo_fnc_ShowUiNotification;
 	false
 };
 
 if ((player distance _target) > 4) exitWith {
-	hint "Move closer to the body.";
+	["REMOVE BODY", "Move closer to the body.", "WARNING", 3, "BOTTOM_LEFT", "REMOVEBODY", "REMOVE BODY"] call Waldo_fnc_ShowUiNotification;
 	false
 };
 
-hint "Disposing of the body...";
+["REMOVE BODY", "Disposing of the body...", "INFO", 2, "BOTTOM_LEFT", "REMOVEBODY", "REMOVE BODY"] call Waldo_fnc_ShowUiNotification;
 
 // Y is handled unscheduled (called directly from the KeyDown handler), so the
 // delay has to live in its own scheduled thread - sleep is illegal here otherwise.
@@ -29,10 +29,12 @@ hint "Disposing of the body...";
 	params ["_target"];
 	sleep 2;
 
-	if (isNull _target) exitWith { hint "" };   // someone else got there first
+	if (isNull _target) exitWith {
+		["REMOVEBODY"] call Waldo_fnc_DismissUiNotification;   // someone else got there first
+	};
 
 	_target remoteExec ["deleteVehicle", 2];
-	hint "Body removed.";
+	["REMOVE BODY", "Body removed.", "SUCCESS", 3, "BOTTOM_LEFT", "REMOVEBODY", "REMOVE BODY"] call Waldo_fnc_ShowUiNotification;
 };
 
 true

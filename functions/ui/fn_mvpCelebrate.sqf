@@ -33,15 +33,16 @@ private _center = missionNamespace getVariable ["mapPos", getPosATL player];
 	};
 };
 
-private _txt = if (_name != "") then {
-	format [
-		"<t align='center' size='1.6' color='#ffd23f' shadow='1'>ROUND MVP</t><br/><t align='center' size='1.3'>%1</t><br/><t align='center' size='0.9' color='#9a9a9a'>%2 - %3 kill%4</t>",
-		_name, _role, _kills, (["", "s"] select (_kills != 1))
-	]
+// Waldo_fnc_ShowUiNotification (functions/uinotify/), "TOP" placement - the
+// same reserved top-centre slot the old topBarAnnounce banner used to sit
+// in, so this doesn't fight the round timer/keybind row for space, and
+// doesn't touch hintSilent (the whole reason that channel used to race
+// fn_dnaScanner.sqf's tracking readout, see the fn_initHud.sqf/
+// fn_dnaScanner.sqf history) at all anymore.
+private _title = if (_name != "") then { "ROUND MVP" } else { "ROUND COMPLETE" };
+private _msg = if (_name != "") then {
+	format ["%1 (%2) - %3 kill%4 this round.", _name, _role, _kills, (["", "s"] select (_kills != 1))]
 } else {
-	"<t align='center' size='1.4' color='#ffd23f' shadow='1'>Round Complete</t>"
+	"No one scored a kill this round."
 };
-
-hintSilent parseText _txt;
-sleep 6;
-hintSilent "";
+[_title, _msg, "SUCCESS", 8, "TOP", "MVP", "ROUND"] call Waldo_fnc_ShowUiNotification;

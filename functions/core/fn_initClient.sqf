@@ -99,15 +99,35 @@ waitUntil { !isNull player && time > 0 };
 // zero indication anywhere that it happened, since playMusic itself still
 // resolves and logs cleanly. Resetting to 1 (instantly, duration 0) right
 // before playing is what actually guarantees this is audible.
+// Waldo_roundLiveAt is 0 during pregame and holds the just-ended round's
+// `time` value for a short window after fn_endRound.sqf flips gameOn false
+// (fn_resetState.sqf doesn't zero it again until the NEXT round's setup) -
+// so `!gameOn` alone doesn't distinguish "haven't started the round yet"
+// from "round just ended, MVP celebration is playing its own music right
+// now". If THIS client's fn_initClient somehow re-runs during that window
+// (e.g. a respawn/JIP landing exactly then), the old code would fire a
+// second playMusic on top of Waldo_fnc_mvpCelebrate's broadcast one -
+// audibly overlapping tracks. Remembering which Waldo_roundLiveAt value
+// already got its intro music (local to this client, not broadcast) closes
+// that window while still playing fresh intro music every real round, since
+// that value is different (0, then a new `time`) each time.
 private _musicStarted = false;
-if !(missionNamespace getVariable ["gameOn", false]) then {
+private _liveAt = missionNamespace getVariable ["Waldo_roundLiveAt", 0];
+private _introPlayedFor = missionNamespace getVariable ["Waldo_introMusicPlayedFor", -1];
+if (!(missionNamespace getVariable ["gameOn", false]) && {_liveAt != _introPlayedFor}) then {
 	0 fadeMusic 1;
 	playMusic ["TTTIntroMusic", 20];
 	_musicStarted = true;
+	missionNamespace setVariable ["Waldo_introMusicPlayedFor", _liveAt];
 	diag_log "[Waldo][client] intro music: playMusic issued";
 } else {
-	diag_log "[Waldo][client] intro music: skipped, round already live (JIP)";
+	diag_log "[Waldo][client] intro music: skipped, round already live (JIP) or already played for this round";
 };
+
+// WMP notification-card system (functions/uinotify/, vendored from
+// WaldosMissionPack): the "clear stuck UI" safety valve. Safe/idempotent to
+// call every init - it no-ops if already installed.
+[] call Waldo_fnc_SetupUiCleanupAction;
 
 // Obscure nametags (ACE)
 ACE_NO_RECOGNIZE = true; publicVariable "ACE_NO_RECOGNIZE";
@@ -226,6 +246,26 @@ player allowDamage false;
 					};
 					_handled = true;
 				};
+				case 35: {   // H - cycle YOUR OWN role crest style, saved across sessions/servers
+					// profileNamespace (not missionNamespace/player variables): a
+					// purely personal, client-side display preference, the same kind
+					// of thing as a keybind or a graphics setting - it has no
+					// gameplay effect, no server ever overrides it, and no other
+					// player should ever see or be affected by it. saveProfileNamespace
+					// flushes it to disk immediately rather than waiting for the
+					// profile's next natural save point, so it survives even a crash
+					// right after.
+					private _styleNames = [
+						"Original", "Signal Ring", "Corner Bracket Frame", "Fused Tag",
+						"Wallet Chip", "Satellite Chip", "IFF Transponder", "Contact Blip"
+					];
+					private _pref = ((profileNamespace getVariable ["Waldo_roleCrestStylePref", 0]) + 1) mod 8;
+					profileNamespace setVariable ["Waldo_roleCrestStylePref", _pref];
+					saveProfileNamespace;
+					[] call Waldo_fnc_initHud;
+					["ROLE CREST", format ["%1 (saved)", _styleNames select _pref], "INFO", 4, "BOTTOM_LEFT", "CRESTPREF", "HUD"] call Waldo_fnc_ShowUiNotification;
+					_handled = true;
+				};
 			};
 			_handled
 		}];
@@ -285,8 +325,12 @@ player addMPEventHandler ["MPKilled", {
 	// Nothing clears a hint/hintSilent on death - a scanner readout, "Reviving...",
 	// "Charge armed", whatever happened to be up at the moment of death, was
 	// otherwise left on screen bleeding into the Spectator view with no way to
-	// dismiss it.
-	if (_unit == player) then { hint ""; hintSilent ""; };
+	// dismiss it. Waldo_fnc_ClearUiPanels covers the same thing for every tool
+	// now on the notification system (functions/uinotify/) - without it, a
+	// card like DNA_TRACK or REVIVE would just sit there on its own duration
+	// timer, the exact bleed-into-Spectator bug this was already guarding
+	// against for the old hint/hintSilent channel.
+	if (_unit == player) then { hint ""; hintSilent ""; [] call Waldo_fnc_ClearUiPanels; };
 }];
 
 // Dead Ringer guard: while armed (Waldo_fnc_deadRinger sets Waldo_deadRingerArmed),
@@ -303,9 +347,15 @@ player addEventHandler ["HandleDamage", {
 	if (!isNull _instigator && {_instigator != _unit}) then {
 		_unit setVariable ["Waldo_lastDamager", _instigator, true];
 	};
-	if ((_unit getVariable ["Waldo_deadRingerArmed", false]) && {((damage _unit) + _damage) >= 1}) then {
+	// Any damage while armed triggers it now, not just a near-lethal hit - and
+	// the return is 0, not a 0.9 cap: Waldo_fnc_deadRingerTrigger now
+	// teleports the real unit away entirely rather than leaving them ragdolled
+	// in place, so "you weren't actually there" means no damage at all, not a
+	// reduced amount (a 0.9 cap on a graze that would've only done 0.05 in the
+	// first place used to make a minor hit WORSE).
+	if ((_unit getVariable ["Waldo_deadRingerArmed", false]) && {_damage > 0}) then {
 		[_unit] call Waldo_fnc_deadRingerTrigger;
-		0.9
+		0
 	} else {
 		_damage
 	}

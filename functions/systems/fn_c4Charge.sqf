@@ -47,7 +47,10 @@ _charge allowDamage false;
 
 	private _p = getPosATL _charge;
 	deleteVehicle _charge;
-	private _bomb = createVehicle ["Bo_Mk82", _p, [], 0, "NONE"];   // same blast the suicide bomb uses
+	// DemoCharge_Remote_Ammo, not Bo_Mk82 (a full 500lb aerial bomb) - this is a
+	// planted demolition charge, not an airstrike, and Bo_Mk82's stock blast
+	// radius was leveling far more than the room it was placed in.
+	private _bomb = createVehicle ["DemoCharge_Remote_Ammo", _p, [], 0, "NONE"];   // same blast the suicide bomb uses
 	// A createVehicle'd bomb has no shooter by default, so anyone it kills would
 	// resolve to a null culprit in Waldo_fnc_onKilled - no karma penalty for
 	// blowing up a teammate, no DNA on the corpse, no round-kill credit. Tag the

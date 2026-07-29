@@ -324,6 +324,21 @@ class RscTitles
 			// spilling past the visible safe area. Above has the same room the
 			// original style's credits pill already proved out (it sits at
 			// RY - 0.04H).
+			//
+			// s2CreditBG: this was bare floating text with just a drop shadow -
+			// the only credit readout in the whole crest with nothing solid
+			// behind it, so against a bright terrain background it washed out
+			// unlike every other style's pill/tab/chip. Same WALDO_HEADERBG
+			// plate every other credit readout uses, sized to the text.
+			class s2CreditBG: RscText {
+				idc = 1219;
+				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.05 * safezoneH);
+				w = 0.19 * safezoneH;
+				h = 0.022 * safezoneH;
+				colorBackground[] = WALDO_HEADERBG;
+				style = 0;
+			};
 			class s2CreditText: RscText {
 				idc = 1218;
 				text = "";
@@ -530,6 +545,23 @@ class RscTitles
 			// pulse rings. This is just the muted grid-reference-style text
 			// underneath, echoing the ping wheel's own text colour (#BFBCAF)
 			// rather than the gold accent. ----
+			//
+			// s7CoordBG: same fix as s2CreditBG above - this was the other
+			// credit readout with nothing solid behind it, and its text is
+			// deliberately muted/desaturated on top of that, so it had the
+			// worst contrast of any style against a bright terrain
+			// background. A subtle translucent backing (not the full-opaque
+			// WALDO_HEADERBG the pill styles use) keeps the "minimal grid
+			// readout" feel while still guaranteeing it's readable.
+			class s7CoordBG: RscText {
+				idc = 1263;
+				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
+				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.16 * safezoneH);
+				w = 0.15 * safezoneH;
+				h = 0.022 * safezoneH;
+				colorBackground[] = {0, 0, 0, 0.55};
+				style = 0;
+			};
 			class s7CoordText: RscText {
 				idc = 1262;
 				text = "";
@@ -538,7 +570,7 @@ class RscTitles
 				w = 0.15 * safezoneH;
 				h = 0.022 * safezoneH;
 				colorBackground[] = {0,0,0,0};
-				colorText[] = {0.75, 0.74, 0.69, 1};
+				colorText[] = {0.95, 0.93, 0.86, 1};
 				style = ST_CENTER;
 				font = "PuristaMedium";
 				sizeEx = 0.016 * safezoneH;

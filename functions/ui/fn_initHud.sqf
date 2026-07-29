@@ -147,12 +147,12 @@ private _styleAlways = [
 private _styleCredits = [
 	[1002, 1003, 1004, 1005],   // 0 - full credits pill (shadow/bg/accent/text)
 	[1204, 1205],                // 1 - Signal Ring tag
-	[1218],                      // 2 - Corner Bracket credit text
+	[1219, 1218],                // 2 - Corner Bracket credit text (+ backing plate)
 	[1224],                      // 3 - Fused Tag credits line
 	[1233],                      // 4 - Wallet Chip credits line
 	[1240, 1241],                // 5 - Satellite Chip pill
 	[1258, 1259],                // 6 - IFF Transponder squawk tab
-	[1262],                      // 7 - Contact Blip coord text
+	[1263, 1262],                // 7 - Contact Blip coord text (+ backing plate)
 	[1286]                       // 8 - Stamped Tag credits strip
 ];
 

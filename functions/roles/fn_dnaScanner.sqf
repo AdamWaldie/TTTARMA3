@@ -93,11 +93,19 @@ hint "Sampling DNA...";
 		];
 		sleep 1;
 	};
-	if (!isNull _tracked && {!alive _tracked}) then {
-		hintSilent parseText "<t size='1.2' color='#02b3ff'>Suspect is down.</t>";
-		sleep 3;
+	// Gated on gameOn too, same as the while loop above and for the same
+	// reason: without this, a trace that ends (suspect already dead) right as
+	// the round does still fires this hintSilent - including the final
+	// clearing hintSilent "" - on the same channel Waldo_fnc_mvpCelebrate is
+	// using for the round-end MVP banner, and whichever one runs last wins.
+	// That race is exactly what made the MVP banner intermittently not show.
+	if (missionNamespace getVariable ["gameOn", true]) then {
+		if (!isNull _tracked && {!alive _tracked}) then {
+			hintSilent parseText "<t size='1.2' color='#02b3ff'>Suspect is down.</t>";
+			sleep 3;
+		};
+		hintSilent "";
 	};
-	hintSilent "";
 };
 
 true

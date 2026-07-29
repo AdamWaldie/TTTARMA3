@@ -147,9 +147,22 @@ if (_hasCredits) then {
 		(_display displayCtrl 1003) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
 	};
 
-	[_credits, _style] spawn {
-		params ["_credits", "_style"];
-		while { !isNull ctrlParent _credits && {alive player} } do {
+	// Token-guarded the same way the keybind-hint fade below is (and for the
+	// same reason): this function re-runs on every respawn and every debug
+	// role switch, and this spawn had no guard at all - each call stacked
+	// another concurrent 0.5s polling loop on top of whatever earlier ones
+	// hadn't exited yet (they only exit once ctrlParent is null or the
+	// player is dead), so rapid role cycling piled up redundant loops all
+	// fighting to set the same control's text.
+	private _creditsTickerToken = (_display getVariable ["Waldo_creditsTickerToken", 0]) + 1;
+	_display setVariable ["Waldo_creditsTickerToken", _creditsTickerToken];
+	[_credits, _style, _display, _creditsTickerToken] spawn {
+		params ["_credits", "_style", "_display", "_token"];
+		while {
+			!isNull ctrlParent _credits
+			&& {alive player}
+			&& {(_display getVariable ["Waldo_creditsTickerToken", 0]) == _token}
+		} do {
 			private _pts = player getVariable ["points", 0];
 			private _text = switch (_style) do {
 				case 1: { format ["%1 cr", _pts] };        // Signal Ring tag

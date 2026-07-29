@@ -99,14 +99,29 @@ waitUntil { !isNull player && time > 0 };
 // zero indication anywhere that it happened, since playMusic itself still
 // resolves and logs cleanly. Resetting to 1 (instantly, duration 0) right
 // before playing is what actually guarantees this is audible.
+// Waldo_roundLiveAt is 0 during pregame and holds the just-ended round's
+// `time` value for a short window after fn_endRound.sqf flips gameOn false
+// (fn_resetState.sqf doesn't zero it again until the NEXT round's setup) -
+// so `!gameOn` alone doesn't distinguish "haven't started the round yet"
+// from "round just ended, MVP celebration is playing its own music right
+// now". If THIS client's fn_initClient somehow re-runs during that window
+// (e.g. a respawn/JIP landing exactly then), the old code would fire a
+// second playMusic on top of Waldo_fnc_mvpCelebrate's broadcast one -
+// audibly overlapping tracks. Remembering which Waldo_roundLiveAt value
+// already got its intro music (local to this client, not broadcast) closes
+// that window while still playing fresh intro music every real round, since
+// that value is different (0, then a new `time`) each time.
 private _musicStarted = false;
-if !(missionNamespace getVariable ["gameOn", false]) then {
+private _liveAt = missionNamespace getVariable ["Waldo_roundLiveAt", 0];
+private _introPlayedFor = missionNamespace getVariable ["Waldo_introMusicPlayedFor", -1];
+if (!(missionNamespace getVariable ["gameOn", false]) && {_liveAt != _introPlayedFor}) then {
 	0 fadeMusic 1;
 	playMusic ["TTTIntroMusic", 20];
 	_musicStarted = true;
+	missionNamespace setVariable ["Waldo_introMusicPlayedFor", _liveAt];
 	diag_log "[Waldo][client] intro music: playMusic issued";
 } else {
-	diag_log "[Waldo][client] intro music: skipped, round already live (JIP)";
+	diag_log "[Waldo][client] intro music: skipped, round already live (JIP) or already played for this round";
 };
 
 // Obscure nametags (ACE)

@@ -367,6 +367,15 @@ class RscTitles
 				colorBackground[] = WALDO_ACCENT;   // tinted to the role colour at runtime
 				style = 0;
 			};
+			// ST_LEFT alone, NOT "+ ST_VCENTER" - see the long-documented reason
+			// above roleText (this file's own BIKI-sourced note: ST_VCENTER is a
+			// vertical/rotated TEXT ORIENTATION flag, not "centre vertically",
+			// and "should not be mixed with any other styles"). This control and
+			// its siblings below (s3Credits/s4RoleName/s4Credits) were the only
+			// ones in the whole crest that combined ST_VCENTER with another
+			// style and rendered fully blank in testing - real vertical
+			// centring is done in script instead (Waldo_fnc_initHud), the same
+			// ctrlTextHeight technique roleText already uses.
 			class s3RoleName: RscText {
 				idc = 1223;
 				text = "";
@@ -376,7 +385,7 @@ class RscTitles
 				h = 0.024 * safezoneH;
 				colorBackground[] = {0,0,0,0};
 				colorText[] = {0.95, 0.93, 0.86, 1};
-				style = ST_LEFT + ST_VCENTER;
+				style = ST_LEFT;
 				font = "PuristaBold";
 				sizeEx = 0.018 * safezoneH;
 				shadow = 1;
@@ -390,7 +399,7 @@ class RscTitles
 				h = 0.018 * safezoneH;
 				colorBackground[] = {0,0,0,0};
 				colorText[] = WALDO_ACCENT;   // tinted to the role colour at runtime
-				style = ST_LEFT + ST_VCENTER;
+				style = ST_LEFT;
 				font = "PuristaMedium";
 				sizeEx = 0.015 * safezoneH;
 				shadow = 1;
@@ -417,6 +426,7 @@ class RscTitles
 				colorBackground[] = WALDO_CASING;
 				style = 0;
 			};
+			// ST_LEFT alone - see s3RoleName's comment above, same bug.
 			class s4RoleName: RscText {
 				idc = 1232;
 				text = "";
@@ -426,7 +436,7 @@ class RscTitles
 				h = 0.024 * safezoneH;
 				colorBackground[] = {0,0,0,0};
 				colorText[] = {0.95, 0.93, 0.86, 1};
-				style = ST_LEFT + ST_VCENTER;
+				style = ST_LEFT;
 				font = "PuristaBold";
 				sizeEx = 0.018 * safezoneH;
 				shadow = 1;
@@ -440,7 +450,7 @@ class RscTitles
 				h = 0.02 * safezoneH;
 				colorBackground[] = {0,0,0,0};
 				colorText[] = WALDO_ACCENT;   // tinted to the role colour at runtime
-				style = ST_LEFT + ST_VCENTER;
+				style = ST_LEFT;
 				font = "PuristaMedium";
 				sizeEx = 0.015 * safezoneH;
 				shadow = 1;

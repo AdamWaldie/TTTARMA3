@@ -162,8 +162,28 @@ if (_hasCredits) then {
 	// fighting to set the same control's text.
 	private _creditsTickerToken = (_display getVariable ["Waldo_creditsTickerToken", 0]) + 1;
 	_display setVariable ["Waldo_creditsTickerToken", _creditsTickerToken];
-	[_credits, _style, _display, _creditsTickerToken] spawn {
-		params ["_credits", "_style", "_display", "_token"];
+	// Styles 3/4's credits line is one of the ST_LEFT-only controls (see the
+	// hpp comment above s3RoleName) - it needs the same real
+	// ctrlTextHeight-based vertical centring roleText uses, redone every tick
+	// since the text content (and so its rendered height) changes as credits
+	// go up. Every other style's credit control keeps ST_CENTER+ST_VCENTER,
+	// which isn't affected by that bug.
+	private _vX = 0; private _vY = 0; private _vW = 0; private _vBoxH = 0;
+	if (_style == 3) then {
+		_vX = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.152 * safezoneH);
+		_vY = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.078 * safezoneH);
+		_vW = 0.144 * safezoneH;
+		_vBoxH = 0.018 * safezoneH;
+	};
+	if (_style == 4) then {
+		_vX = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.142 * safezoneH);
+		_vY = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.077 * safezoneH);
+		_vW = 0.134 * safezoneH;
+		_vBoxH = 0.02 * safezoneH;
+	};
+	private _needsVCenter = (_style in [3, 4]);
+	[_credits, _style, _display, _creditsTickerToken, _needsVCenter, _vX, _vY, _vW, _vBoxH] spawn {
+		params ["_credits", "_style", "_display", "_token", "_needsVCenter", "_vX", "_vY", "_vW", "_vBoxH"];
 		while {
 			!isNull ctrlParent _credits
 			&& {alive player}
@@ -172,11 +192,17 @@ if (_hasCredits) then {
 			private _pts = player getVariable ["points", 0];
 			private _text = switch (_style) do {
 				case 1: { format ["%1 cr", _pts] };        // Signal Ring tag
+				case 5: { format ["%1", _pts] };            // Satellite Chip pill - narrow, no room for "credits"
 				case 6: { format ["%1", _pts] };            // IFF squawk code
 				case 7: { format ["%1 CR", _pts] };          // Contact Blip coord readout
 				default { format ["%1 credits", _pts] };
 			};
 			_credits ctrlSetText _text;
+			if (_needsVCenter) then {
+				private _h = ctrlTextHeight _credits;
+				_credits ctrlSetPosition [_vX, _vY + ((_vBoxH - _h) / 2), _vW, _h];
+				_credits ctrlCommit 0;
+			};
 			sleep 0.5;
 		};
 	};
@@ -184,8 +210,37 @@ if (_hasCredits) then {
 
 // Style 3/4 always show the role's name (identity, not shop status) - set
 // once here since it never changes for the lifetime of this HUD instance.
-if (_style == 3) then { (_display displayCtrl 1223) ctrlSetText _role; };
-if (_style == 4) then { (_display displayCtrl 1232) ctrlSetText _role; };
+// Real vertical centring (ctrlTextHeight), same reason/technique as the
+// credits line just above - these are the ST_LEFT-only controls, see the
+// hpp comment above s3RoleName.
+if (_style == 3) then {
+	private _c = _display displayCtrl 1223;
+	_c ctrlSetText _role;
+	private _h = ctrlTextHeight _c;
+	private _boxY = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.054 * safezoneH);
+	private _boxH = 0.024 * safezoneH;
+	_c ctrlSetPosition [
+		((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.152 * safezoneH),
+		_boxY + ((_boxH - _h) / 2),
+		0.144 * safezoneH,
+		_h
+	];
+	_c ctrlCommit 0;
+};
+if (_style == 4) then {
+	private _c = _display displayCtrl 1232;
+	_c ctrlSetText _role;
+	private _h = ctrlTextHeight _c;
+	private _boxY = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.053 * safezoneH);
+	private _boxH = 0.024 * safezoneH;
+	_c ctrlSetPosition [
+		((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.142 * safezoneH),
+		_boxY + ((_boxH - _h) / 2),
+		0.134 * safezoneH,
+		_h
+	];
+	_c ctrlCommit 0;
+};
 
 // Top bar keybind row: a normal game gives no other indication of what's
 // bound, so list whatever's actually relevant to this role (Waldo_keyHintsFor,

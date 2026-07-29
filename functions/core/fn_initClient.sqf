@@ -124,6 +124,11 @@ if (!(missionNamespace getVariable ["gameOn", false]) && {_liveAt != _introPlaye
 	diag_log "[Waldo][client] intro music: skipped, round already live (JIP) or already played for this round";
 };
 
+// WMP notification-card system (functions/uinotify/, vendored from
+// WaldosMissionPack): the "clear stuck UI" safety valve. Safe/idempotent to
+// call every init - it no-ops if already installed.
+[] call Waldo_fnc_SetupUiCleanupAction;
+
 // Obscure nametags (ACE)
 ACE_NO_RECOGNIZE = true; publicVariable "ACE_NO_RECOGNIZE";
 

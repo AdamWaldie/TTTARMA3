@@ -187,6 +187,34 @@ class CfgFunctions
 			class registerActivationSlot {}; // Waldo_fnc_registerActivationSlot (shared: slot/backlog assignment)
 		};
 
+		// Vendored from AdamWaldie/WaldosMissionPack (MissionScripts/MissionFlowAndUi,
+		// commit 3109e52) - the reusable WMP notification-card system, unmodified.
+		// Deliberately its own class/folder (not merged into `ui` above) so future
+		// pulls from the source repo are a clean file copy, not a merge against
+		// this mission's own UI code. Class names keep the source's PascalCase
+		// Waldo_fnc_* API exactly (SQF identifiers are case-insensitive, so this
+		// doesn't collide with this mission's own lowerCamelCase convention) so
+		// they match that pack's own documentation/wiki. Only the two files that
+		// are pure vanilla SQF with no CBA/ACE calls at all were worth pulling in
+		// for what this mission actually needs (queued/placed notification
+		// cards); fn_setupUiCleanupAction.sqf is the one exception and is safe
+		// regardless - it already detects ACE's absence and falls back to a
+		// vanilla addAction on its own.
+		class uinotify
+		{
+			file = "functions\uinotify";
+			class ShowUiNotification {};        // Waldo_fnc_ShowUiNotification
+			class DismissUiNotification {};     // Waldo_fnc_DismissUiNotification
+			class DrainUiNotificationQueue {};  // Waldo_fnc_DrainUiNotificationQueue
+			class ResolveUiPanelPlacement {};   // Waldo_fnc_ResolveUiPanelPlacement
+			class ReflowUiPanels {};            // Waldo_fnc_ReflowUiPanels
+			class SetUiPanelPlacement {};       // Waldo_fnc_SetUiPanelPlacement
+			class SetLocalUiPanelPlacement {};  // Waldo_fnc_SetLocalUiPanelPlacement
+			class ClearUiPanels {};             // Waldo_fnc_ClearUiPanels
+			class CleanupTransientUi {};        // Waldo_fnc_CleanupTransientUi
+			class SetupUiCleanupAction {};      // Waldo_fnc_SetupUiCleanupAction (ACE self-action, vanilla addAction fallback)
+		};
+
 		class debug
 		{
 			file = "functions\debug";

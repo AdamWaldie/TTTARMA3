@@ -1,26 +1,35 @@
 //////////////////////////////////////////////////////////////////
 // Waldo_fnc_spawnDecoyCorpse
 // SERVER: spawns a fake corpse to sell a Traitor's Dead Ringer as a real death.
-// Dressed from the current spawn-loadout pool, tagged role "Innocent" (so any
-// Identify/DNA info gathered from it is misleading), and given the same
-// "Identify Body" action as a real corpse. Deletes itself after a while so it
-// doesn't linger forever once the scene has moved on.
+// Wears the REAL player's exact loadout (uniform/vest/backpack/headgear/
+// weapons/items, via _loadout - see getUnitLoadout in Waldo_fnc_deadRingerTrigger)
+// when one is given, so a body found at the drop site is visually identical to
+// the player who was just standing there - falls back to a random pick from
+// the spawn-loadout pool only if no loadout is passed (kept for any future
+// caller that doesn't have a specific player to clone). Tagged role
+// "Innocent" (so any Identify/DNA info gathered from it is misleading), and
+// given the same "Identify Body" action as a real corpse. Deletes itself
+// after a while so it doesn't linger forever once the scene has moved on.
 //
-// params: [_pos, _dir]
+// params: [_pos, _dir, _loadout]
 //////////////////////////////////////////////////////////////////
 
 if (!isServer) exitWith {};
-params ["_pos", ["_dir", 0]];
+params ["_pos", ["_dir", 0], ["_loadout", []]];
 
 private _grp = createGroup [civilian, true];
 _grp createUnit ["C_man_1", _pos, [], 0, "NONE"];
 private _decoy = (units _grp) select 0;
 if (isNull _decoy) exitWith { diag_log "[Waldo][server] spawnDecoyCorpse: spawn failed"; };
 
-private _uni  = missionNamespace getVariable ["uniformsConfig", []];
-private _vest = missionNamespace getVariable ["vestsConfig", []];
-if (count _uni  > 0) then { _decoy forceAddUniform (selectRandom _uni); };
-if (count _vest > 0) then { _decoy addVest (selectRandom _vest); };
+if (count _loadout > 0) then {
+	_decoy setUnitLoadout _loadout;
+} else {
+	private _uni  = missionNamespace getVariable ["uniformsConfig", []];
+	private _vest = missionNamespace getVariable ["vestsConfig", []];
+	if (count _uni  > 0) then { _decoy forceAddUniform (selectRandom _uni); };
+	if (count _vest > 0) then { _decoy addVest (selectRandom _vest); };
+};
 
 _decoy setDir _dir;
 _decoy setVariable ["role", "Innocent", true];       // misdirection - never the truth

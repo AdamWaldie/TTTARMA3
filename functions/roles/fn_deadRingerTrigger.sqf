@@ -18,7 +18,10 @@ _unit setVariable ["Waldo_deadRingerTriggered", true];
 _unit setVariable ["Waldo_deadRingerArmed", false];
 
 private _dropPos = getPosATL _unit;
-[_dropPos, getDir _unit] remoteExec ["Waldo_fnc_spawnDecoyCorpse", 2];
+// getUnitLoadout, not a random uniform/vest pick - the decoy has to be
+// visually identical to the real player (weapons, backpack, headgear,
+// everything), not just "dressed like someone."
+[_dropPos, getDir _unit, getUnitLoadout _unit] remoteExec ["Waldo_fnc_spawnDecoyCorpse", 2];
 
 // Hunt for a spot inside the arena that no OTHER living player currently has
 // eyes on. Falls back to the drop position (better than nothing) if 40

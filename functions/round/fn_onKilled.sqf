@@ -54,18 +54,25 @@ if (!isNull _culprit && {_culprit != _unit}) then {
 	// This used to have zero observable effect for a tester who didn't
 	// personally go DNA-scan the corpse afterward - the frame itself worked,
 	// there was just no confirmation anywhere that it had, which read as
-	// "doesn't seem to work." A private hint to the culprit closes that gap.
-	// Also excludes Detectives from the frame pool now, matching the shop
-	// tooltip's actual wording ("an innocent bystander") - it used to only
-	// exclude other Traitors, so it could occasionally frame a Detective.
+	// "doesn't seem to work." A private notification card to the culprit
+	// (Waldo_fnc_ShowUiNotification) closes that gap. Also excludes Detectives
+	// from the frame pool now, matching the shop tooltip's actual wording
+	// ("an innocent bystander") - it used to only exclude other Traitors, so
+	// it could occasionally frame a Detective.
 	private _dnaOn = _culprit;
 	if (_culprit getVariable ["Waldo_falseFlag", false]) then {
 		private _frames = allPlayers select { alive _x && {!(_x in _traitors)} && {!(_x in _detectives)} && {_x != _culprit} };
 		if (count _frames > 0) then {
 			_dnaOn = selectRandom _frames;
-			[format ["False Flag triggered - %1's DNA was left at the scene instead of yours.", name _dnaOn]] remoteExec ["hint", _culprit];
+			[
+				"FALSE FLAG TRIGGERED", format ["%1's DNA was left at the scene instead of yours.", name _dnaOn],
+				"SUCCESS", 8, "TOP_RIGHT", "FALSEFLAG", "TRAITOR"
+			] remoteExec ["Waldo_fnc_ShowUiNotification", _culprit];
 		} else {
-			["False Flag didn't find anyone to frame - no one else was around."] remoteExec ["hint", _culprit];
+			[
+				"FALSE FLAG FAILED", "No one else was around to frame - your own DNA was left at the scene.",
+				"WARNING", 8, "TOP_RIGHT", "FALSEFLAG", "TRAITOR"
+			] remoteExec ["Waldo_fnc_ShowUiNotification", _culprit];
 		};
 		_culprit setVariable ["Waldo_falseFlag", false, true];
 	};

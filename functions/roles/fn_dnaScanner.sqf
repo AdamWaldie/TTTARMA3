@@ -46,17 +46,25 @@ if (isNull _target) then {
 	if (count _nearby > 0) then { _target = _nearby select 0; };
 };
 
-if (isNull _target) exitWith { hint "Aim at a body or a piece of evidence."; false };
-if ((player distance _target) > 4) exitWith { hint "Move closer to the evidence."; false };
+private _warn = {
+	params ["_msg"];
+	["DNA SCANNER", _msg, "WARNING", 3, "BOTTOM_LEFT", "DNA_SAMPLE", "DNA SCANNER"] call Waldo_fnc_ShowUiNotification;
+};
+
+if (isNull _target) exitWith { ["Aim at a body or a piece of evidence."] call _warn; false };
+if ((player distance _target) > 4) exitWith { ["Move closer to the evidence."] call _warn; false };
 // A living person cannot be sampled - only bodies and tagged objects carry DNA.
-if (_target isKindOf "CAManBase" && {alive _target}) exitWith { hint "Aim at a body, not a living person."; false };
+if (_target isKindOf "CAManBase" && {alive _target}) exitWith { ["Aim at a body, not a living person."] call _warn; false };
 
 private _source = _target getVariable ["Waldo_killerDNA", objNull];
-if (isNull _source) exitWith { hint "No usable DNA here."; false };
+if (isNull _source) exitWith { ["No usable DNA here."] call _warn; false };
 
 private _charges = (player getVariable ["Waldo_dnaScannerCharges", 3]) - 1;
 player setVariable ["Waldo_dnaScannerCharges", _charges, true];
-hint format ["Sampling DNA... (%1 use%2 left)", _charges, ["s", ""] select (_charges == 1)];
+[
+	"DNA SCANNER", format ["Sampling DNA... (%1 use%2 left)", _charges, ["s", ""] select (_charges == 1)],
+	"INFO", 2, "BOTTOM_LEFT", "DNA_SAMPLE", "DNA SCANNER"
+] call Waldo_fnc_ShowUiNotification;
 
 // Y is handled unscheduled (called directly from the KeyDown handler), so
 // everything below (both early sleeps and the tracking loop) has to live in
@@ -64,7 +72,6 @@ hint format ["Sampling DNA... (%1 use%2 left)", _charges, ["s", ""] select (_cha
 [_target, _source] spawn {
 	params ["_target", "_source"];
 	sleep 2;
-	hint "";
 
 	private _enhanced = player getVariable ["Waldo_enhancedScanner", false];
 
@@ -73,11 +80,21 @@ hint format ["Sampling DNA... (%1 use%2 left)", _charges, ["s", ""] select (_cha
 	private _misChance = (_contam * (if (_enhanced) then { 0.07 } else { 0.15 })) min 0.85;
 	private _tracked = _source;
 	if (_contam > 0 && {random 1 < _misChance}) then {
-		private _decoyPool = allPlayers select { alive _x && {_x != _source} };
+		// _decoyPool must also exclude the scanning player, not just the real
+		// source - fn_dnaContaminate.sqf already keeps a Detective's own
+		// presence from inflating _contam, but this pool used to let a
+		// misdirection land on "player" anyway, and a Detective is by
+		// definition within 4m of whatever they're scanning. With few living
+		// players left (the exact point this matters most), that made the
+		// scanner "usually" track the detective holding it.
+		private _decoyPool = allPlayers select { alive _x && {_x != _source} && {_x != player} };
 		if (count _decoyPool > 0) then { _tracked = selectRandom _decoyPool; };
 	};
 	if (_contam > 1) then {
-		hint format ["Sample contaminated (%1 people were near the scene) - the reading may be unreliable.", _contam];
+		[
+			"DNA SCANNER", format ["Sample contaminated (%1 people were near the scene) - the reading may be unreliable.", _contam],
+			"WARNING", 4, "BOTTOM_LEFT", "DNA_CONTAM", "DNA SCANNER"
+		] call Waldo_fnc_ShowUiNotification;
 		sleep 1.5;
 	};
 
@@ -97,14 +114,18 @@ hint format ["Sampling DNA... (%1 use%2 left)", _charges, ["s", ""] select (_cha
 			private _wTxt = if (_dw != "" && {isClass (configFile >> "CfgWeapons" >> _dw)}) then {
 				" - " + (getText (configFile >> "CfgWeapons" >> _dw >> "displayName"))
 			} else { "" };
-			_forensics = format ["<br/><t size='0.8' color='#02b3ff'>Died %1s ago%2</t>", round (time - _dt), _wTxt];
+			_forensics = format ["<br/><t size='0.8' color='#9FB3C8'>Died %1s ago%2</t>", round (time - _dt), _wTxt];
 		};
 	};
 
 	private _endAt = time + _dur;
 	private _dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
-	// Also stop the moment the round ends, so this doesn't keep overwriting
-	// hintSilent against the round-end MVP celebration banner.
+	// This is its own notification channel/display now, not hintSilent, so it
+	// no longer needs the gameOn race-guard the old hintSilent version did
+	// (that was specifically to stop clobbering Waldo_fnc_mvpCelebrate's
+	// round-end banner on the ONE shared hint channel) - still stops the loop
+	// at round end on its own merits, though, since tracking a suspect past
+	// the round being over is meaningless.
 	while {
 		time < _endAt
 		&& {!isNull _tracked} && {alive _tracked} && {alive player}
@@ -112,24 +133,17 @@ hint format ["Sampling DNA... (%1 use%2 left)", _charges, ["s", ""] select (_cha
 	} do {
 		private _d = round (player distance _tracked);
 		private _c = _dirs select (floor ((((player getDir _tracked) + 22.5) % 360) / 45));
-		hintSilent parseText format [
-			"<t size='1.2' color='#02b3ff'>DNA Suspect</t><br/><t size='1.4'>~%1 m</t>  <t size='1.1'>%2</t><br/><t size='0.8' color='#9a9a9a'>tracking %3s</t>%4",
-			_d, _c, round (_endAt - time), _forensics
-		];
+		[
+			"DNA SUSPECT",
+			format ["~%1 m  %2<br/><t size='0.8' color='#9FB3C8'>tracking %3s</t>%4", _d, _c, round (_endAt - time), _forensics],
+			"INFO", 0, "BOTTOM_LEFT", "DNA_TRACK", "DNA SCANNER"
+		] call Waldo_fnc_ShowUiNotification;
 		sleep 1;
 	};
-	// Gated on gameOn too, same as the while loop above and for the same
-	// reason: without this, a trace that ends (suspect already dead) right as
-	// the round does still fires this hintSilent - including the final
-	// clearing hintSilent "" - on the same channel Waldo_fnc_mvpCelebrate is
-	// using for the round-end MVP banner, and whichever one runs last wins.
-	// That race is exactly what made the MVP banner intermittently not show.
-	if (missionNamespace getVariable ["gameOn", true]) then {
-		if (!isNull _tracked && {!alive _tracked}) then {
-			hintSilent parseText "<t size='1.2' color='#02b3ff'>Suspect is down.</t>";
-			sleep 3;
-		};
-		hintSilent "";
+	if (!isNull _tracked && {!alive _tracked} && {missionNamespace getVariable ["gameOn", true]}) then {
+		["DNA SUSPECT", "Suspect is down.", "SUCCESS", 4, "BOTTOM_LEFT", "DNA_TRACK", "DNA SCANNER"] call Waldo_fnc_ShowUiNotification;
+	} else {
+		["DNA_TRACK"] call Waldo_fnc_DismissUiNotification;
 	};
 };
 

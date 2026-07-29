@@ -318,9 +318,15 @@ player addEventHandler ["HandleDamage", {
 	if (!isNull _instigator && {_instigator != _unit}) then {
 		_unit setVariable ["Waldo_lastDamager", _instigator, true];
 	};
-	if ((_unit getVariable ["Waldo_deadRingerArmed", false]) && {((damage _unit) + _damage) >= 1}) then {
+	// Any damage while armed triggers it now, not just a near-lethal hit - and
+	// the return is 0, not a 0.9 cap: Waldo_fnc_deadRingerTrigger now
+	// teleports the real unit away entirely rather than leaving them ragdolled
+	// in place, so "you weren't actually there" means no damage at all, not a
+	// reduced amount (a 0.9 cap on a graze that would've only done 0.05 in the
+	// first place used to make a minor hit WORSE).
+	if ((_unit getVariable ["Waldo_deadRingerArmed", false]) && {_damage > 0}) then {
 		[_unit] call Waldo_fnc_deadRingerTrigger;
-		0.9
+		0
 	} else {
 		_damage
 	}

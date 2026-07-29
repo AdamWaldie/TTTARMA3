@@ -13,7 +13,9 @@ if (isNull _station) exitWith {};
 private _pos = getPosATL _station;
 private _owner = _station getVariable ["Waldo_fakeOwner", objNull];
 deleteVehicle _station;
-private _bomb = createVehicle ["Bo_Mk82", _pos, [], 0, "NONE"];
+// DemoCharge_Remote_Ammo, not Bo_Mk82 (a full 500lb aerial bomb) - see
+// fn_c4Charge.sqf, which shares this same blast.
+private _bomb = createVehicle ["DemoCharge_Remote_Ammo", _pos, [], 0, "NONE"];
 // Same attribution fix as fn_c4Charge.sqf's charge - without this, the trap's
 // owner never gets credited (or karma-penalized, if it catches a teammate) for
 // the kill, and the corpse carries no DNA at all.

@@ -28,7 +28,22 @@ Saving = 0;
 
 respawn = 2;
 respawnDelay = 5800;
-respawnTemplates[] = {"Spectator"}; 
+respawnTemplates[] = {"Spectator"};
+
+// Corpses carry the "Identify Body" scroll action (Waldo_fnc_onKilled /
+// Waldo_fnc_identifyBody) and are a core part of this gamemode's actual
+// deduction gameplay - the engine's own corpse-cleanup defaults are tuned
+// for a normal shooter (a handful of seconds after a low corpseLimit is
+// exceeded) and were silently deleting bodies, action and all, well before
+// anyone could realistically reach and use them. Nothing in this mission
+// ever overrode these, so it was running on those defaults the whole time.
+// corpseLimit comfortably exceeds maxPlayers (128) so the count-based
+// trigger never fires; the min/max removal times give a corpse the length
+// of a full round (base + bonuses can run several minutes) before the
+// engine's own timer-based cleanup can claim it either.
+corpseLimit = 150;
+corpseRemovalMinTime = 900;
+corpseRemovalMaxTime = 1200;
 
 class CfgDebriefing
 {  
@@ -146,6 +161,7 @@ class CfgFunctions
 			class identifyBody {};      // Waldo_fnc_identifyBody (server: call in a corpse)
 			class dnaContaminate {};    // Waldo_fnc_dnaContaminate (server: witness/contamination tracking)
 			class spawnDecoyCorpse {};  // Waldo_fnc_spawnDecoyCorpse (server: Dead Ringer decoy)
+			class flowerSpawn {};       // Waldo_fnc_flowerSpawn (server: creates one networked flower)
 		};
 
 		class ui

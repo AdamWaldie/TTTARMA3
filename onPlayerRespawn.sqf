@@ -33,6 +33,11 @@ _newUnit setVariable ["role", _role, true];
 _newUnit setVariable ["points", (_oldUnit getVariable ["points", 0]), true];
 _newUnit setVariable ["Waldo_roundKills", (_oldUnit getVariable ["Waldo_roundKills", 0]), true];
 _newUnit setVariable ["Waldo_purchases", (_oldUnit getVariable ["Waldo_purchases", []])];
+// Armed-but-not-yet-consumed passives: without carrying these across, dying
+// with False Flag armed (or DNA Scanner charges left) after a revive silently
+// lost the arm state / remaining uses the player already paid for.
+_newUnit setVariable ["Waldo_falseFlag", (_oldUnit getVariable ["Waldo_falseFlag", false]), true];
+_newUnit setVariable ["Waldo_dnaScannerCharges", (_oldUnit getVariable ["Waldo_dnaScannerCharges", 0]), true];
 _newUnit setVariable ["tested", (_oldUnit getVariable ["tested", false]), true];
 _newUnit setVariable ["Waldo_activationSlots", (_oldUnit getVariable ["Waldo_activationSlots", [-1, -1, -1]])];
 _newUnit setVariable ["Waldo_activationBacklog", (_oldUnit getVariable ["Waldo_activationBacklog", []])];
@@ -49,9 +54,12 @@ _newUnit setVariable ["Waldo_purchaseSeq", (_oldUnit getVariable ["Waldo_purchas
 _newUnit addMPEventHandler ["MPKilled", { _this call Waldo_fnc_onKilled; }];
 _newUnit addEventHandler ["HandleDamage", {
 	params ["_unit", "_selection", "_damage"];
-	if ((_unit getVariable ["Waldo_deadRingerArmed", false]) && {((damage _unit) + _damage) >= 1}) then {
+	// Kept in sync with the same HandleDamage handler in fn_initClient.sqf -
+	// any damage while armed triggers it, and the return is 0 since
+	// Waldo_fnc_deadRingerTrigger now teleports the unit away entirely.
+	if ((_unit getVariable ["Waldo_deadRingerArmed", false]) && {_damage > 0}) then {
 		[_unit] call Waldo_fnc_deadRingerTrigger;
-		0.9
+		0
 	} else {
 		_damage
 	}

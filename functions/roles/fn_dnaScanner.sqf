@@ -18,10 +18,33 @@
 // extends the track duration/floor, and adds forensic detail (time since death,
 // weapon used) when scanning a body.
 //
-// Returns true when a sample was taken (consuming the item), false otherwise.
+// Limited uses: Waldo_dnaScannerCharges is set to 3 on purchase (see the DNA
+// Scanner catalog entry in fn_initShops.sqf) and decremented on every
+// successful sample below. The item's activation slot only actually frees up
+// (Waldo_fnc_useActivationSlot's contract: return true = consumed) once
+// charges hit 0 - a failed attempt (no target, out of range, etc) never
+// spends a charge at all, only a real sample does.
+//
+// Returns true once charges are exhausted (consuming the item), false
+// otherwise (including every early-exit below, none of which spend a charge).
 //////////////////////////////////////////////////////////////////
 
 private _target = cursorTarget;
+
+// cursorTarget is unreliable for small, loosely-simulated evidence (dropped
+// gear, the C4 decoy prop) - it's tuned to pick out AI-relevant targets like
+// full character bodies, which is why fn_removeBody.sqf/fn_revive.sqf/
+// fn_tester.sqf (corpse-only) never hit this problem but this scanner - which
+// also has to pick up WeaponHolderSimulated/GroundWeaponHolder and the C4
+// decoy prop - could come up completely empty even when aimed at something in
+// range. Fall back to the nearest DNA-bearing object when the cursor itself
+// finds nothing at all; this can never resolve to a living player, since a
+// living player never carries Waldo_killerDNA in the first place.
+if (isNull _target) then {
+	private _nearby = nearestObjects [player, ["CAManBase", "WeaponHolderSimulated", "GroundWeaponHolder", "Land_Suitcase_F"], 4];
+	_nearby = _nearby select { !isNull (_x getVariable ["Waldo_killerDNA", objNull]) };
+	if (count _nearby > 0) then { _target = _nearby select 0; };
+};
 
 if (isNull _target) exitWith { hint "Aim at a body or a piece of evidence."; false };
 if ((player distance _target) > 4) exitWith { hint "Move closer to the evidence."; false };
@@ -31,7 +54,9 @@ if (_target isKindOf "CAManBase" && {alive _target}) exitWith { hint "Aim at a b
 private _source = _target getVariable ["Waldo_killerDNA", objNull];
 if (isNull _source) exitWith { hint "No usable DNA here."; false };
 
-hint "Sampling DNA...";
+private _charges = (player getVariable ["Waldo_dnaScannerCharges", 3]) - 1;
+player setVariable ["Waldo_dnaScannerCharges", _charges, true];
+hint format ["Sampling DNA... (%1 use%2 left)", _charges, ["s", ""] select (_charges == 1)];
 
 // Y is handled unscheduled (called directly from the KeyDown handler), so
 // everything below (both early sleeps and the tracking loop) has to live in
@@ -108,4 +133,4 @@ hint "Sampling DNA...";
 	};
 };
 
-true
+_charges <= 0

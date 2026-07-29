@@ -282,9 +282,9 @@ Waldo_detectiveShop = [
 		"Aim at a player or body within 3m and press your assigned key to reveal their role"],
 
 	["DNA Scanner", 2, "activation",
-		{},
+		{ player setVariable ["Waldo_dnaScannerCharges", 3, true]; },
 		{ [] call Waldo_fnc_dnaScanner },
-		"Aim at a body and press your assigned key to sample the killer's DNA, then track them down"],
+		"Aim at a body and press your assigned key to sample the killer's DNA, then track them down (3 uses)"],
 
 	["Enhanced Scanner", 3, "passive",
 		{ player setVariable ["Waldo_enhancedScanner", true, true]; },

@@ -119,12 +119,16 @@ _content ctrlSetStructuredText parseText format [
 
 private _visibleW = safeZoneW;
 private _visibleH = safeZoneH;
+// Capped at the round timer bar's own width (0.36 * safezoneW, see
+// topBarTimerBG in ui/TTTHud.hpp) or narrower - CENTER/default (used by
+// "TOP" placements like the airdrop card) used to run out to 0.44-0.48W,
+// nearly half the screen, dwarfing the bar it sits right underneath.
 private _panelW = switch (_placement) do {
     case "BOTTOM_RIGHT": {_visibleW * 0.235};
     case "TOP_RIGHT": {_visibleW * 0.28};
     case "BOTTOM_LEFT": {_visibleW * 0.34};
-    case "CENTER": {_visibleW * 0.44};
-    default {_visibleW * 0.48};
+    case "CENTER": {_visibleW * 0.30};
+    default {_visibleW * 0.28};
 };
 private _padX = _visibleW * 0.010;
 private _padY = _visibleH * 0.008;

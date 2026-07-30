@@ -133,7 +133,15 @@ class RscTitles
 				y = (safezoneH + safezoneY) - (0.185 * safezoneH);
 				w = 0.15 * safezoneH;
 				h = 0.15 * safezoneH;
-				color = [1,1,1,0.5];
+				// Raised from 0.5. At 0.5 this disc was half-transparent, so what
+				// sat behind the role letter was whatever terrain happened to be
+				// there - near-invisible against bright ground, a grey smudge
+				// against dark. The medallion never read as a solid object and the
+				// letter's legibility changed shot to shot. At 0.72 it's a
+				// consistent pale face on any background, which is also closer to
+				// the solid disc of the GMod-TTT badge this is an homage to - so it
+				// reads as more like the original reference, not less.
+				color = [1,1,1,0.72];
 			};
 			class roleTextBG: RscPicture
 			{
@@ -172,7 +180,12 @@ class RscTitles
 				// (63%, no margin at all against the ring) to keep some breathing
 				// room.
 				sizeEx = 0.088 * safezoneH;
-				shadow = false;
+				// Was false. This is the only text control in the whole HUD without
+				// a shadow, and it's the largest one - the role letter sits over a
+				// pale disc whose own brightness varies with the terrain behind it,
+				// so an unshadowed glyph had nothing holding its edge. Every other
+				// label here already uses shadow = 1.
+				shadow = 1;
 				colorBackground[] = {0,0,0,0};
 			};
 			// Credits readout: a proper casing pill (shadow + dark base + accent line)
@@ -197,6 +210,26 @@ class RscTitles
 				colorBackground[] = WALDO_HEADERBG;
 				style = 0;
 			};
+			// The one piece of amber on Original. Every other style carries a fixed
+			// amber mark as the thread that ties the crest family together, and
+			// Original had none - it was the odd one out on a shelf of nine. A
+			// hairline along the pill's top edge is the smallest thing that joins
+			// it to the rest: it doubles as the top bevel every other panel in this
+			// HUD already has (see s8Highlight), it doesn't touch the silhouette,
+			// and it leaves the role-tinted accent line at the pill's bottom - the
+			// part that actually carries Original's identity - exactly as it was.
+			// Part of the credits group, so it hides with the pill for roles that
+			// have no credits rather than leaving a stray line under the badge.
+			class roleCreditsHighlight: RscText
+			{
+				idc = 1006;
+				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
+				y = (safezoneH + safezoneY) - (0.225 * safezoneH);
+				w = 0.15 * safezoneH;
+				h = 0.0025 * safezoneH;
+				colorBackground[] = WALDO_ACCENT;   // fixed amber, never role-tinted
+				style = 0;
+			};
 			class roleCreditsAccent: RscText
 			{
 				idc = 1003;
@@ -216,7 +249,11 @@ class RscTitles
 				w = 0.15 * safezoneH;
 				h = 0.03 * safezoneH;
 				colorBackground[] = {0,0,0,0};
-				colorText[] = {1,1,1,1};
+				// Was pure white, the only pure-white text anywhere in this HUD -
+				// next to the cream every other label uses it read colder and
+				// cheaper than its surroundings. Same cream now. Deliberately still
+				// not role-tinted (see fn_initHud.sqf's note on why).
+				colorText[] = {0.95, 0.93, 0.86, 1};
 				style = ST_CENTER;
 				font = "PuristaBold";
 				sizeEx = 0.021 * safezoneH;
@@ -224,8 +261,10 @@ class RscTitles
 			};
 
 			// ====================================================================
-			// Role crest styles 1-7. Style 0 above is grandfathered and must stay
-			// untouched - it is the original GMod-TTT homage, textures and all.
+			// Role crest styles 1-7. Style 0 above is the original GMod-TTT homage
+			// and stays structurally as it always was - it has had a light polish
+			// pass (each change is commented at the control it touches) but its
+			// medallion-plus-pill composition is not up for redesign.
 			//
 			// Everything from here down is a deliberate break from how styles 1-7
 			// used to work. They were decorations pinned around style 0's badge

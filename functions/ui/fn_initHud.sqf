@@ -39,10 +39,15 @@ private _color = [_role] call Waldo_roleColor;
 // Selectable role crest style - entirely a per-player preference, not a
 // server/lobby setting (there is no RoleCrestStyle mission param).
 //
-// 0 = Original: the roleShadow/roleTextBG*/roleCredits* block in TTTHud.hpp,
-//     grandfathered and untouched - the classic GMod-TTT homage, textures and
-//     all. It is the ONLY style that uses the badge ring (idc 999/1000/1001
-//     and its roleShadow, 1272).
+// 0 = Original: the roleShadow/roleTextBG*/roleCredits* block in TTTHud.hpp -
+//     the classic GMod-TTT homage, textures and all, and the ONLY style that
+//     uses the badge ring (idc 999/1000/1001 and its roleShadow, 1272). It has
+//     had a light polish pass (a solider face disc, a shadowed letter, cream
+//     instead of pure-white balance text, real vertical centring in its pill,
+//     one amber hairline) but nothing structural: same medallion, same
+//     full-width pill beneath it, same wording, same proportions. Its identity
+//     is the thing being protected here, not its exact pixels - the brief was
+//     to improve its look and feel without losing what it is.
 // 1-7 = seven self-contained crests, each with its own footprint and theme
 //     (Rank Bar, Stencil Column, Service Pips, Punch Card, Bracket Sight,
 //     Layered Chip, Ledger Slip - see the big comment block above them in
@@ -140,7 +145,7 @@ private _styleAlways = [
 	[1280, 1281, 1282, 1287, 1283, 1284, 1285]                       // 8 - Stamped Tag
 ];
 private _styleCredits = [
-	[1002, 1003, 1004, 1005],   // 0 - full credits pill (shadow/bg/accent/text)
+	[1002, 1003, 1004, 1005, 1006],   // 0 - full credits pill (shadow/bg/highlight/accent/text)
 	[1304, 1305],                // 1 - amber divider + balance in the right cell
 	[1314, 1315],                // 2 - amber rule + balance under it
 	[1327],                      // 3 - balance in the corner opposite the pips
@@ -252,12 +257,17 @@ if (_hasCredits) then {
 	// exact original behaviour (which did tint 1002), kept because it's a real
 	// contrast fix rather than a style change.
 	//
-	// Styles 1-8's controls are all ST_CENTER with no ST_VCENTER (that flag is
+	// Every one of these controls is ST_CENTER with no ST_VCENTER (that flag is
 	// a vertical/rotated TEXT ORIENTATION mode, not "centre vertically" - see
-	// the long comment above roleText in TTTHud.hpp), so they need the same
-	// real ctrlTextHeight centring the letters get, redone every tick since the
-	// text's rendered height changes as the number grows. Style 0's pill is
-	// left exactly as it always was.
+	// the long comment above roleText in TTTHud.hpp), so they need the same real
+	// ctrlTextHeight centring the letters get, redone every tick since the
+	// text's rendered height changes as the number grows.
+	//
+	// Style 0 included. ST_CENTER only ever centred it horizontally, so its
+	// balance had always rendered against the top of a 0.03H pill with all the
+	// slack below it - visibly high in its own casing. Nothing about Original's
+	// design intended that; it's the same measure-don't-guess fix the rest of
+	// this HUD already had, applied to the one control that never got it.
 	private _creditBox = switch (_style) do {
 		case 1: { [1305,  0.054, 0.089, 0.111, 0.086, "%1 CR"] };
 		case 2: { [1315,  0.075, 0.132, 0.090, 0.028, "%1 CR"] };
@@ -267,7 +277,10 @@ if (_hasCredits) then {
 		case 6: { [1365,  0.014, 0.142, 0.145, 0.020, "%1 CREDITS"] };
 		case 7: { [1377,  0.051, 0.144, 0.108, 0.020, "%1 CR"] };
 		case 8: { [1286, -0.020, 0.129, 0.170, 0.020, "%1 CR"] };
-		default { [1002, 0, 0, 0, 0, "%1 credits"] };   // 0 - Original's pill, positioned by the hpp alone
+		// 0 - Original. Keeps its own lowercase "%1 credits" wording rather than
+		// being normalised to the other styles' "CR"/"CREDITS" - the full-width
+		// pill has room for it, and it's part of what the style is.
+		default { [1002, 0, -0.040, 0.150, 0.030, "%1 credits"] };
 	};
 	_creditBox params ["_creditTextIdc", "_cX", "_cY", "_cW", "_cBoxH", "_cFormat"];
 	private _credits = _display displayCtrl _creditTextIdc;
@@ -282,25 +295,22 @@ if (_hasCredits) then {
 	private _creditsTickerToken = (_display getVariable ["Waldo_creditsTickerToken", 0]) + 1;
 	_display setVariable ["Waldo_creditsTickerToken", _creditsTickerToken];
 
-	private _needsVCenter = (_style > 0);
 	private _vX = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (_cX * safezoneH);
 	private _vY = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (_cY * safezoneH);
 	private _vW = _cW * safezoneH;
 	private _vBoxH = _cBoxH * safezoneH;
 
-	[_credits, _cFormat, _display, _creditsTickerToken, _needsVCenter, _vX, _vY, _vW, _vBoxH] spawn {
-		params ["_credits", "_format", "_display", "_token", "_needsVCenter", "_vX", "_vY", "_vW", "_vBoxH"];
+	[_credits, _cFormat, _display, _creditsTickerToken, _vX, _vY, _vW, _vBoxH] spawn {
+		params ["_credits", "_format", "_display", "_token", "_vX", "_vY", "_vW", "_vBoxH"];
 		while {
 			!isNull ctrlParent _credits
 			&& {alive player}
 			&& {(_display getVariable ["Waldo_creditsTickerToken", 0]) == _token}
 		} do {
 			_credits ctrlSetText format [_format, player getVariable ["points", 0]];
-			if (_needsVCenter) then {
-				private _h = ctrlTextHeight _credits;
-				_credits ctrlSetPosition [_vX, _vY + ((_vBoxH - _h) / 2), _vW, _h];
-				_credits ctrlCommit 0;
-			};
+			private _h = ctrlTextHeight _credits;
+			_credits ctrlSetPosition [_vX, _vY + ((_vBoxH - _h) / 2), _vW, _h];
+			_credits ctrlCommit 0;
 			sleep 0.5;
 		};
 	};

@@ -64,13 +64,15 @@ private _usesRankDisc = _usesRing;
 
 { (_display displayCtrl _x) ctrlShow _usesRankDisc; } forEach [1270, 1271];
 { (_display displayCtrl _x) ctrlShow _usesRing; } forEach [1272, 1000, 1001];
-// 999 (roleTextBGBG, the white "face" disc) is retired for every style, not
-// just hidden for some - it doesn't have a control it's shown under any
-// more, so this always holds it hidden regardless of style. Was making the
-// ring's hole read as a plain white circle; now the Rank Disc's gold accent
-// shows through instead, which is the whole point of building the accent
-// ring in the first place.
-(_display displayCtrl 999) ctrlShow false;
+// 999 (roleTextBGBG, the white "face" disc) AND 1002-1005 (the old
+// style-0-only credits pill, since retired in favour of style 0 sharing
+// Satellite Chip's small pill) are both force-hidden unconditionally, not
+// just left out of the per-style show/hide arrays - leaving an idc out of
+// every array means NOTHING ever touches its ctrlShow state, so it just
+// sits at whatever it happened to default to (visible, in this case) -
+// confirmed live: the old pill was floating above the badge on every
+// style, not just style 0, because nothing was ever hiding it any more.
+{ (_display displayCtrl _x) ctrlShow false; } forEach [999, 1002, 1003, 1004, 1005];
 
 if (_usesRing) then {
 	// GMod-style role crest: tint the circular badge and centre the role's

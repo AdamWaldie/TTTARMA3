@@ -37,7 +37,7 @@ private _gap = safeZoneH * 0.008;
         _cursor = safeZoneY + ((safeZoneH - _total) / 2);
     };
     {
-        _x params ["_channel", "_controls", "_token", "_slot", "_panelW", "_panelH", "_padX", "_padY", "_accentH", "_contentH"];
+        _x params ["_channel", "_controls", "_token", "_slot", "_panelW", "_panelH", "_padX", "_padY", "_accentH", "_contentH", "_priority", "_createdAt", ["_headerH", 0]];
         private _panelX = switch (_slot) do {
             case "TOP_RIGHT";
             case "BOTTOM_RIGHT": {safeZoneX + safeZoneW - _panelW - (safeZoneW * 0.025)};
@@ -51,15 +51,25 @@ private _gap = safeZoneH * 0.008;
         } else {
             _cursor = _panelY + _panelH + _gap;
         };
-        _controls params ["_shadow", "_frame", "_accent", "_content"];
+        _controls params ["_shadow", "_frame", "_header", "_accent", "_sourceText", "_content"];
         // Same small offset/oversize the rest of this HUD's shadow layers use
         // (see e.g. roleCreditsShadow in TTTHud.hpp).
         private _shadowPad = _gap * 0.5;
         _shadow ctrlSetPosition [_panelX - _shadowPad, _panelY - _shadowPad, _panelW + (2 * _shadowPad), _panelH + (2 * _shadowPad)];
         _frame ctrlSetPosition [_panelX, _panelY, _panelW, _panelH];
-        _accent ctrlSetPosition [_panelX, _panelY, _panelW, _accentH];
-        _content ctrlSetPosition [_panelX + _padX, _panelY + _padY + _accentH, _panelW - (2 * _padX), _contentH - _accentH];
-        {_x ctrlCommit 0;} forEach _controls;
+        _header ctrlSetPosition [_panelX, _panelY, _panelW, _headerH];
+        _accent ctrlSetPosition [_panelX, _panelY + _headerH, _panelW, _accentH];
+        _content ctrlSetPosition [_panelX + _padX, _panelY + _headerH + _accentH + _padY, _panelW - (2 * _padX), _contentH];
+        {_x ctrlCommit 0;} forEach [_shadow, _frame, _header, _accent, _content];
+        // Real vertical centring for the source label, not ST_VCENTER (see
+        // its own comment in fn_ShowUiNotification.sqf) - needs the
+        // control's real position/size set above first, so this can't move
+        // into the creation script itself.
+        _sourceText ctrlSetPosition [_panelX + _padX, _panelY, _panelW - (2 * _padX), _headerH];
+        _sourceText ctrlCommit 0;
+        private _srcH = ctrlTextHeight _sourceText;
+        _sourceText ctrlSetPosition [_panelX + _padX, _panelY + ((_headerH - _srcH) / 2), _panelW - (2 * _padX), _srcH];
+        _sourceText ctrlCommit 0;
     } forEach _entries;
 } forEach ["TOP", "TOP_RIGHT", "CENTER", "BOTTOM_LEFT", "BOTTOM_RIGHT"];
 true

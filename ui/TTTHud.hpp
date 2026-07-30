@@ -105,44 +105,36 @@ class RscTitles
 			// declaration order, later on top of earlier - so this sits
 			// BEHIND the badge ring instead of covering the letter.
 			//
-			// Flat RscText squares, NOT RscPicture reusing ui\rolebg.paa -
-			// this used to be a texture reuse, tinted via the "color"
-			// property, and it never actually rendered in-game (confirmed
-			// live via screenshots showing no rim/accent at all, even after
-			// fixing the "color[] vs color =" syntax that broke it the
-			// first time). This codebase already has one documented history
-			// of texture-loading unreliability in this exact engine build
-			// (see the DXT5-reencoding note on roleshadow.paa a few lines
-			// down) - rather than keep chasing a second texture-specific
-			// failure with no way to see the result, this is built from the
-			// same flat-rect recipe already proven reliable everywhere else
-			// in this file (Style 8's plate/border, every credit pill,
-			// every bracket/tick). The square corners peek out past the
-			// round ring's edges instead of forming a perfect ring, which
-			// reads as a plate the ring sits on rather than a seamless
-			// medallion - an intentional trade for something guaranteed to
-			// actually show up, not a compromise anyone asked for.
-			class rankDiscRim: RscText
+			// Dedicated ui\rankDiscRim.paa / rankDiscAccent.paa - filled
+			// circles, generated and properly DXT5-encoded via the same
+			// github.com/woozymasta/paa Go encoder already used for
+			// roleshadow.paa (see its own comment below), not reused from
+			// ui\rolebg.paa. An earlier attempt reused rolebg.paa for these
+			// (same file 999/roleTextBGBG also references) and it never
+			// rendered in-game despite the tint syntax being correct -
+			// dedicated files sidestep whatever that was, same-path reuse
+			// or otherwise, without needing to root-cause it blind.
+			class rankDiscRim: RscPicture
 			{
 				idc = 1270;
+				text = "ui\rankDiscRim.paa";
 				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.02 * safezoneH);
 				w = 0.19 * safezoneH;
 				h = 0.19 * safezoneH;
 				// Darker than the WALDO_CASING macro (0.105/0.11/0.095) -
 				// needs to read clearly against bright terrain/concrete.
-				colorBackground[] = {0.06, 0.065, 0.055, 1};
-				style = 0;
+				color = [0.06, 0.065, 0.055, 1];
 			};
-			class rankDiscAccent: RscText
+			class rankDiscAccent: RscPicture
 			{
 				idc = 1271;
+				text = "ui\rankDiscAccent.paa";
 				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.0075 * safezoneH);
 				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.0075 * safezoneH);
 				w = 0.165 * safezoneH;
 				h = 0.165 * safezoneH;
-				colorBackground[] = WALDO_ACCENT;   // flat gold, not role-tinted
-				style = 0;
+				color = [0.85, 0.62, 0.20, 1];   // WALDO_ACCENT gold, flat - not role-tinted
 			};
 			// idc 1272, not -1: style 8 (Stamped Tag) doesn't use the ring at
 			// all and needs to hide this too, or its soft shadow blob would

@@ -1,0 +1,130 @@
+{
+ "1": {
+  "name": "struckCoin",
+  "letter": [
+   28,
+   32,
+   200,
+   130
+  ],
+  "credit": [
+   48,
+   178,
+   160,
+   32
+  ],
+  "letterColour": "cream"
+ },
+ "2": {
+  "name": "enamelPin",
+  "letter": [
+   40,
+   46,
+   176,
+   116
+  ],
+  "credit": [
+   52,
+   181,
+   152,
+   26
+  ],
+  "letterColour": "cream"
+ },
+ "3": {
+  "name": "dogTag",
+  "letter": [
+   70,
+   78,
+   116,
+   70
+  ],
+  "credit": [
+   46,
+   152,
+   164,
+   24
+  ],
+  "letterColour": "cream"
+ },
+ "4": {
+  "name": "unitPatch",
+  "letter": [
+   58,
+   46,
+   140,
+   100
+  ],
+  "credit": [
+   64,
+   154,
+   128,
+   24
+  ],
+  "letterColour": "cream"
+ },
+ "5": {
+  "name": "crateStencil",
+  "letter": [
+   46,
+   64,
+   164,
+   94
+  ],
+  "credit": [
+   46,
+   168,
+   164,
+   24
+  ],
+  "letterColour": "plank"
+ },
+ "6": {
+  "name": "caseFile",
+  "letter": [
+   40,
+   48,
+   176,
+   94
+  ],
+  "credit": [
+   30,
+   200,
+   196,
+   24
+  ],
+  "letterColour": "role"
+ },
+ "7": {
+  "name": "chalkMark",
+  "letter": [
+   56,
+   56,
+   144,
+   112
+  ],
+  "credit": [
+   56,
+   204,
+   144,
+   26
+  ],
+  "letterColour": "cream"
+ },
+ "8": {
+  "name": "evidenceTag",
+  "letter": [
+   90,
+   74,
+   92,
+   72
+  ],
+  "credit": [
+   82,
+   200,
+   108,
+   26
+  ],
+  "letterColour": "role"
+ }
+}

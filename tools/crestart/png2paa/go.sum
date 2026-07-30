@@ -1,0 +1,10 @@
+github.com/woozymasta/bcn v0.5.0 h1:xGv/n9K3lqv12dby/a9+es4JDZ2TdJqknyn+7ouypE0=
+github.com/woozymasta/bcn v0.5.0/go.mod h1:hD5uVT37krcNs/1wBB2FKtlwfDeNJY8qKh7TnqNF7Ig=
+github.com/woozymasta/lzo v0.3.2 h1:YOTK3xjyFwmWv8lxieLZ33e/zZuU9/b+cnLWv2Gzuqs=
+github.com/woozymasta/lzo v0.3.2/go.mod h1:atslvdCReG3PCslm/INvW6VmGp+GnHABHYG4ANDasvg=
+github.com/woozymasta/lzss v0.2.0 h1:kSns5tkmcbyRE0woY/i0AcLc0DD1P0/tD3hY6Y/xtLs=
+github.com/woozymasta/lzss v0.2.0/go.mod h1:3P9MZicG+a7UJ+4m4x+QWFgnvKI9Vgd7oobmu5DOFsw=
+github.com/woozymasta/paa v0.4.0 h1:F1MDecdRaD/rSh0GzzZzI7oM81wImeTDVAJOkt4bCSE=
+github.com/woozymasta/paa v0.4.0/go.mod h1:hTEZKqj1zSB7cg8Tpu2dztfhATIO1CTv47Z3E7eJ0fk=
+golang.org/x/sys v0.46.0 h1:noSf2Fq6F8DBgS+LysIkx7rIExoNHJsxOAtPp4rthXw=
+golang.org/x/sys v0.46.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=

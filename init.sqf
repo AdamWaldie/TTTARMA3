@@ -30,8 +30,14 @@ ace_hearing_disableVolumeUpdate = true;
 // it's not, but this is an actual function call, which would throw if CBA
 // isn't loaded at all (CBA/ACE aren't a hard requirement in this mission,
 // same reasoning as fn_initClient.sqf's own ACE-optional guards).
+// ace_nametags_showVehicleCrewInfo is a SEPARATE checkbox setting, not a
+// sub-option of showPlayerNames above - it independently shows crew names
+// when looking at a vehicle even with the main nametag popup off, which
+// leaks exactly the identity this mission needs to stay hidden (who's
+// driving/gunning). Forced off the same way, for the same reason.
 if (!isNil "CBA_settings_fnc_set") then {
 	["ace_nametags_showPlayerNames", 0, 1, "mission"] call CBA_settings_fnc_set;
+	["ace_nametags_showVehicleCrewInfo", false, 1, "mission"] call CBA_settings_fnc_set;
 };
 
 // Vanilla Arma's own nametags (the "Tags" difficulty flag) can't be forced

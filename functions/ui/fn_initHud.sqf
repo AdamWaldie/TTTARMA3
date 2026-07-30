@@ -37,16 +37,18 @@ private _color = [_role] call Waldo_roleColor;
 
 // ============================================================================
 // Selectable role crest style - entirely a per-player preference, not a
-// server/lobby setting (there is no RoleCrestStyle mission param). 0 =
-// Original (roleShadow/roleTextBG*/roleCredits* in TTTHud.hpp, untouched -
-// kept exactly as shipped, a deliberate homage to the classic GMod-TTT
-// badge); 1-7 share the "Rank Disc" backing (rankDiscRim/rankDiscAccent,
-// idc 1270/1271 - a dark casing rim + gold accent ring behind the same
-// tuned badge ring every style always used) around their own distinguishing
-// decoration; 8 (Stamped Tag) replaces the ring entirely with a flat casing
-// plate (see the big comment blocks in TTTHud.hpp for each). The letter and
-// role colour are the one thing every single style keeps without exception -
-// only the material/backing around them changes.
+// server/lobby setting (there is no RoleCrestStyle mission param). 0-7 all
+// share the "Rank Disc" backing (rankDiscRim/rankDiscAccent, idc 1270/1271 -
+// a dark casing rim + gold accent ring behind the same tuned badge ring
+// every style always used) around their own distinguishing decoration; 0 and
+// 5 are literally the same treatment (Satellite Chip's small credits pill,
+// nothing else) - 0 used to be its own untouched "homage" look, but that
+// read as a plain white circle sitting oddly next to the dark-rim-plus-gold
+// styles once those existed, so it was folded into 5's look instead. 8
+// (Stamped Tag) replaces the ring entirely with a flat casing plate (see the
+// big comment blocks in TTTHud.hpp for each). The letter and role colour are
+// the one thing every single style keeps without exception - only the
+// material/backing around them changes.
 //
 // Waldo_roleCrestStylePref lives in THIS client's own profileNamespace (set
 // via the H key -> Waldo_fnc_openStylePicker, functions/ui/fn_openStylePicker.sqf),
@@ -55,10 +57,20 @@ private _color = [_role] call Waldo_roleColor;
 // ============================================================================
 private _style = profileNamespace getVariable ["Waldo_roleCrestStylePref", 0];
 private _usesRing = (_style >= 0 && _style <= 7);
-private _usesRankDisc = (_style >= 1 && _style <= 7);
+// Style 0 now gets the Rank Disc too (per direction: 0 became Satellite
+// Chip's look, minus its outer white halo) - every ring style shares the
+// same dark-rim-plus-gold-ring backing now, none of them stand apart.
+private _usesRankDisc = _usesRing;
 
 { (_display displayCtrl _x) ctrlShow _usesRankDisc; } forEach [1270, 1271];
-{ (_display displayCtrl _x) ctrlShow _usesRing; } forEach [1272, 999, 1000, 1001];
+{ (_display displayCtrl _x) ctrlShow _usesRing; } forEach [1272, 1000, 1001];
+// 999 (roleTextBGBG, the white "face" disc) is retired for every style, not
+// just hidden for some - it doesn't have a control it's shown under any
+// more, so this always holds it hidden regardless of style. Was making the
+// ring's hole read as a plain white circle; now the Rank Disc's gold accent
+// shows through instead, which is the whole point of building the accent
+// ring in the first place.
+(_display displayCtrl 999) ctrlShow false;
 
 if (_usesRing) then {
 	// GMod-style role crest: tint the circular badge and centre the role's
@@ -68,15 +80,15 @@ if (_usesRing) then {
 	_badge ctrlSetTextColor _color;
 	_badge ctrlSetText toUpper (_role select [0, 1]);
 
-	// Letter scale suits the backing it's sitting on: Rank Disc's extra rim/
-	// accent rings make the Original's exact letter size read as lost inside
-	// a visibly bigger medallion, so styles 1-7 get a modest bump. ctrlSetFontHeight
-	// (not a hardcoded hpp sizeEx) is what makes a per-style size possible on
-	// one shared control - already a proven command in this codebase
-	// (fn_openBuyMenu.sqf's shop cards use it the same way). Must run before
-	// ctrlTextHeight below, since that measurement reflects whatever size was
-	// actually just set.
-	_badge ctrlSetFontHeight ((if (_style == 0) then { 0.088 } else { 0.098 }) * safezoneH);
+	// Every ring style (0-7 now all share the Rank Disc) uses the same
+	// bumped-up letter size - the extra rim/accent rings make the smaller
+	// original size read as lost inside a visibly bigger medallion.
+	// ctrlSetFontHeight (not a hardcoded hpp sizeEx) is what makes this
+	// possible on one shared control - already a proven command in this
+	// codebase (fn_openBuyMenu.sqf's shop cards use it the same way). Must
+	// run before ctrlTextHeight below, since that measurement reflects
+	// whatever size was actually just set.
+	_badge ctrlSetFontHeight (0.098 * safezoneH);
 
 	// Real measured vertical centring, not a guessed offset: ST_VCENTER does NOT
 	// mean "centre vertically" despite the name - BIKI documents it (with
@@ -112,18 +124,15 @@ if (_usesRing) then {
 if (_style == 8) then {
 	{ (_display displayCtrl _x) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1]; } forEach [1281, 1283, 1284];
 
-	// Letter box matches the ring's own 999/1000/1001 box exactly (RX/RY,
-	// 0.15H square) now that Style 8 was rescaled to the same footprint as
-	// the Rank Disc - was its own independently-sized 0.17H zone before.
 	private _s8Letter = _display displayCtrl 1285;
 	_s8Letter ctrlSetTextColor _color;
 	_s8Letter ctrlSetText toUpper (_role select [0, 1]);
 	private _s8H = ctrlTextHeight _s8Letter;
-	private _s8ZoneX = (safezoneW + safezoneX) - (0.175 * safezoneH);
-	private _s8ZoneY = (safezoneH + safezoneY) - (0.185 * safezoneH);
-	private _s8ZoneH = 0.15 * safezoneH;
+	private _s8ZoneX = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH);
+	private _s8ZoneY = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.044 * safezoneH);
+	private _s8ZoneH = 0.17 * safezoneH;
 	private _s8OpticalNudgeX = if (_role == "Jester") then { -0.003 * safezoneH } else { 0 };
-	_s8Letter ctrlSetPosition [_s8ZoneX + _s8OpticalNudgeX, _s8ZoneY + ((_s8ZoneH - _s8H) / 2), 0.15 * safezoneH, _s8H];
+	_s8Letter ctrlSetPosition [_s8ZoneX + _s8OpticalNudgeX, _s8ZoneY + ((_s8ZoneH - _s8H) / 2), 0.17 * safezoneH, _s8H];
 	_s8Letter ctrlCommit 0;
 };
 
@@ -137,7 +146,7 @@ private _hasCredits = _role in ["Traitor", "Detective"];
 // pass hides every style except the selected one, second pass then re-hides
 // the selected style's credit-only controls if this role has none.
 private _styleAlways = [
-	[],                                             // 0 - Original: nothing beyond the credits pill below
+	[],                                             // 0 - Original: now IS Satellite Chip's look (shares its pill below)
 	[1200, 1201, 1202, 1203],                       // 1 - Signal Ring: compass ticks
 	[1210, 1211, 1212, 1213, 1214, 1215, 1216, 1217],// 2 - Corner Bracket Frame
 	[1220, 1221, 1222, 1223],                        // 3 - Fused Tag: tab + role name
@@ -147,8 +156,16 @@ private _styleAlways = [
 	[],                                              // 7 - Contact Blip: shares Rank Disc now, no style-specific extras of its own
 	[1280, 1281, 1282, 1287, 1283, 1284, 1285]       // 8 - Stamped Tag: shadow/border/plate/highlight/divider/flash/letter
 ];
+// Style 0 reuses Style 5's exact pill (1240/1241) - not a copy, the same
+// controls - since 0 is now Satellite Chip's look. roleCredits* (1002-1005,
+// the old full-width pill) is retired: nothing shows it any more. Index 0
+// is left empty here and _creditsStyleIdx below redirects style 0 to check
+// against index 5 instead - two array entries pointing at the same idc's
+// would fight over ctrlShow in the forEach below (whichever index comes
+// later always wins), so there can only be one real entry for them.
+private _creditsStyleIdx = if (_style == 0) then { 5 } else { _style };
 private _styleCredits = [
-	[1002, 1003, 1004, 1005],   // 0 - full credits pill (shadow/bg/accent/text)
+	[],                           // 0 - redirected to 5 (shares Satellite Chip's pill)
 	[1204, 1205],                // 1 - Signal Ring tag
 	[1219, 1218],                // 2 - Corner Bracket credit text (+ backing plate)
 	[1224],                      // 3 - Fused Tag credits line
@@ -164,7 +181,7 @@ private _styleCredits = [
 	{ (_display displayCtrl _x) ctrlShow _isActiveStyle; } forEach _x;
 } forEach _styleAlways;
 {
-	private _show = (_forEachIndex == _style) && _hasCredits;
+	private _show = (_forEachIndex == _creditsStyleIdx) && _hasCredits;
 	{ (_display displayCtrl _x) ctrlShow _show; } forEach _x;
 } forEach _styleCredits;
 
@@ -183,19 +200,18 @@ switch (_style) do {
 // credits (_hasCredits), matching the idc's shown by the pass above.
 if (_hasCredits) then {
 	// idc of the control that actually displays "<n> credits" text for the
-	// active style, and whether that text itself gets tinted to the role
-	// colour (some styles keep it neutral ink instead, per the mockups).
-	private _creditTextIdc = [1002, 1205, 1218, 1224, 1233, 1241, 1259, 1262, 1286] select _style;
-	private _tintCreditText = [true, true, false, true, true, false, false, false, true] select _style;
-
+	// active style. Indexed by _creditsStyleIdx, same redirect as
+	// _styleCredits above, so style 0 reads Satellite Chip's entry (index 5).
+	//
+	// NEVER tinted to the role colour any more - every role colour is a
+	// fairly dark, saturated tone, and every one of these sits on a near-
+	// black backing panel, so role-tinted credit text was low-contrast
+	// (worst on Traitor red, but Detective/Jester weren't much better) no
+	// matter which style. They keep their hpp-declared static colour
+	// instead (cream or WALDO_ACCENT gold, both high-contrast on near-black
+	// regardless of role).
+	private _creditTextIdc = [1241, 1205, 1218, 1224, 1233, 1241, 1259, 1262, 1286] select _creditsStyleIdx;
 	private _credits = _display displayCtrl _creditTextIdc;
-	if (_tintCreditText) then { _credits ctrlSetTextColor _color; };
-
-	// Style 0's pill also has its own accent line, tinted the same way it
-	// always was.
-	if (_style == 0) then {
-		(_display displayCtrl 1003) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
-	};
 
 	// Token-guarded the same way the keybind-hint fade below is (and for the
 	// same reason): this function re-runs on every respawn and every debug
@@ -236,6 +252,7 @@ if (_hasCredits) then {
 			private _pts = player getVariable ["points", 0];
 			private _text = switch (_style) do {
 				case 1: { format ["%1 cr", _pts] };        // Signal Ring tag
+				case 0;                                     // 0 shares Satellite Chip's pill/format now
 				case 5: { format ["%1", _pts] };            // Satellite Chip pill - narrow, no room for "credits"
 				case 6: { format ["%1", _pts] };            // IFF squawk code
 				case 7: { format ["%1 CR", _pts] };          // Contact Blip coord readout

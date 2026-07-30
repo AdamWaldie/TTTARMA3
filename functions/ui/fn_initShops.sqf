@@ -163,14 +163,35 @@ Waldo_swapVestKeepCargo = {
 	{ _x params ["_cls", "_cnt"]; _newContainer addItemCargo [_cls, _cnt]; } forEach _items;
 };
 
-// Role -> RGBA colour (shared by HUD, icons, menus).
+// Role -> RGBA colour (shared by HUD, icons, menus, radar, ping wheel) -
+// every one of those calls this same function, so the accessibility check
+// below is the ONE place a colourblind-safe palette needs to live for it to
+// apply everywhere "where appropriate" instead of needing to be threaded
+// through each caller individually.
+//
+// Waldo_accessibilityMode lives in profileNamespace (toggled from the
+// role crest style picker, H key), same per-player/no-gameplay-effect
+// reasoning as Waldo_roleCrestStylePref. Palette is the Okabe-Ito
+// colourblind-safe set (vermillion/blue/reddish-purple/bluish-green),
+// chosen because it stays pairwise-distinguishable under all three common
+// forms of colour vision deficiency, not just one.
 Waldo_roleColor = {
 	params ["_role"];
-	switch (_role) do {
-		case "Traitor":   { [0.75, 0.21, 0.21, 1] };
-		case "Detective": { [0.01, 0.45, 1, 1] };
-		case "Jester":    { [0.4, 0, 0.5, 1] };
-		default           { [0.12549, 0.72941, 0.09412, 1] };
+	private _cb = profileNamespace getVariable ["Waldo_accessibilityMode", false];
+	if (_cb) then {
+		switch (_role) do {
+			case "Traitor":   { [0.835, 0.369, 0, 1] };
+			case "Detective": { [0, 0.447, 0.698, 1] };
+			case "Jester":    { [0.8, 0.475, 0.655, 1] };
+			default           { [0, 0.62, 0.451, 1] };
+		};
+	} else {
+		switch (_role) do {
+			case "Traitor":   { [0.75, 0.21, 0.21, 1] };
+			case "Detective": { [0.01, 0.45, 1, 1] };
+			case "Jester":    { [0.4, 0, 0.5, 1] };
+			default           { [0.12549, 0.72941, 0.09412, 1] };
+		};
 	};
 };
 

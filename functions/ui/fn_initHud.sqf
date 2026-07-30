@@ -64,7 +64,7 @@ private _color = [_role] call Waldo_roleColor;
 // the H key -> Waldo_fnc_openStylePicker), so it's saved across sessions and
 // never broadcast or read from anywhere else.
 // ============================================================================
-private _style = profileNamespace getVariable ["Waldo_roleCrestStylePref", 0];
+private _style = profileNamespace getVariable ["Waldo_roleCrestStylePref", 1];
 // Only Original uses the badge ring now. Every other style is its own drawn
 // crest and replaces the medallion outright.
 private _usesRing = (_style == 0);

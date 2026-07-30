@@ -13,7 +13,7 @@ disableSerialization;
 
 private _role = player getVariable ["role", "Innocent"];
 private _color = [_role] call Waldo_roleColor;
-private _current = profileNamespace getVariable ["Waldo_roleCrestStylePref", 0];
+private _current = profileNamespace getVariable ["Waldo_roleCrestStylePref", 1];
 
 createDialog "WaldoStylePicker";
 waitUntil { !isNull (uiNamespace getVariable ["WaldoStylePicker", displayNull]) };
@@ -41,34 +41,16 @@ private _vcenter = {
 { [_display displayCtrl _x] call _vcenter; } forEach [1620, 1621, 1622, 1623, 1624, 1625, 1626, 1627, 1628];
 
 // Paints the 9 cards: an amber selection frame behind the current style's card
-// only, and every card's preview tinted to this player's role colour so the
-// picker shows the crests as they'll actually look rather than in some
-// placeholder colour.
-//
-// Selection is that amber frame rather than a role-coloured fill on the card.
-// The cards used to fill with the role colour to show which was active, which
-// worked while they were bare labels but would now swallow the previews sitting
-// on them - and amber is the crest family's own accent, so an amber frame reads
-// as "this one" without competing with the role colour it's framing.
-//
-// Exactly one control per card carries an idc: that crest's role layer. The base
-// and detail layers hold the fixed colours (amber fittings, brass, manila, plank)
-// and are never tinted, same as on the live crests. Card 0 tints ui\role.paa,
-// which is what the live badge ring tints too.
+// only. Nothing else needs tinting - the cards are named, not previewed (three
+// attempts at a preview graphic at this size all rendered as blank or black boxes
+// in game, so per direction the names carry it), and the crest itself is visible
+// the moment a card is picked.
 Waldo_stylePickerPaint = {
 	params ["_d"];
-	private _role = player getVariable ["role", "Innocent"];
-	private _col = [_role] call Waldo_roleColor;
-	private _cur = profileNamespace getVariable ["Waldo_roleCrestStylePref", 0];
+	private _cur = profileNamespace getVariable ["Waldo_roleCrestStylePref", 1];
 	{
 		(_d displayCtrl _x) ctrlShow (_forEachIndex == _cur);
 	} forEach [1630, 1631, 1632, 1633, 1634, 1635, 1636, 1637, 1638];
-	{
-		// ctrlSetTextColor, not ctrlSetBackgroundColor: these are RscPictures now
-		// (the crest's own role layer at card size), and tinting a picture is a
-		// text-colour multiply, not a background fill.
-		(_d displayCtrl _x) ctrlSetTextColor _col;
-	} forEach [1660, 1661, 1662, 1663, 1664, 1665, 1666, 1667, 1668];
 };
 [_display] call Waldo_stylePickerPaint;
 
@@ -103,5 +85,4 @@ _accessBtn ctrlAddEventHandler ["ButtonClick", {
 	_ctrl ctrlSetText (["COLOURBLIND MODE: OFF", "COLOURBLIND MODE: ON"] select _on);
 
 	[] call Waldo_fnc_initHud;   // live badge picks up the new palette immediately
-	[ctrlParent _ctrl] call Waldo_stylePickerPaint;   // and so do all 9 previews
 }];

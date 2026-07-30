@@ -75,7 +75,13 @@ class RscTitles
 		fadeout=0;
 		fadein=0;
 		duration = 99999;
-		onLoad = "with uiNamespace do {TTTHud = _this select 0}";
+		// Hides every script-controlled element the instant the display exists.
+		// Without this they render at their config defaults until fn_initHud
+		// catches up: the ping wheel is centre-screen, so it flashed across the
+		// middle at round start, and all nine crests drew stacked on top of each
+		// other bottom-right. onLoad is the earliest available hook - doing it in
+		// fn_initHud is already too late by a frame or two.
+		onLoad = "with uiNamespace do {TTTHud = _this select 0}; {((_this select 0) displayCtrl _x) ctrlShow false} forEach [3520,999,1000,1001,1272,1002,1003,1004,1005,1006,1300,1301,1302,1303,1304,1305,1306,1310,1311,1312,1313,1314,1315,1316,1320,1321,1322,1323,1324,1325,1326,1330,1331,1332,1333,1334,1335,1336,1340,1341,1342,1343,1344,1345,1346,1350,1351,1352,1353,1354,1355,1356,1360,1361,1362,1363,1364,1365,1366,1370,1371,1372,1373,1374,1375,1376];";
 
 		// GMod-TTT style role crest: a circular badge with the role's letter
 		// (T / D / I / J) centred in it, tinted to the role colour. The badge is
@@ -773,7 +779,12 @@ class WaldoShop {
 	movingEnable = false;
 	enableSimulation = true;
 	duration = 99999;
-	onLoad = "with uiNamespace do { WaldoShop = _this select 0 }";
+	// Same modal guard as WaldoStylePicker: notification cards are created on
+	// display 46 and were drawing over this mission's dialogs instead of under
+	// them. Flag while open so Waldo_fnc_ShowUiNotification queues, and drain on
+	// close so nothing is lost.
+	onLoad = "with uiNamespace do { WaldoShop = _this select 0 }; uiNamespace setVariable ['Waldo_uiModalOpen', true];";
+	onUnload = "uiNamespace setVariable ['Waldo_uiModalOpen', false]; [] spawn Waldo_fnc_DrainUiNotificationQueue;";
 
 	class controlsBackground {
 		// Dims the world behind the panel and drops a soft shadow under it.
@@ -1004,7 +1015,12 @@ class WaldoStylePicker {
 	movingEnable = false;
 	enableSimulation = true;
 	duration = 99999;
-	onLoad = "with uiNamespace do { WaldoStylePicker = _this select 0 }";
+	// Notification cards are created on display 46 and were drawing OVER this
+	// dialog, covering its title. Rather than fight the engine's layering, flag
+	// while this is open so Waldo_fnc_ShowUiNotification queues instead of drawing,
+	// then drain the queue on close so nothing is lost.
+	onLoad = "with uiNamespace do { WaldoStylePicker = _this select 0 }; uiNamespace setVariable ['Waldo_uiModalOpen', true];";
+	onUnload = "uiNamespace setVariable ['Waldo_uiModalOpen', false]; [] spawn Waldo_fnc_DrainUiNotificationQueue;";
 
 	class controlsBackground {
 		class spDim: RscText {
@@ -1096,87 +1112,41 @@ class WaldoStylePicker {
 		// is an amber frame behind the card instead of a role-coloured fill,
 		// because the previews now carry the role colour themselves and a
 		// role-filled card would swallow them.
-		// Card previews. Each card shows the crest's OWN artwork - the same three
-		// .paa layers the live badge uses, at card size, with the role layer tinted
-		// to this player's role. Previously these were schematics built from flat
-		// rects, which was the best that could be done when the crests themselves
-		// were arrangements of rects; now that they're drawn, the honest preview is
-		// the art itself.
+		// Named cards, no previews. Three separate attempts at a preview graphic at
+		// this size have now failed in game - RscPicture swatches, flat-rect
+		// schematics, and finally the crests' own .paa layers, which rendered as
+		// black boxes. Per direction, stop paying for it: the name is what has always
+		// rendered reliably, and the crest itself is visible the moment you pick it.
 		//
-		// Only the role layer carries an idc, since it's the only part that gets
-		// tinted. Card 0 (Original) has no crest texture of its own - it IS the badge
-		// ring - so it shows ui\rolebg.paa and ui\role.paa, exactly what the live
-		// badge draws.
-		// ---- 0: Original ----
+		// Selection is an amber frame behind the card rather than a fill, so the
+		// card's own label stays legible.
 		class sp0Select: RscText { idc = 1630; x = (SP_BASEX) - (0.003 * safezoneH); y = (SP_BASEY) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp0Card: RscText { idc = 1600; text = ""; x = SP_BASEX; y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp0PvBg: RscPicture { idc = -1; text = "ui\rolebg.paa"; x = SP_BASEX + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; color = [1,1,1,0.72]; };
-		class sp0PvRing: RscPicture { idc = 1660; text = "ui\role.paa"; x = SP_BASEX + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp0Label: RscText { idc = 1620; text = "Original"; x = SP_BASEX; y = (SP_BASEY) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
-
-		// ---- 1: Struck Coin ----
+		class sp0Label: RscText { idc = 1620; text = "Original"; x = SP_BASEX; y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.024 * safezoneH; shadow = 1; };
 		class sp1Select: RscText { idc = 1631; x = (SP_BASEX + SP_COLSTEP) - (0.003 * safezoneH); y = (SP_BASEY) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp1Card: RscText { idc = 1601; text = ""; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp1PvBase: RscPicture { idc = -1; text = "ui\crests\struckCoin_base.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp1PvRole: RscPicture { idc = 1661; text = "ui\crests\struckCoin_role.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp1PvDetail: RscPicture { idc = -1; text = "ui\crests\struckCoin_detail.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp1Label: RscText { idc = 1621; text = "Struck Coin"; x = SP_BASEX + SP_COLSTEP; y = (SP_BASEY) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
-
-		// ---- 2: Enamel Pin ----
+		class sp1Label: RscText { idc = 1621; text = "Struck Coin"; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.024 * safezoneH; shadow = 1; };
 		class sp2Select: RscText { idc = 1632; x = (SP_BASEX + (2 * SP_COLSTEP)) - (0.003 * safezoneH); y = (SP_BASEY) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp2Card: RscText { idc = 1602; text = ""; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp2PvBase: RscPicture { idc = -1; text = "ui\crests\enamelPin_base.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp2PvRole: RscPicture { idc = 1662; text = "ui\crests\enamelPin_role.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp2PvDetail: RscPicture { idc = -1; text = "ui\crests\enamelPin_detail.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp2Label: RscText { idc = 1622; text = "Enamel Pin"; x = SP_BASEX + (2 * SP_COLSTEP); y = (SP_BASEY) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
-
-		// ---- 3: Dog Tag ----
+		class sp2Label: RscText { idc = 1622; text = "Enamel Pin"; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.024 * safezoneH; shadow = 1; };
 		class sp3Select: RscText { idc = 1633; x = (SP_BASEX) - (0.003 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp3Card: RscText { idc = 1603; text = ""; x = SP_BASEX; y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp3PvBase: RscPicture { idc = -1; text = "ui\crests\dogTag_base.paa"; x = SP_BASEX + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp3PvRole: RscPicture { idc = 1663; text = "ui\crests\dogTag_role.paa"; x = SP_BASEX + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp3PvDetail: RscPicture { idc = -1; text = "ui\crests\dogTag_detail.paa"; x = SP_BASEX + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp3Label: RscText { idc = 1623; text = "Dog Tag"; x = SP_BASEX; y = (SP_BASEY + SP_ROWSTEP) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
-
-		// ---- 4: Unit Patch ----
+		class sp3Label: RscText { idc = 1623; text = "Dog Tag"; x = SP_BASEX; y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.024 * safezoneH; shadow = 1; };
 		class sp4Select: RscText { idc = 1634; x = (SP_BASEX + SP_COLSTEP) - (0.003 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp4Card: RscText { idc = 1604; text = ""; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp4PvBase: RscPicture { idc = -1; text = "ui\crests\unitPatch_base.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp4PvRole: RscPicture { idc = 1664; text = "ui\crests\unitPatch_role.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp4PvDetail: RscPicture { idc = -1; text = "ui\crests\unitPatch_detail.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp4Label: RscText { idc = 1624; text = "Unit Patch"; x = SP_BASEX + SP_COLSTEP; y = (SP_BASEY + SP_ROWSTEP) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
-
-		// ---- 5: Crate Stencil ----
+		class sp4Label: RscText { idc = 1624; text = "Unit Patch"; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.024 * safezoneH; shadow = 1; };
 		class sp5Select: RscText { idc = 1635; x = (SP_BASEX + (2 * SP_COLSTEP)) - (0.003 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp5Card: RscText { idc = 1605; text = ""; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp5PvBase: RscPicture { idc = -1; text = "ui\crests\crateStencil_base.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp5PvRole: RscPicture { idc = 1665; text = "ui\crests\crateStencil_role.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp5PvDetail: RscPicture { idc = -1; text = "ui\crests\crateStencil_detail.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp5Label: RscText { idc = 1625; text = "Crate Stencil"; x = SP_BASEX + (2 * SP_COLSTEP); y = (SP_BASEY + SP_ROWSTEP) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
-
-		// ---- 6: Case File ----
+		class sp5Label: RscText { idc = 1625; text = "Crate Stencil"; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.024 * safezoneH; shadow = 1; };
 		class sp6Select: RscText { idc = 1636; x = (SP_BASEX) - (0.003 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp6Card: RscText { idc = 1606; text = ""; x = SP_BASEX; y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp6PvBase: RscPicture { idc = -1; text = "ui\crests\caseFile_base.paa"; x = SP_BASEX + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp6PvRole: RscPicture { idc = 1666; text = "ui\crests\caseFile_role.paa"; x = SP_BASEX + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp6PvDetail: RscPicture { idc = -1; text = "ui\crests\caseFile_detail.paa"; x = SP_BASEX + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp6Label: RscText { idc = 1626; text = "Case File"; x = SP_BASEX; y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
-
-		// ---- 7: Chalk Mark ----
+		class sp6Label: RscText { idc = 1626; text = "Case File"; x = SP_BASEX; y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.024 * safezoneH; shadow = 1; };
 		class sp7Select: RscText { idc = 1637; x = (SP_BASEX + SP_COLSTEP) - (0.003 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp7Card: RscText { idc = 1607; text = ""; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp7PvBase: RscPicture { idc = -1; text = "ui\crests\chalkMark_base.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp7PvRole: RscPicture { idc = 1667; text = "ui\crests\chalkMark_role.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp7PvDetail: RscPicture { idc = -1; text = "ui\crests\chalkMark_detail.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp7Label: RscText { idc = 1627; text = "Chalk Mark"; x = SP_BASEX + SP_COLSTEP; y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
-
-		// ---- 8: Evidence Tag ----
+		class sp7Label: RscText { idc = 1627; text = "Chalk Mark"; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.024 * safezoneH; shadow = 1; };
 		class sp8Select: RscText { idc = 1638; x = (SP_BASEX + (2 * SP_COLSTEP)) - (0.003 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp8Card: RscText { idc = 1608; text = ""; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp8PvBase: RscPicture { idc = -1; text = "ui\crests\evidenceTag_base.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp8PvRole: RscPicture { idc = 1668; text = "ui\crests\evidenceTag_role.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp8PvDetail: RscPicture { idc = -1; text = "ui\crests\evidenceTag_detail.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
-		class sp8Label: RscText { idc = 1628; text = "Evidence Tag"; x = SP_BASEX + (2 * SP_COLSTEP); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
+		class sp8Label: RscText { idc = 1628; text = "Evidence Tag"; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.024 * safezoneH; shadow = 1; };
 	};
 
 	class Controls {
@@ -1248,7 +1218,12 @@ class WaldoDebug {
 	movingEnable = true;
 	enableSimulation = true;
 	duration = 99999;
-	onLoad = "with uiNamespace do { WaldoDebug = _this select 0 }";
+	// Same modal guard as WaldoStylePicker: notification cards are created on
+	// display 46 and were drawing over this mission's dialogs instead of under
+	// them. Flag while open so Waldo_fnc_ShowUiNotification queues, and drain on
+	// close so nothing is lost.
+	onLoad = "with uiNamespace do { WaldoDebug = _this select 0 }; uiNamespace setVariable ['Waldo_uiModalOpen', true];";
+	onUnload = "uiNamespace setVariable ['Waldo_uiModalOpen', false]; [] spawn Waldo_fnc_DrainUiNotificationQueue;";
 
 	class controlsBackground {
 		class dbgDim: RscText {
@@ -1349,7 +1324,12 @@ class WaldoScore {
 	movingEnable = false;
 	enableSimulation = true;
 	duration = 99999;
-	onLoad = "with uiNamespace do { WaldoScore = _this select 0 }";
+	// Same modal guard as WaldoStylePicker: notification cards are created on
+	// display 46 and were drawing over this mission's dialogs instead of under
+	// them. Flag while open so Waldo_fnc_ShowUiNotification queues, and drain on
+	// close so nothing is lost.
+	onLoad = "with uiNamespace do { WaldoScore = _this select 0 }; uiNamespace setVariable ['Waldo_uiModalOpen', true];";
+	onUnload = "uiNamespace setVariable ['Waldo_uiModalOpen', false]; [] spawn Waldo_fnc_DrainUiNotificationQueue;";
 
 	class controlsBackground {
 		class scDim: RscText {

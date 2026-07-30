@@ -13,7 +13,7 @@ disableSerialization;
 
 private _role = player getVariable ["role", "Innocent"];
 private _color = [_role] call Waldo_roleColor;
-private _current = profileNamespace getVariable ["Waldo_roleCrestStylePref", 1];
+private _current = profileNamespace getVariable ["Waldo_roleCrestStylePref", 0];
 
 createDialog "WaldoStylePicker";
 waitUntil { !isNull (uiNamespace getVariable ["WaldoStylePicker", displayNull]) };
@@ -38,7 +38,7 @@ private _vcenter = {
 	_ctrl ctrlCommit 0;
 };
 [_display displayCtrl 1590] call _vcenter;
-{ [_display displayCtrl _x] call _vcenter; } forEach [1620, 1621, 1622, 1623, 1624, 1625, 1626, 1627, 1628, 1629];
+{ [_display displayCtrl _x] call _vcenter; } forEach [1620, 1621, 1622, 1623, 1624, 1625, 1626, 1627, 1628];
 
 // Paints the 9 cards: an amber selection frame behind the current style's card
 // only. Nothing else needs tinting - the cards are named, not previewed (three
@@ -47,14 +47,14 @@ private _vcenter = {
 // the moment a card is picked.
 Waldo_stylePickerPaint = {
 	params ["_d"];
-	private _cur = profileNamespace getVariable ["Waldo_roleCrestStylePref", 1];
+	private _cur = profileNamespace getVariable ["Waldo_roleCrestStylePref", 0];
 	{
 		(_d displayCtrl _x) ctrlShow (_forEachIndex == _cur);
-	} forEach [1630, 1631, 1632, 1633, 1634, 1635, 1636, 1637, 1638, 1639];
+	} forEach [1630, 1631, 1632, 1633, 1634, 1635, 1636, 1637, 1638];
 };
 [_display] call Waldo_stylePickerPaint;
 
-private _btnIdcs = [1640, 1641, 1642, 1643, 1644, 1645, 1646, 1647, 1648, 1649];
+private _btnIdcs = [1640, 1641, 1642, 1643, 1644, 1645, 1646, 1647, 1648];
 {
 	private _i = _forEachIndex;
 	(_display displayCtrl _x) ctrlAddEventHandler ["ButtonClick", {

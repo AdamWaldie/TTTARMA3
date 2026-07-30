@@ -9,9 +9,9 @@
   ],
   "letterSize": 98,
   "credit": [
-   48,
+   49,
    178,
-   160,
+   158,
    32
   ],
   "letterColour": "cream"
@@ -36,17 +36,17 @@
  "3": {
   "name": "dogTag",
   "letter": [
-   64,
-   91,
-   120,
-   52
+   70,
+   90,
+   108,
+   56
   ],
-  "letterSize": 47,
+  "letterSize": 50,
   "credit": [
-   46,
-   152,
-   164,
-   24
+   49,
+   155,
+   158,
+   21
   ],
   "letterColour": "cream"
  },
@@ -54,16 +54,16 @@
   "name": "unitPatch",
   "letter": [
    56,
-   53,
+   54,
    144,
    92
   ],
   "letterSize": 83,
   "credit": [
-   64,
-   154,
-   128,
-   24
+   67,
+   156,
+   122,
+   22
   ],
   "letterColour": "cream"
  },

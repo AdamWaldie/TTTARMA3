@@ -39,6 +39,18 @@ BODY = {
     8: lambda: rot(roundrect([90, 72, 182, 146], 5), -5),                       # inside the stamp ring, as rotated
 }
 
+OUTER = {
+    1: lambda: ellipse([14, 14, 242, 242]),                                     # the coin
+    2: lambda: ellipse([16, 16, 240, 240]),                                     # the pin
+    3: lambda: ImageChops.subtract(roundrect([17, 74, 237, 186], 54),
+                                   ellipse([187, 110, 231, 154])),              # tag, minus eyelet
+    4: lambda: polym([(40, 26), (216, 26), (216, 156), (128, 228), (40, 156)]), # the patch
+    5: lambda: rectm([16, 44, 240, 212]),                                       # the crate plank
+    6: lambda: rectm([14, 22, 242, 232]),                                       # the file card
+    7: lambda: rectm([6, 12, 250, 242]),                                        # the asphalt
+    8: lambda: polym([(74, 44), (162, 24), (196, 58), (196, 238), (74, 238)]),  # the tag stock
+}
+
 def centre(m):
     """Horizontally, the bounding box's centre; vertically, the centre of area.
 
@@ -88,7 +100,16 @@ report, out = [], {}
 for i, (name, fn) in enumerate(C.CRESTS, start=1):
     *_, lb_old, cb = fn()
     body = BODY[i]()
-    # The balance band is off limits, with a little clearance.
+    # Shrink the balance box until it lies wholly inside the crest's shape. These
+    # were hand-placed and overhung the inner circle/plate on several crests. The
+    # OUTER mask is the authority here, not BODY - the balance belongs on the object
+    # (card, tag, plank), while BODY is only the face the letter may occupy.
+    bpx = OUTER[i]().load()
+    cb = list(cb)
+    while cb[2] > 8 and not fits(bpx, cb[0], cb[1], cb[0] + cb[2], cb[1] + cb[3]):
+        cb[0] += 1; cb[2] -= 2
+        if not fits(bpx, cb[0], cb[1], cb[0] + cb[2], cb[1] + cb[3]) and cb[3] > 10:
+            cb[1] += 1; cb[3] -= 1
     band = rectm([cb[0] - 4, cb[1] - 6, cb[0] + cb[2] + 4, cb[1] + cb[3] + 4])
     region = ImageChops.subtract(body, band)
     cx, cy, area = centre(region)
@@ -102,7 +123,7 @@ for i, (name, fn) in enumerate(C.CRESTS, start=1):
     rcx, rcy = round(cx), round(cy)
     ok = fits(region.load(), rcx - iw/2, rcy - ih/2, rcx + iw/2, rcy + ih/2)
     out[i] = {"name": name, "letter": list(box), "letterSize": size,
-              "credit": list(cb), "letterColour": C.LETTER[i]}
+              "credit": [int(v) for v in cb], "letterColour": C.LETTER[i]}
     report.append("%d %-13s centre=(%3d,%3d) box=%-22s size=%3d  contained=%s  (was %s)"
                   % (i, name, cx, cy, str(box), size, "YES" if ok else "NO", lb_old))
 print("\n".join(report))

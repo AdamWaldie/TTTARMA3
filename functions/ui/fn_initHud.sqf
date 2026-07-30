@@ -43,16 +43,15 @@ private _color = [_role] call Waldo_roleColor;
 // Three thematic wells, per direction - GMod-TTT heritage, Armaville military
 // identity, TTT evidence:
 //
-//   0 Original      - the badge ring, grandfathered. The only style still using
 //                     idc 999/1000/1001/1272.
 //   1 Struck Coin   - milled rim, recessed field, exergue at the foot
-//   2 Enamel Pin    - cloisonne enamel in a brass cloison
-//   3 Dog Tag       - brushed steel on a bead chain, hole punched through
-//   4 Unit Patch    - satin stitch, merrowed amber edge
-//   5 Crate Stencil - spray through a stencil; the glyph is the UNPAINTED part
-//   6 Case File     - rubber clearance stamp on manila
-//   7 Chalk Mark    - chalk on asphalt
-//   8 Evidence Tag  - manila tag, brass eyelet punched top-right, string
+//   1 Enamel Pin    - cloisonne enamel in a brass cloison
+//   2 Dog Tag       - brushed steel on a bead chain, hole punched through
+//   3 Unit Patch    - satin stitch, merrowed amber edge
+//   4 Crate Stencil - spray through a stencil; the glyph is the UNPAINTED part
+//   5 Case File     - rubber clearance stamp on manila
+//   6 Chalk Mark    - chalk on asphalt
+//   7 Evidence Tag  - manila tag, brass eyelet punched top-right, string
 //
 // Each is three RscPictures: a base under the role element, a luminance-only role
 // layer that ctrlSetTextColor multiplies to the role colour, and a detail layer
@@ -64,14 +63,21 @@ private _color = [_role] call Waldo_roleColor;
 // the H key -> Waldo_fnc_openStylePicker), so it's saved across sessions and
 // never broadcast or read from anywhere else.
 // ============================================================================
-private _style = profileNamespace getVariable ["Waldo_roleCrestStylePref", 1];
+private _style = profileNamespace getVariable ["Waldo_roleCrestStylePref", 0];
 // Original and Field Medallion both use the badge ring. Field Medallion's whole
 // idea is to BE Original with a nameplate under it, so it inherits the same
 // medallion - textures and tuned position included. Styles 2-9 are drawn crests
 // and replace it outright.
-private _usesRing = (_style in [0, 1]);
+// Only Field Medallion (slot 0) uses the badge ring. Styles 1-8 are drawn crests
+// and replace it outright.
+private _usesRing = (_style == 0);
 
 { (_display displayCtrl _x) ctrlShow _usesRing; } forEach [1272, 999, 1000, 1001];
+// Original's full-width credits pill is retired with Original itself - Field
+// Medallion carries the balance in its nameplate instead. Kept declared but always
+// hidden rather than deleted, so the controls are there if a future style wants a
+// pill again.
+{ (_display displayCtrl _x) ctrlShow false; } forEach [1002, 1003, 1004, 1005, 1006];
 
 if (_usesRing) then {
 	// GMod-style role crest: tint the circular badge and centre the role's
@@ -130,28 +136,26 @@ private _hasCredits = _role in ["Traitor", "Detective"];
 // omittable without notice: hide them and the plate is simply plain, with no
 // hole where a panel used to be.
 private _styleAlways = [
-	[],                        // 0 - Original: badge ring above, nothing else
-	[1290, 1291, 1292, 1293],          // 1 - Field Medallion: nameplate under the ring
-	[1300, 1301, 1302, 1303],                  // 2 - struckCoin
-	[1310, 1311, 1312, 1313],                  // 3 - enamelPin
-	[1320, 1321, 1322, 1323],                  // 4 - dogTag
-	[1330, 1331, 1332, 1333],                  // 5 - unitPatch
-	[1340, 1341, 1342, 1343],                  // 6 - crateStencil
-	[1350, 1351, 1352, 1353],                  // 7 - caseFile
-	[1360, 1361, 1362, 1363],                  // 8 - chalkMark
-	[1370, 1371, 1372, 1373]                  // 9 - evidenceTag
+	[1290, 1291, 1292, 1293],          // 0 - Field Medallion: nameplate under the ring
+	[1300, 1301, 1302, 1303],                  // 1 - struckCoin
+	[1310, 1311, 1312, 1313],                  // 2 - enamelPin
+	[1320, 1321, 1322, 1323],                  // 3 - dogTag
+	[1330, 1331, 1332, 1333],                  // 4 - unitPatch
+	[1340, 1341, 1342, 1343],                  // 5 - crateStencil
+	[1350, 1351, 1352, 1353],                  // 6 - caseFile
+	[1360, 1361, 1362, 1363],                  // 7 - chalkMark
+	[1370, 1371, 1372, 1373]                  // 8 - evidenceTag
 ];
 private _styleCredits = [
-	[1002, 1003, 1004, 1005, 1006],   // 0 - the whole pill (shadow/bg/highlight/accent/text)
-	[1294, 1295],                      // 1 - amber tick + balance in the nameplate's right half
-	[1304, 1305, 1306],                    // 2 - struckCoin
-	[1314, 1315, 1316],                    // 3 - enamelPin
-	[1324, 1325, 1326],                    // 4 - dogTag
-	[1334, 1335, 1336],                    // 5 - unitPatch
-	[1344, 1345, 1346],                    // 6 - crateStencil
-	[1354, 1355, 1356],                    // 7 - caseFile
-	[1364, 1365, 1366],                    // 8 - chalkMark
-	[1374, 1375, 1376]                    // 9 - evidenceTag
+	[1294, 1295],                      // 0 - amber tick + balance in the nameplate's right half
+	[1304, 1305, 1306],                    // 1 - struckCoin
+	[1314, 1315, 1316],                    // 2 - enamelPin
+	[1324, 1325, 1326],                    // 3 - dogTag
+	[1334, 1335, 1336],                    // 4 - unitPatch
+	[1344, 1345, 1346],                    // 5 - crateStencil
+	[1354, 1355, 1356],                    // 6 - caseFile
+	[1364, 1365, 1366],                    // 7 - chalkMark
+	[1374, 1375, 1376]                    // 8 - evidenceTag
 ];
 
 {
@@ -172,16 +176,16 @@ private _styleCredits = [
 // colours - amber fittings, brass eyelet, bead chain, manila card, crate plank,
 // asphalt - and tinting them would collapse each crest to a single hue, which is
 // the exact failure the drawn artwork exists to avoid.
-if (_style > 1) then {
+if (_style > 0) then {
 	private _roleLayer = switch (_style) do {
-		case 2: { 1301 };
-		case 3: { 1311 };
-		case 4: { 1321 };
-		case 5: { 1331 };
-		case 6: { 1341 };
-		case 7: { 1351 };
-		case 8: { 1361 };
-		case 9: { 1371 };
+		case 1: { 1301 };
+		case 2: { 1311 };
+		case 3: { 1321 };
+		case 4: { 1331 };
+		case 5: { 1341 };
+		case 6: { 1351 };
+		case 7: { 1361 };
+		case 8: { 1371 };
 	};
 	(_display displayCtrl _roleLayer) ctrlSetTextColor _color;
 };
@@ -191,9 +195,6 @@ if (_style > 1) then {
 // line. Both are flat rects rather than a texture layer, so they take a
 // background colour, not a text colour.
 if (_style == 0) then {
-	(_display displayCtrl 1003) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
-};
-if (_style == 1) then {
 	(_display displayCtrl 1292) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
 };
 
@@ -210,18 +211,18 @@ if (_style == 1) then {
 //   "role"  - ink, for the two paper crests where the letter sits on pale card
 //   "plank" - the crate's own olive, because on a real stencil the glyph is the
 //             UNPAINTED part showing the surface through it
-if (_style > 1) then {
+if (_style > 0) then {
 	// [letter idc, xOff, yOff, w, h, sizeEx, colour] - offsets/sizes in safezoneH
 	// from the badge anchor, matching the hpp block exactly.
 	private _letterBox = switch (_style) do {
-		case 2: { [1303, 0.039922, 0.038047, 0.080156, 0.080156, 0.072734, "cream"] };   // struckCoin
-		case 3: { [1313, 0.038437, 0.038789, 0.083125, 0.083125, 0.074961, "cream"] };   // enamelPin
-		case 4: { [1323, 0.0325, 0.062539, 0.089063, 0.038594, 0.034883, "cream"] };   // dogTag
-		case 5: { [1333, 0.026562, 0.034336, 0.10687, 0.068281, 0.061602, "cream"] };   // unitPatch
-		case 6: { [1343, 0.013203, 0.044727, 0.13359, 0.068281, 0.061602, "plank"] };   // crateStencil
-		case 7: { [1353, 0.051797, 0.040273, 0.062344, 0.050469, 0.045273, "role"] };   // caseFile
-		case 8: { [1363, 0.031016, 0.041016, 0.097969, 0.083125, 0.074961, "cream"] };   // chalkMark
-		case 9: { [1373, 0.060703, 0.052891, 0.053437, 0.0475, 0.043047, "role"] };   // evidenceTag
+		case 1: { [1303, 0.039922, 0.038047, 0.080156, 0.080156, 0.072734, "cream"] };   // struckCoin
+		case 2: { [1313, 0.038437, 0.038789, 0.083125, 0.083125, 0.074961, "cream"] };   // enamelPin
+		case 3: { [1323, 0.0325, 0.062539, 0.089063, 0.038594, 0.034883, "cream"] };   // dogTag
+		case 4: { [1333, 0.026562, 0.034336, 0.10687, 0.068281, 0.061602, "cream"] };   // unitPatch
+		case 5: { [1343, 0.013203, 0.044727, 0.13359, 0.068281, 0.061602, "plank"] };   // crateStencil
+		case 6: { [1353, 0.051797, 0.040273, 0.062344, 0.050469, 0.045273, "role"] };   // caseFile
+		case 7: { [1363, 0.031016, 0.041016, 0.097969, 0.083125, 0.074961, "cream"] };   // chalkMark
+		case 8: { [1373, 0.060703, 0.052891, 0.053437, 0.0475, 0.043047, "role"] };   // evidenceTag
 	};
 	_letterBox params ["_lIdc", "_lX", "_lY", "_lW", "_lH", "_lSize", "_lColour"];
 
@@ -256,7 +257,7 @@ if (_style > 1) then {
 // bar. Set once here since it never changes for this HUD instance. Its box shrinks
 // to the bar's left half when there's a balance to sit beside, and takes the whole
 // bar when there isn't, so the plate never reads as half-empty.
-if (_style == 1) then {
+if (_style == 0) then {
 	private _name = _display displayCtrl 1293;
 	_name ctrlSetText toUpper _role;
 	private _nH = ctrlTextHeight _name;
@@ -300,15 +301,15 @@ if (_hasCredits) then {
 	// design intended that; it's the same measure-don't-guess fix the rest of
 	// this HUD already had, applied to the one control that never got it.
 	private _creditBox = switch (_style) do {
-		case 1: { [1295, 0.086, 0.152, 0.060, 0.026, "%1 CR"] };   // Field Medallion
-		case 2: { [1306, 0.020625, 0.12711, 0.11875, 0.02375, "%1 CR"] };   // struckCoin
-		case 3: { [1316, 0.023594, 0.12934, 0.11281, 0.019297, "%1 CR"] };   // enamelPin
-		case 4: { [1326, 0.019141, 0.10781, 0.12172, 0.017813, "%1 CR"] };   // dogTag
-		case 5: { [1336, 0.0325, 0.1093, 0.095, 0.017813, "%1 CR"] };   // unitPatch
-		case 6: { [1346, 0.019141, 0.11969, 0.12172, 0.017813, "%1 CR"] };   // crateStencil
-		case 7: { [1356, 0.0072656, 0.14344, 0.14547, 0.017813, "%1 CREDITS"] };   // caseFile
-		case 8: { [1366, 0.026562, 0.14641, 0.10687, 0.019297, "%1 CREDITS"] };   // chalkMark
-		case 9: { [1376, 0.045859, 0.14344, 0.080156, 0.019297, "%1 CR"] };   // evidenceTag
+		case 0: { [1295, 0.086, 0.152, 0.060, 0.026, "%1 CR"] };   // Field Medallion
+		case 1: { [1306, 0.020625, 0.12711, 0.11875, 0.02375, "%1 CR"] };   // struckCoin
+		case 2: { [1316, 0.023594, 0.12934, 0.11281, 0.019297, "%1 CR"] };   // enamelPin
+		case 3: { [1326, 0.019141, 0.10781, 0.12172, 0.017813, "%1 CR"] };   // dogTag
+		case 4: { [1336, 0.0325, 0.1093, 0.095, 0.017813, "%1 CR"] };   // unitPatch
+		case 5: { [1346, 0.019141, 0.11969, 0.12172, 0.017813, "%1 CR"] };   // crateStencil
+		case 6: { [1356, 0.0072656, 0.14344, 0.14547, 0.017813, "%1 CREDITS"] };   // caseFile
+		case 7: { [1366, 0.026562, 0.14641, 0.10687, 0.019297, "%1 CREDITS"] };   // chalkMark
+		case 8: { [1376, 0.045859, 0.14344, 0.080156, 0.019297, "%1 CR"] };   // evidenceTag
 		// 0 - Original. Keeps its own lowercase "%1 credits" wording rather than
 		// being normalised to the other styles' CR/CREDITS - the full-width pill has
 		// room for it, and it's part of what the style is.

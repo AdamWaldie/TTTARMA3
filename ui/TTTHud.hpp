@@ -265,35 +265,28 @@ class RscTitles
 			// it keeps its own construction and has only had a light polish pass
 			// (each change is commented at the control it touches).
 			//
-			// EACH STYLE BELOW IS ITS OWN CONSTRUCTION SYSTEM. That is the point of
-			// them, and it's worth being explicit because an earlier pass got it
-			// wrong: every style was built from Style 8's recipe (shadow, role
-			// border, dark plate, amber accent) with only its silhouette and accent
-			// marks varying, which is a set of variations, not a set of designs.
-			// What varies now is how each crest is BUILT:
+			// Styles 1-8 are DRAWN ARTWORK (ui/crests/*.paa), not arrangements of
+			// rects. An earlier pass built them from flat rects with the theme living
+			// entirely in their names, which is not a theme at all:
 			//
-			//   1 Field Medallion - medallion + nameplate. Extends Original.
-			//   2 Stencil Column  - banded: role bands at head and foot, no outline.
-			//   3 Service Pips    - outline only: no plate, terrain shows through.
-			//   4 Punch Card      - solid role field with a knocked-out cream letter.
-			//   5 Bracket Sight   - frameless: marks and outlined text, no panel.
-			//   6 Layered Chip    - offset stack: role plate behind, not around.
-			//   7 Ledger Slip     - paper: pale slip, ink text, bound role margin.
-			//   8 Stamped Tag     - bordered plate: the one style that frames itself.
+			//   1 Struck Coin   - milled rim, recessed field, exergue at the foot
+			//   2 Enamel Pin    - cloisonne enamel in a brass cloison
+			//   3 Dog Tag       - brushed steel on a bead chain, hole punched through
+			//   4 Unit Patch    - satin stitch, merrowed amber edge
+			//   5 Crate Stencil - spray through a stencil; the glyph is the UNPAINTED part
+			//   6 Case File     - rubber clearance stamp on manila
+			//   7 Chalk Mark    - chalk on asphalt
+			//   8 Evidence Tag  - manila tag, brass eyelet punched top-right, string
 			//
-			// Style 1 is the only one that reuses the badge ring (idc 999/1000/1001
-			// and its shadow, 1272) - deliberately, since its whole idea is to build
-			// on Original. Every other style replaces the medallion outright.
+			// Three wells, per direction: GMod-TTT heritage (1-2), Armaville military
+			// identity (3-5), TTT evidence (6-8). The artwork and its generator live in
+			// tools/crestart/, so it can be re-derived rather than only replaced.
 			//
-			// Amber (WALDO_ACCENT) is never role-tinted anywhere. It is the one
-			// constant across nine otherwise unrelated constructions, which is what
-			// keeps them recognisable as the same game's UI rather than nine
-			// unrelated widgets. The role colour is what varies.
-			//
-			// Flat RscText rects only, no RscPicture (beyond Original's own three
-			// textures, which are proven). Two separate attempts at texture-based
-			// tinting for new crest elements both failed to apply their tint
-			// in-game, confirmed live via screenshots.
+			// On textures: two earlier attempts at texture-based tinting did fail, but
+			// both used CONFIG-TIME tint properties on new files. The runtime path -
+			// an RscPicture with no colour property, tinted by ctrlSetTextColor - has
+			// always worked here and is what the live badge ring already does every
+			// round. That distinction is what makes the drawn crests viable.
 			//
 			// Credits handling, per the direction that credit displays must either
 			// be worked into the design or omitted without notice: every balance is
@@ -318,124 +311,107 @@ class RscTitles
 // low-contrast on every style (worst on Traitor red).
 #define ROLE_LETTER {0.95, 0.93, 0.86, 1}
 #define CREAM {0.95, 0.93, 0.86, 1}
-			// ---- Style 1: Field Medallion. The one style that builds directly ON
-			// Original rather than away from it - it reuses the exact same badge
-			// ring (idc 999/1000/1001 and its soft shadow, 1272), textures and
-			// tuned position included, and changes only what sits under it. Where
-			// Original puts a full-width pill ABOVE the medallion carrying just a
-			// number, this puts a nameplate BELOW it carrying the role's name and
-			// the balance in one bar, split by an amber tick. Construction:
-			// medallion + nameplate. No border, no casing plate around the badge.
-			class s1Shadow: RscText { idc = 1300; x = RX - (0.004 * safezoneH); y = RY + (0.148 * safezoneH); w = 0.158 * safezoneH; h = 0.034 * safezoneH; colorBackground[] = WALDO_SHADOW; style = 0; };
-			class s1Plate: RscText { idc = 1301; x = RX; y = RY + (0.152 * safezoneH); w = 0.15 * safezoneH; h = 0.026 * safezoneH; colorBackground[] = WALDO_PLATE; style = 0; };
-			class s1Accent: RscText { idc = 1302; x = RX; y = RY + (0.152 * safezoneH); w = 0.15 * safezoneH; h = 0.0025 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-			class s1Name: RscText { idc = 1303; text = ""; x = RX + (0.004 * safezoneH); y = RY + (0.152 * safezoneH); w = 0.08 * safezoneH; h = 0.026 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = CREAM; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.017 * safezoneH; shadow = 1; };
-			class s1Divider: RscText { idc = 1304; x = RX + (0.083 * safezoneH); y = RY + (0.156 * safezoneH); w = 0.0015 * safezoneH; h = 0.018 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s1Credits: RscText { idc = 1305; text = ""; x = RX + (0.086 * safezoneH); y = RY + (0.152 * safezoneH); w = 0.06 * safezoneH; h = 0.026 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = CREAM; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.017 * safezoneH; shadow = 1; };
+			// Each crest is three RscPictures plus its letter and balance.
+			//
+			// ctrlSetTextColor multiplies the WHOLE texture, which is why the artwork
+			// is split rather than shipped as one image per crest: only *_role carries
+			// the material that becomes the role colour, so *_base (the shadow, and any
+			// surface the role element sits ON - crate plank, asphalt, manila card) and
+			// *_detail (amber fittings, bead chain, brass eyelet, clip) can keep their
+			// own fixed colours. Declaration order is draw order, so base must come
+			// first and detail last.
+			//
+			// Both mechanisms are already proven in this file, which is the whole reason
+			// this approach works where earlier texture attempts failed: an RscPicture
+			// with no colour property renders as authored (roleTextBG), and
+			// ctrlSetTextColor tints one at runtime (roleTextBG again, every round, in
+			// fn_initHud). The attempts that failed used CONFIG-TIME tint properties on
+			// new files - a different thing entirely.
+			//
+			// All three layers share the crest's full footprint; the art places
+			// everything within it. The footprint is 0.19 of safezoneH square, matching
+			// Original's own overall height, anchored so its right and bottom edges land
+			// exactly on the screen-edge budget (RX + 0.175, RY + 0.185).
+			//
+			// Letter boxes and sizes are NOT hand-picked: tools/crestart/fitletters.py
+			// measures them from each crest's own body mask and verifies the glyph is
+			// contained, and this block is generated from that output - so the geometry
+			// here can't drift from the artwork it belongs to.
+			//
+			// The balance's dark backing is a flat rect, deliberately not baked into any
+			// texture: a texture can't be hidden per role, so a baked band showed up on
+			// Jester/Innocent as an empty holder with nothing in it.
+			// ---- Style 1: struckCoin ----
+			class s1Base: RscPicture { idc = 1300; text = "ui\crests\struckCoin_base.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // under the role element - shadow, and any surface it sits on
+			class s1Role: RscPicture { idc = 1301; text = "ui\crests\struckCoin_role.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // TINTED to the role colour at runtime (ctrlSetTextColor)
+			class s1Detail: RscPicture { idc = 1302; text = "ui\crests\struckCoin_detail.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // over the top - amber fittings, chain, eyelet, clip
+			class s1Letter: RscText { idc = 1303; text = ""; x = RX + (0.039922 * safezoneH); y = RY + (0.038047 * safezoneH); w = 0.080156 * safezoneH; h = 0.080156 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95, 0.93, 0.86, 1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.072734 * safezoneH; shadow = 1; };
+			class s1CreditsBand: RscText { idc = 1304; x = RX + (0.020625 * safezoneH); y = RY + (0.12711 * safezoneH); w = 0.11875 * safezoneH; h = 0.02375 * safezoneH; colorBackground[] = {0.07, 0.067, 0.055, 0.8}; style = 0; };
+			class s1CreditsLip: RscText { idc = 1305; x = RX + (0.020625 * safezoneH); y = RY + (0.12711 * safezoneH); w = 0.11875 * safezoneH; h = 0.0014844 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s1Credits: RscText { idc = 1306; text = ""; x = RX + (0.020625 * safezoneH); y = RY + (0.12711 * safezoneH); w = 0.11875 * safezoneH; h = 0.02375 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95, 0.93, 0.86, 1}; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.0171 * safezoneH; shadow = 1; };
 
-			// ---- Style 2: Stencil Column. A narrow crate stencil. Construction:
-			// BANDED, not bordered - the role colour is a thick band across the
-			// column's head and foot with an amber hairline inside each, rather
-			// than an outline running round the whole plate. Nothing frames the
-			// letter; the two bands do the work.
-			class s2Shadow: RscText { idc = 1310; x = RX + (0.071 * safezoneH); y = RY + (0.018 * safezoneH); w = 0.098 * safezoneH; h = 0.158 * safezoneH; colorBackground[] = WALDO_SHADOW; style = 0; };
-			class s2Plate: RscText { idc = 1311; x = RX + (0.075 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.09 * safezoneH; h = 0.15 * safezoneH; colorBackground[] = WALDO_PLATE; style = 0; };
-			class s2BandTop: RscText { idc = 1312; x = RX + (0.075 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.09 * safezoneH; h = 0.012 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-			class s2BandBot: RscText { idc = 1313; x = RX + (0.075 * safezoneH); y = RY + (0.16 * safezoneH); w = 0.09 * safezoneH; h = 0.012 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-			class s2HairTop: RscText { idc = 1314; x = RX + (0.075 * safezoneH); y = RY + (0.034 * safezoneH); w = 0.09 * safezoneH; h = 0.002 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s2HairBot: RscText { idc = 1315; x = RX + (0.075 * safezoneH); y = RY + (0.158 * safezoneH); w = 0.09 * safezoneH; h = 0.002 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s2Letter: RscText { idc = 1316; text = ""; x = RX + (0.075 * safezoneH); y = RY + (0.036 * safezoneH); w = 0.09 * safezoneH; h = 0.1 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = ROLE_LETTER; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.062 * safezoneH; shadow = 1; };
-			class s2Credits: RscText { idc = 1317; text = ""; x = RX + (0.075 * safezoneH); y = RY + (0.136 * safezoneH); w = 0.09 * safezoneH; h = 0.022 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = CREAM; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.019 * safezoneH; shadow = 1; };
+			// ---- Style 2: enamelPin ----
+			class s2Base: RscPicture { idc = 1310; text = "ui\crests\enamelPin_base.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // under the role element - shadow, and any surface it sits on
+			class s2Role: RscPicture { idc = 1311; text = "ui\crests\enamelPin_role.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // TINTED to the role colour at runtime (ctrlSetTextColor)
+			class s2Detail: RscPicture { idc = 1312; text = "ui\crests\enamelPin_detail.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // over the top - amber fittings, chain, eyelet, clip
+			class s2Letter: RscText { idc = 1313; text = ""; x = RX + (0.038437 * safezoneH); y = RY + (0.038789 * safezoneH); w = 0.083125 * safezoneH; h = 0.083125 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95, 0.93, 0.86, 1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.074961 * safezoneH; shadow = 1; };
+			class s2CreditsBand: RscText { idc = 1314; x = RX + (0.023594 * safezoneH); y = RY + (0.12934 * safezoneH); w = 0.11281 * safezoneH; h = 0.019297 * safezoneH; colorBackground[] = {0.07, 0.067, 0.055, 0.8}; style = 0; };
+			class s2CreditsLip: RscText { idc = 1315; x = RX + (0.023594 * safezoneH); y = RY + (0.12934 * safezoneH); w = 0.11281 * safezoneH; h = 0.0014844 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s2Credits: RscText { idc = 1316; text = ""; x = RX + (0.023594 * safezoneH); y = RY + (0.12934 * safezoneH); w = 0.11281 * safezoneH; h = 0.019297 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95, 0.93, 0.86, 1}; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.013894 * safezoneH; shadow = 1; };
 
-			// ---- Style 3: Service Pips. Construction: OUTLINE ONLY - four thin
-			// role-coloured edge rects and no plate, so the terrain shows through
-			// the middle behind a faint wash rather than a solid casing. The three
-			// amber service bars sit OUTSIDE the frame, below its foot. This is the
-			// closest thing here to a wireframe/technical-drawing treatment.
-			class s3Wash: RscText { idc = 1320; x = RX + (0.015 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.15 * safezoneH; h = 0.15 * safezoneH; colorBackground[] = {0, 0, 0, 0.38}; style = 0; };
-			class s3EdgeT: RscText { idc = 1321; x = RX + (0.015 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.15 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-			class s3EdgeB: RscText { idc = 1322; x = RX + (0.015 * safezoneH); y = RY + (0.168 * safezoneH); w = 0.15 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-			class s3EdgeL: RscText { idc = 1323; x = RX + (0.015 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.004 * safezoneH; h = 0.15 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-			class s3EdgeR: RscText { idc = 1324; x = RX + (0.161 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.004 * safezoneH; h = 0.15 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-			class s3Bar1: RscText { idc = 1325; x = RX + (0.151 * safezoneH); y = RY + (0.176 * safezoneH); w = 0.014 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s3Bar2: RscText { idc = 1326; x = RX + (0.135 * safezoneH); y = RY + (0.176 * safezoneH); w = 0.01 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s3Bar3: RscText { idc = 1327; x = RX + (0.125 * safezoneH); y = RY + (0.176 * safezoneH); w = 0.006 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s3Letter: RscText { idc = 1328; text = ""; x = RX + (0.015 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.15 * safezoneH; h = 0.15 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = ROLE_LETTER; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.09 * safezoneH; shadow = 2; };
-			class s3Credits: RscText { idc = 1329; text = ""; x = RX + (0.023 * safezoneH); y = RY + (0.144 * safezoneH); w = 0.134 * safezoneH; h = 0.022 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = CREAM; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.019 * safezoneH; shadow = 2; };
+			// ---- Style 3: dogTag ----
+			class s3Base: RscPicture { idc = 1320; text = "ui\crests\dogTag_base.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // under the role element - shadow, and any surface it sits on
+			class s3Role: RscPicture { idc = 1321; text = "ui\crests\dogTag_role.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // TINTED to the role colour at runtime (ctrlSetTextColor)
+			class s3Detail: RscPicture { idc = 1322; text = "ui\crests\dogTag_detail.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // over the top - amber fittings, chain, eyelet, clip
+			class s3Letter: RscText { idc = 1323; text = ""; x = RX + (0.0325 * safezoneH); y = RY + (0.062539 * safezoneH); w = 0.089063 * safezoneH; h = 0.038594 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95, 0.93, 0.86, 1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.034883 * safezoneH; shadow = 1; };
+			class s3CreditsBand: RscText { idc = 1324; x = RX + (0.019141 * safezoneH); y = RY + (0.10781 * safezoneH); w = 0.12172 * safezoneH; h = 0.017813 * safezoneH; colorBackground[] = {0.07, 0.067, 0.055, 0.8}; style = 0; };
+			class s3CreditsLip: RscText { idc = 1325; x = RX + (0.019141 * safezoneH); y = RY + (0.10781 * safezoneH); w = 0.12172 * safezoneH; h = 0.0014844 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s3Credits: RscText { idc = 1326; text = ""; x = RX + (0.019141 * safezoneH); y = RY + (0.10781 * safezoneH); w = 0.12172 * safezoneH; h = 0.017813 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95, 0.93, 0.86, 1}; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.012825 * safezoneH; shadow = 1; };
 
-			// ---- Style 4: Punch Card. Construction: SOLID ROLE FIELD - the plate
-			// itself IS the role colour at full opacity and the letter is knocked
-			// out of it in cream, the inverse of every other style here (dark plate,
-			// coloured mark). Amber punch marks along its head. The one deliberately
-			// loud, poster-like crest, for players who want the role read at a
-			// glance rather than kept subtle.
-			class s4Shadow: RscText { idc = 1330; x = RX + (0.011 * safezoneH); y = RY + (0.018 * safezoneH); w = 0.158 * safezoneH; h = 0.158 * safezoneH; colorBackground[] = WALDO_SHADOW; style = 0; };
-			class s4Plate: RscText { idc = 1331; x = RX + (0.015 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.15 * safezoneH; h = 0.15 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-			class s4Punch1: RscText { idc = 1332; x = RX + (0.04 * safezoneH); y = RY + (0.031 * safezoneH); w = 0.012 * safezoneH; h = 0.012 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s4Punch2: RscText { idc = 1333; x = RX + (0.062 * safezoneH); y = RY + (0.031 * safezoneH); w = 0.012 * safezoneH; h = 0.012 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s4Punch3: RscText { idc = 1334; x = RX + (0.084 * safezoneH); y = RY + (0.031 * safezoneH); w = 0.012 * safezoneH; h = 0.012 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s4Punch4: RscText { idc = 1335; x = RX + (0.106 * safezoneH); y = RY + (0.031 * safezoneH); w = 0.012 * safezoneH; h = 0.012 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s4Punch5: RscText { idc = 1336; x = RX + (0.128 * safezoneH); y = RY + (0.031 * safezoneH); w = 0.012 * safezoneH; h = 0.012 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s4Letter: RscText { idc = 1337; text = ""; x = RX + (0.015 * safezoneH); y = RY + (0.032 * safezoneH); w = 0.15 * safezoneH; h = 0.14 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = CREAM; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.09 * safezoneH; shadow = 1; };
-			class s4Credits: RscText { idc = 1338; text = ""; x = RX + (0.015 * safezoneH); y = RY + (0.144 * safezoneH); w = 0.15 * safezoneH; h = 0.02 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = CREAM; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.019 * safezoneH; shadow = 1; };
+			// ---- Style 4: unitPatch ----
+			class s4Base: RscPicture { idc = 1330; text = "ui\crests\unitPatch_base.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // under the role element - shadow, and any surface it sits on
+			class s4Role: RscPicture { idc = 1331; text = "ui\crests\unitPatch_role.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // TINTED to the role colour at runtime (ctrlSetTextColor)
+			class s4Detail: RscPicture { idc = 1332; text = "ui\crests\unitPatch_detail.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // over the top - amber fittings, chain, eyelet, clip
+			class s4Letter: RscText { idc = 1333; text = ""; x = RX + (0.026562 * safezoneH); y = RY + (0.034336 * safezoneH); w = 0.10687 * safezoneH; h = 0.068281 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95, 0.93, 0.86, 1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.061602 * safezoneH; shadow = 1; };
+			class s4CreditsBand: RscText { idc = 1334; x = RX + (0.0325 * safezoneH); y = RY + (0.1093 * safezoneH); w = 0.095 * safezoneH; h = 0.017813 * safezoneH; colorBackground[] = {0.07, 0.067, 0.055, 0.8}; style = 0; };
+			class s4CreditsLip: RscText { idc = 1335; x = RX + (0.0325 * safezoneH); y = RY + (0.1093 * safezoneH); w = 0.095 * safezoneH; h = 0.0014844 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s4Credits: RscText { idc = 1336; text = ""; x = RX + (0.0325 * safezoneH); y = RY + (0.1093 * safezoneH); w = 0.095 * safezoneH; h = 0.017813 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95, 0.93, 0.86, 1}; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.012825 * safezoneH; shadow = 1; };
 
-			// ---- Style 5: Bracket Sight. Construction: FRAMELESS - no plate, no
-			// border, no shadow rect. Four amber L-arms, the letter and the balance,
-			// sitting directly on the world with outlined text (shadow = 2) doing
-			// the legibility work. Arma's own target-marking convention, and the
-			// minimal option for players who don't want a panel in the corner.
-			class s5ArmTLh: RscText { idc = 1340; x = RX + (0.017 * safezoneH); y = RY + (0.027 * safezoneH); w = 0.028 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s5ArmTLv: RscText { idc = 1341; x = RX + (0.017 * safezoneH); y = RY + (0.027 * safezoneH); w = 0.004 * safezoneH; h = 0.028 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s5ArmTRh: RscText { idc = 1342; x = RX + (0.129 * safezoneH); y = RY + (0.027 * safezoneH); w = 0.028 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s5ArmTRv: RscText { idc = 1343; x = RX + (0.153 * safezoneH); y = RY + (0.027 * safezoneH); w = 0.004 * safezoneH; h = 0.028 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s5ArmBLh: RscText { idc = 1344; x = RX + (0.017 * safezoneH); y = RY + (0.163 * safezoneH); w = 0.028 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s5ArmBLv: RscText { idc = 1345; x = RX + (0.017 * safezoneH); y = RY + (0.139 * safezoneH); w = 0.004 * safezoneH; h = 0.028 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s5ArmBRh: RscText { idc = 1346; x = RX + (0.129 * safezoneH); y = RY + (0.163 * safezoneH); w = 0.028 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s5ArmBRv: RscText { idc = 1347; x = RX + (0.153 * safezoneH); y = RY + (0.139 * safezoneH); w = 0.004 * safezoneH; h = 0.028 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s5Letter: RscText { idc = 1348; text = ""; x = RX + (0.017 * safezoneH); y = RY + (0.027 * safezoneH); w = 0.14 * safezoneH; h = 0.14 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = ROLE_LETTER; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.088 * safezoneH; shadow = 2; };
-			class s5Credits: RscText { idc = 1349; text = ""; x = RX + (0.017 * safezoneH); y = RY + (0.139 * safezoneH); w = 0.14 * safezoneH; h = 0.02 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = CREAM; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.019 * safezoneH; shadow = 2; };
+			// ---- Style 5: crateStencil ----
+			class s5Base: RscPicture { idc = 1340; text = "ui\crests\crateStencil_base.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // under the role element - shadow, and any surface it sits on
+			class s5Role: RscPicture { idc = 1341; text = "ui\crests\crateStencil_role.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // TINTED to the role colour at runtime (ctrlSetTextColor)
+			class s5Detail: RscPicture { idc = 1342; text = "ui\crests\crateStencil_detail.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // over the top - amber fittings, chain, eyelet, clip
+			class s5Letter: RscText { idc = 1343; text = ""; x = RX + (0.013203 * safezoneH); y = RY + (0.044727 * safezoneH); w = 0.13359 * safezoneH; h = 0.068281 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.227, 0.243, 0.165, 1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.061602 * safezoneH; shadow = 1; };
+			class s5CreditsBand: RscText { idc = 1344; x = RX + (0.019141 * safezoneH); y = RY + (0.11969 * safezoneH); w = 0.12172 * safezoneH; h = 0.017813 * safezoneH; colorBackground[] = {0.07, 0.067, 0.055, 0.8}; style = 0; };
+			class s5CreditsLip: RscText { idc = 1345; x = RX + (0.019141 * safezoneH); y = RY + (0.11969 * safezoneH); w = 0.12172 * safezoneH; h = 0.0014844 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s5Credits: RscText { idc = 1346; text = ""; x = RX + (0.019141 * safezoneH); y = RY + (0.11969 * safezoneH); w = 0.12172 * safezoneH; h = 0.017813 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95, 0.93, 0.86, 1}; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.012825 * safezoneH; shadow = 1; };
 
-			// ---- Style 6: Layered Chip. Construction: OFFSET STACK - two plates,
-			// and the role colour is the one UNDERNEATH showing past the dark front
-			// plate's corner, not an outline around it. An amber bevel catches the
-			// front plate's top edge. Nothing else here uses depth as its device.
-			class s6Shadow: RscText { idc = 1360; x = RX + (0.01 * safezoneH); y = RY + (0.02 * safezoneH); w = 0.163 * safezoneH; h = 0.163 * safezoneH; colorBackground[] = WALDO_SHADOW; style = 0; };
-			class s6BackPlate: RscText { idc = 1361; x = RX + (0.024 * safezoneH); y = RY + (0.034 * safezoneH); w = 0.145 * safezoneH; h = 0.145 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-			class s6FrontPlate: RscText { idc = 1362; x = RX + (0.014 * safezoneH); y = RY + (0.024 * safezoneH); w = 0.145 * safezoneH; h = 0.145 * safezoneH; colorBackground[] = WALDO_PLATE; style = 0; };
-			class s6Bevel: RscText { idc = 1363; x = RX + (0.014 * safezoneH); y = RY + (0.024 * safezoneH); w = 0.145 * safezoneH; h = 0.003 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s6Letter: RscText { idc = 1364; text = ""; x = RX + (0.014 * safezoneH); y = RY + (0.024 * safezoneH); w = 0.145 * safezoneH; h = 0.145 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = ROLE_LETTER; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.09 * safezoneH; shadow = 1; };
-			class s6Credits: RscText { idc = 1365; text = ""; x = RX + (0.014 * safezoneH); y = RY + (0.142 * safezoneH); w = 0.145 * safezoneH; h = 0.02 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = CREAM; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.019 * safezoneH; shadow = 1; };
+			// ---- Style 6: caseFile ----
+			class s6Base: RscPicture { idc = 1350; text = "ui\crests\caseFile_base.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // under the role element - shadow, and any surface it sits on
+			class s6Role: RscPicture { idc = 1351; text = "ui\crests\caseFile_role.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // TINTED to the role colour at runtime (ctrlSetTextColor)
+			class s6Detail: RscPicture { idc = 1352; text = "ui\crests\caseFile_detail.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // over the top - amber fittings, chain, eyelet, clip
+			class s6Letter: RscText { idc = 1353; text = ""; x = RX + (0.051797 * safezoneH); y = RY + (0.040273 * safezoneH); w = 0.062344 * safezoneH; h = 0.050469 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95, 0.93, 0.86, 1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.045273 * safezoneH; shadow = 1; };
+			class s6CreditsBand: RscText { idc = 1354; x = RX + (0.0072656 * safezoneH); y = RY + (0.14344 * safezoneH); w = 0.14547 * safezoneH; h = 0.017813 * safezoneH; colorBackground[] = {0.07, 0.067, 0.055, 0.8}; style = 0; };
+			class s6CreditsLip: RscText { idc = 1355; x = RX + (0.0072656 * safezoneH); y = RY + (0.14344 * safezoneH); w = 0.14547 * safezoneH; h = 0.0014844 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s6Credits: RscText { idc = 1356; text = ""; x = RX + (0.0072656 * safezoneH); y = RY + (0.14344 * safezoneH); w = 0.14547 * safezoneH; h = 0.017813 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95, 0.93, 0.86, 1}; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.012825 * safezoneH; shadow = 1; };
 
-			// ---- Style 7: Ledger Slip. Construction: PAPER - the only light crest
-			// in the set. A pale slip with the role colour as a thick bound margin
-			// down its left edge, an amber rule beside it, faint ruled lines, and
-			// the letter and balance set in dark ink rather than cream on black.
-			// Keeps its lowercase "credits" wording, which suits a bookkeeper's
-			// slip and nothing else here.
-			class s7Shadow: RscText { idc = 1370; x = RX + (0.011 * safezoneH); y = RY + (0.018 * safezoneH); w = 0.158 * safezoneH; h = 0.158 * safezoneH; colorBackground[] = WALDO_SHADOW; style = 0; };
-			class s7Plate: RscText { idc = 1371; x = RX + (0.015 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.15 * safezoneH; h = 0.15 * safezoneH; colorBackground[] = WALDO_PAPER; style = 0; };
-			class s7Margin: RscText { idc = 1372; x = RX + (0.015 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.014 * safezoneH; h = 0.15 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-			class s7Rule: RscText { idc = 1373; x = RX + (0.031 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.002 * safezoneH; h = 0.15 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s7Line1: RscText { idc = 1374; x = RX + (0.037 * safezoneH); y = RY + (0.07 * safezoneH); w = 0.122 * safezoneH; h = 0.0015 * safezoneH; colorBackground[] = {0.25, 0.24, 0.20, 0.28}; style = 0; };
-			class s7Line2: RscText { idc = 1375; x = RX + (0.037 * safezoneH); y = RY + (0.118 * safezoneH); w = 0.122 * safezoneH; h = 0.0015 * safezoneH; colorBackground[] = {0.25, 0.24, 0.20, 0.28}; style = 0; };
-			class s7Letter: RscText { idc = 1376; text = ""; x = RX + (0.037 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.122 * safezoneH; h = 0.13 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = ROLE_LETTER; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.088 * safezoneH; shadow = 0; };
-			class s7Credits: RscText { idc = 1377; text = ""; x = RX + (0.037 * safezoneH); y = RY + (0.144 * safezoneH); w = 0.122 * safezoneH; h = 0.02 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = WALDO_INK; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.019 * safezoneH; shadow = 0; };
+			// ---- Style 7: chalkMark ----
+			class s7Base: RscPicture { idc = 1360; text = "ui\crests\chalkMark_base.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // under the role element - shadow, and any surface it sits on
+			class s7Role: RscPicture { idc = 1361; text = "ui\crests\chalkMark_role.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // TINTED to the role colour at runtime (ctrlSetTextColor)
+			class s7Detail: RscPicture { idc = 1362; text = "ui\crests\chalkMark_detail.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // over the top - amber fittings, chain, eyelet, clip
+			class s7Letter: RscText { idc = 1363; text = ""; x = RX + (0.031016 * safezoneH); y = RY + (0.041016 * safezoneH); w = 0.097969 * safezoneH; h = 0.083125 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95, 0.93, 0.86, 1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.074961 * safezoneH; shadow = 1; };
+			class s7CreditsBand: RscText { idc = 1364; x = RX + (0.026562 * safezoneH); y = RY + (0.14641 * safezoneH); w = 0.10687 * safezoneH; h = 0.019297 * safezoneH; colorBackground[] = {0.07, 0.067, 0.055, 0.8}; style = 0; };
+			class s7CreditsLip: RscText { idc = 1365; x = RX + (0.026562 * safezoneH); y = RY + (0.14641 * safezoneH); w = 0.10687 * safezoneH; h = 0.0014844 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s7Credits: RscText { idc = 1366; text = ""; x = RX + (0.026562 * safezoneH); y = RY + (0.14641 * safezoneH); w = 0.10687 * safezoneH; h = 0.019297 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95, 0.93, 0.86, 1}; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.013894 * safezoneH; shadow = 1; };
 
-			// ---- Style 8: Stamped Tag. Reshaped from a squarer plate into a narrow
-			// column - closer to Stencil Column's proportions - with its tag block
-			// moved into the top-right corner, per direction. Construction: the
-			// BORDERED plate - black drop shadow, role-coloured border, dark casing
-			// plate, amber tag and foot divider. It is the only style that frames
-			// its plate with an outline, which is what makes it read as a stamped
-			// tag rather than a stencil.
-			class s8Shadow: RscText { idc = 1280; x = RX + (0.075 * safezoneH); y = RY + (0.01 * safezoneH); w = 0.094 * safezoneH; h = 0.166 * safezoneH; colorBackground[] = WALDO_SHADOW; style = 0; };
-			class s8Border: RscText { idc = 1281; x = RX + (0.073 * safezoneH); y = RY + (0.008 * safezoneH); w = 0.098 * safezoneH; h = 0.17 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-			class s8Plate: RscText { idc = 1282; x = RX + (0.079 * safezoneH); y = RY + (0.014 * safezoneH); w = 0.086 * safezoneH; h = 0.158 * safezoneH; colorBackground[] = WALDO_PLATE; style = 0; };
-			class s8Highlight: RscText { idc = 1287; x = RX + (0.079 * safezoneH); y = RY + (0.014 * safezoneH); w = 0.086 * safezoneH; h = 0.003 * safezoneH; colorBackground[] = {0.32, 0.33, 0.28, 0.55}; style = 0; };
-			class s8Tag: RscText { idc = 1284; x = RX + (0.139 * safezoneH); y = RY + (0.014 * safezoneH); w = 0.026 * safezoneH; h = 0.026 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s8Divider: RscText { idc = 1283; x = RX + (0.079 * safezoneH); y = RY + (0.15 * safezoneH); w = 0.086 * safezoneH; h = 0.003 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s8Letter: RscText { idc = 1285; text = ""; x = RX + (0.079 * safezoneH); y = RY + (0.02 * safezoneH); w = 0.086 * safezoneH; h = 0.126 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = ROLE_LETTER; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.07 * safezoneH; shadow = 1; };
-			class s8Credits: RscText { idc = 1286; text = ""; x = RX + (0.079 * safezoneH); y = RY + (0.153 * safezoneH); w = 0.086 * safezoneH; h = 0.019 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = CREAM; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.018 * safezoneH; shadow = 1; };
+			// ---- Style 8: evidenceTag ----
+			class s8Base: RscPicture { idc = 1370; text = "ui\crests\evidenceTag_base.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // under the role element - shadow, and any surface it sits on
+			class s8Role: RscPicture { idc = 1371; text = "ui\crests\evidenceTag_role.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // TINTED to the role colour at runtime (ctrlSetTextColor)
+			class s8Detail: RscPicture { idc = 1372; text = "ui\crests\evidenceTag_detail.paa"; x = RX - (0.015 * safezoneH); y = RY - (0.005 * safezoneH); w = 0.19 * safezoneH; h = 0.19 * safezoneH; };   // over the top - amber fittings, chain, eyelet, clip
+			class s8Letter: RscText { idc = 1373; text = ""; x = RX + (0.060703 * safezoneH); y = RY + (0.052891 * safezoneH); w = 0.053437 * safezoneH; h = 0.0475 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95, 0.93, 0.86, 1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.043047 * safezoneH; shadow = 1; };
+			class s8CreditsBand: RscText { idc = 1374; x = RX + (0.045859 * safezoneH); y = RY + (0.14344 * safezoneH); w = 0.080156 * safezoneH; h = 0.019297 * safezoneH; colorBackground[] = {0.07, 0.067, 0.055, 0.8}; style = 0; };
+			class s8CreditsLip: RscText { idc = 1375; x = RX + (0.045859 * safezoneH); y = RY + (0.14344 * safezoneH); w = 0.080156 * safezoneH; h = 0.0014844 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s8Credits: RscText { idc = 1376; text = ""; x = RX + (0.045859 * safezoneH); y = RY + (0.14344 * safezoneH); w = 0.080156 * safezoneH; h = 0.019297 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95, 0.93, 0.86, 1}; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.013894 * safezoneH; shadow = 1; };
 #undef RX
 #undef RY
 #undef ROLE_LETTER
@@ -1120,100 +1096,87 @@ class WaldoStylePicker {
 		// is an amber frame behind the card instead of a role-coloured fill,
 		// because the previews now carry the role colour themselves and a
 		// role-filled card would swallow them.
-		// ---- 0: Original ----
+		// Card previews. Each card shows the crest's OWN artwork - the same three
+		// .paa layers the live badge uses, at card size, with the role layer tinted
+		// to this player's role. Previously these were schematics built from flat
+		// rects, which was the best that could be done when the crests themselves
+		// were arrangements of rects; now that they're drawn, the honest preview is
+		// the art itself.
+		//
+		// Only the role layer carries an idc, since it's the only part that gets
+		// tinted. Card 0 (Original) has no crest texture of its own - it IS the badge
+		// ring - so it shows ui\rolebg.paa and ui\role.paa, exactly what the live
+		// badge draws.
 		// ---- 0: Original ----
 		class sp0Select: RscText { idc = 1630; x = (SP_BASEX) - (0.003 * safezoneH); y = (SP_BASEY) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp0Card: RscText { idc = 1600; text = ""; x = SP_BASEX; y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp0Pv1: RscText { idc = -1; x = SP_BASEX + (0.5 * SP_CARDW) - (0.0375 * safezoneH); y = (SP_BASEY) + (0.012 * safezoneH); w = 0.075 * safezoneH; h = 0.01 * safezoneH; colorBackground[] = {0.07, 0.075, 0.065, 1}; style = 0; };
-		class sp0Pv2: RscText { idc = -1; x = SP_BASEX + (0.5 * SP_CARDW) - (0.0375 * safezoneH); y = (SP_BASEY) + (0.012 * safezoneH); w = 0.075 * safezoneH; h = 0.0015 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp0Pv3: RscText { idc = 1669; x = SP_BASEX + (0.5 * SP_CARDW) - (0.0375 * safezoneH); y = (SP_BASEY) + (0.0205 * safezoneH); w = 0.075 * safezoneH; h = 0.0015 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-		class sp0Pv4: RscText { idc = 1660; x = SP_BASEX + (0.5 * SP_CARDW) - (0.017 * safezoneH); y = (SP_BASEY) + (0.03 * safezoneH); w = 0.034 * safezoneH; h = 0.034 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-		class sp0Pv5: RscText { idc = -1; x = SP_BASEX + (0.5 * SP_CARDW) - (0.011 * safezoneH); y = (SP_BASEY) + (0.036 * safezoneH); w = 0.022 * safezoneH; h = 0.022 * safezoneH; colorBackground[] = {0.07, 0.075, 0.065, 1}; style = 0; };
-		class sp0Label: RscText { idc = 1620; text = "Original"; x = SP_BASEX; y = (SP_BASEY) + (0.088 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.019 * safezoneH; shadow = 1; };
+		class sp0PvBg: RscPicture { idc = -1; text = "ui\rolebg.paa"; x = SP_BASEX + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; color = [1,1,1,0.72]; };
+		class sp0PvRing: RscPicture { idc = 1660; text = "ui\role.paa"; x = SP_BASEX + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp0Label: RscText { idc = 1620; text = "Original"; x = SP_BASEX; y = (SP_BASEY) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
 
-		// ---- 1: Field Medallion ----
+		// ---- 1: Struck Coin ----
 		class sp1Select: RscText { idc = 1631; x = (SP_BASEX + SP_COLSTEP) - (0.003 * safezoneH); y = (SP_BASEY) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp1Card: RscText { idc = 1601; text = ""; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp1Pv1: RscText { idc = 1661; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.017 * safezoneH); y = (SP_BASEY) + (0.012 * safezoneH); w = 0.034 * safezoneH; h = 0.034 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-		class sp1Pv2: RscText { idc = -1; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.011 * safezoneH); y = (SP_BASEY) + (0.018 * safezoneH); w = 0.022 * safezoneH; h = 0.022 * safezoneH; colorBackground[] = {0.07, 0.075, 0.065, 1}; style = 0; };
-		class sp1Pv3: RscText { idc = -1; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.0375 * safezoneH); y = (SP_BASEY) + (0.056 * safezoneH); w = 0.075 * safezoneH; h = 0.014 * safezoneH; colorBackground[] = {0.07, 0.075, 0.065, 1}; style = 0; };
-		class sp1Pv4: RscText { idc = 1670; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.0375 * safezoneH); y = (SP_BASEY) + (0.056 * safezoneH); w = 0.075 * safezoneH; h = 0.0015 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-		class sp1Pv5: RscText { idc = -1; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) + (0.0075 * safezoneH); y = (SP_BASEY) + (0.059 * safezoneH); w = 0.0015 * safezoneH; h = 0.008 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp1Label: RscText { idc = 1621; text = "Field Medallion"; x = SP_BASEX + SP_COLSTEP; y = (SP_BASEY) + (0.088 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.019 * safezoneH; shadow = 1; };
+		class sp1PvBase: RscPicture { idc = -1; text = "ui\crests\struckCoin_base.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp1PvRole: RscPicture { idc = 1661; text = "ui\crests\struckCoin_role.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp1PvDetail: RscPicture { idc = -1; text = "ui\crests\struckCoin_detail.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp1Label: RscText { idc = 1621; text = "Struck Coin"; x = SP_BASEX + SP_COLSTEP; y = (SP_BASEY) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
 
-		// ---- 2: Stencil Column ----
+		// ---- 2: Enamel Pin ----
 		class sp2Select: RscText { idc = 1632; x = (SP_BASEX + (2 * SP_COLSTEP)) - (0.003 * safezoneH); y = (SP_BASEY) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp2Card: RscText { idc = 1602; text = ""; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp2Pv1: RscText { idc = -1; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.013 * safezoneH); y = (SP_BASEY) + (0.012 * safezoneH); w = 0.026 * safezoneH; h = 0.058 * safezoneH; colorBackground[] = {0.07, 0.075, 0.065, 1}; style = 0; };
-		class sp2Pv2: RscText { idc = 1662; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.013 * safezoneH); y = (SP_BASEY) + (0.012 * safezoneH); w = 0.026 * safezoneH; h = 0.005 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-		class sp2Pv3: RscText { idc = 1671; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.013 * safezoneH); y = (SP_BASEY) + (0.065 * safezoneH); w = 0.026 * safezoneH; h = 0.005 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-		class sp2Pv4: RscText { idc = -1; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.013 * safezoneH); y = (SP_BASEY) + (0.017 * safezoneH); w = 0.026 * safezoneH; h = 0.0015 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp2Pv5: RscText { idc = -1; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.013 * safezoneH); y = (SP_BASEY) + (0.0635 * safezoneH); w = 0.026 * safezoneH; h = 0.0015 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp2Label: RscText { idc = 1622; text = "Stencil Column"; x = SP_BASEX + (2 * SP_COLSTEP); y = (SP_BASEY) + (0.088 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.019 * safezoneH; shadow = 1; };
+		class sp2PvBase: RscPicture { idc = -1; text = "ui\crests\enamelPin_base.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp2PvRole: RscPicture { idc = 1662; text = "ui\crests\enamelPin_role.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp2PvDetail: RscPicture { idc = -1; text = "ui\crests\enamelPin_detail.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp2Label: RscText { idc = 1622; text = "Enamel Pin"; x = SP_BASEX + (2 * SP_COLSTEP); y = (SP_BASEY) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
 
-		// ---- 3: Service Pips ----
+		// ---- 3: Dog Tag ----
 		class sp3Select: RscText { idc = 1633; x = (SP_BASEX) - (0.003 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp3Card: RscText { idc = 1603; text = ""; x = SP_BASEX; y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp3Pv1: RscText { idc = -1; x = SP_BASEX + (0.5 * SP_CARDW) - (0.022 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.019 * safezoneH); w = 0.044 * safezoneH; h = 0.044 * safezoneH; colorBackground[] = {0, 0, 0, 0.38}; style = 0; };
-		class sp3Pv2: RscText { idc = 1663; x = SP_BASEX + (0.5 * SP_CARDW) - (0.022 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.019 * safezoneH); w = 0.044 * safezoneH; h = 0.002 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-		class sp3Pv3: RscText { idc = 1672; x = SP_BASEX + (0.5 * SP_CARDW) - (0.022 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.061 * safezoneH); w = 0.044 * safezoneH; h = 0.002 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-		class sp3Pv4: RscText { idc = 1673; x = SP_BASEX + (0.5 * SP_CARDW) - (0.022 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.019 * safezoneH); w = 0.002 * safezoneH; h = 0.044 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-		class sp3Pv5: RscText { idc = 1674; x = SP_BASEX + (0.5 * SP_CARDW) + (0.02 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.019 * safezoneH); w = 0.002 * safezoneH; h = 0.044 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-		class sp3Pv6: RscText { idc = -1; x = SP_BASEX + (0.5 * SP_CARDW) + (0.01 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.066 * safezoneH); w = 0.012 * safezoneH; h = 0.002 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp3Pv7: RscText { idc = -1; x = SP_BASEX + (0.5 * SP_CARDW) - (0.004 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.066 * safezoneH); w = 0.009 * safezoneH; h = 0.002 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp3Pv8: RscText { idc = -1; x = SP_BASEX + (0.5 * SP_CARDW) - (0.013 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.066 * safezoneH); w = 0.006 * safezoneH; h = 0.002 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp3Label: RscText { idc = 1623; text = "Service Pips"; x = SP_BASEX; y = (SP_BASEY + SP_ROWSTEP) + (0.088 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.019 * safezoneH; shadow = 1; };
+		class sp3PvBase: RscPicture { idc = -1; text = "ui\crests\dogTag_base.paa"; x = SP_BASEX + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp3PvRole: RscPicture { idc = 1663; text = "ui\crests\dogTag_role.paa"; x = SP_BASEX + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp3PvDetail: RscPicture { idc = -1; text = "ui\crests\dogTag_detail.paa"; x = SP_BASEX + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp3Label: RscText { idc = 1623; text = "Dog Tag"; x = SP_BASEX; y = (SP_BASEY + SP_ROWSTEP) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
 
-		// ---- 4: Punch Card ----
+		// ---- 4: Unit Patch ----
 		class sp4Select: RscText { idc = 1634; x = (SP_BASEX + SP_COLSTEP) - (0.003 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp4Card: RscText { idc = 1604; text = ""; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp4Pv1: RscText { idc = 1664; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.022 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.019 * safezoneH); w = 0.044 * safezoneH; h = 0.044 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-		class sp4Pv2: RscText { idc = -1; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.016 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.023 * safezoneH); w = 0.004 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp4Pv3: RscText { idc = -1; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.0092 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.023 * safezoneH); w = 0.004 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp4Pv4: RscText { idc = -1; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.0024 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.023 * safezoneH); w = 0.004 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp4Pv5: RscText { idc = -1; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) + (0.0044 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.023 * safezoneH); w = 0.004 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp4Pv6: RscText { idc = -1; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) + (0.0112 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.023 * safezoneH); w = 0.004 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp4Label: RscText { idc = 1624; text = "Punch Card"; x = SP_BASEX + SP_COLSTEP; y = (SP_BASEY + SP_ROWSTEP) + (0.088 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.019 * safezoneH; shadow = 1; };
+		class sp4PvBase: RscPicture { idc = -1; text = "ui\crests\unitPatch_base.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp4PvRole: RscPicture { idc = 1664; text = "ui\crests\unitPatch_role.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp4PvDetail: RscPicture { idc = -1; text = "ui\crests\unitPatch_detail.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp4Label: RscText { idc = 1624; text = "Unit Patch"; x = SP_BASEX + SP_COLSTEP; y = (SP_BASEY + SP_ROWSTEP) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
 
-		// ---- 5: Bracket Sight ----
+		// ---- 5: Crate Stencil ----
 		class sp5Select: RscText { idc = 1635; x = (SP_BASEX + (2 * SP_COLSTEP)) - (0.003 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp5Card: RscText { idc = 1605; text = ""; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp5Pv1: RscText { idc = -1; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.018 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.023 * safezoneH); w = 0.009 * safezoneH; h = 0.0015 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp5Pv2: RscText { idc = -1; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.018 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.023 * safezoneH); w = 0.0015 * safezoneH; h = 0.009 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp5Pv3: RscText { idc = -1; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) + (0.009 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.023 * safezoneH); w = 0.009 * safezoneH; h = 0.0015 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp5Pv4: RscText { idc = -1; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) + (0.0165 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.023 * safezoneH); w = 0.0015 * safezoneH; h = 0.009 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp5Pv5: RscText { idc = -1; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.018 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.0575 * safezoneH); w = 0.009 * safezoneH; h = 0.0015 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp5Pv6: RscText { idc = -1; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.018 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.05 * safezoneH); w = 0.0015 * safezoneH; h = 0.009 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp5Pv7: RscText { idc = -1; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) + (0.009 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.0575 * safezoneH); w = 0.009 * safezoneH; h = 0.0015 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp5Pv8: RscText { idc = -1; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) + (0.0165 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.05 * safezoneH); w = 0.0015 * safezoneH; h = 0.009 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp5Label: RscText { idc = 1625; text = "Bracket Sight"; x = SP_BASEX + (2 * SP_COLSTEP); y = (SP_BASEY + SP_ROWSTEP) + (0.088 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.019 * safezoneH; shadow = 1; };
+		class sp5PvBase: RscPicture { idc = -1; text = "ui\crests\crateStencil_base.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp5PvRole: RscPicture { idc = 1665; text = "ui\crests\crateStencil_role.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp5PvDetail: RscPicture { idc = -1; text = "ui\crests\crateStencil_detail.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + SP_ROWSTEP) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp5Label: RscText { idc = 1625; text = "Crate Stencil"; x = SP_BASEX + (2 * SP_COLSTEP); y = (SP_BASEY + SP_ROWSTEP) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
 
-		// ---- 6: Layered Chip ----
+		// ---- 6: Case File ----
 		class sp6Select: RscText { idc = 1636; x = (SP_BASEX) - (0.003 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp6Card: RscText { idc = 1606; text = ""; x = SP_BASEX; y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp6Pv1: RscText { idc = 1666; x = SP_BASEX + (0.5 * SP_CARDW) - (0.015 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.026 * safezoneH); w = 0.038 * safezoneH; h = 0.038 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-		class sp6Pv2: RscText { idc = -1; x = SP_BASEX + (0.5 * SP_CARDW) - (0.021 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.02 * safezoneH); w = 0.038 * safezoneH; h = 0.038 * safezoneH; colorBackground[] = {0.07, 0.075, 0.065, 1}; style = 0; };
-		class sp6Pv3: RscText { idc = -1; x = SP_BASEX + (0.5 * SP_CARDW) - (0.021 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.02 * safezoneH); w = 0.038 * safezoneH; h = 0.0015 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp6Label: RscText { idc = 1626; text = "Layered Chip"; x = SP_BASEX; y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.088 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.019 * safezoneH; shadow = 1; };
+		class sp6PvBase: RscPicture { idc = -1; text = "ui\crests\caseFile_base.paa"; x = SP_BASEX + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp6PvRole: RscPicture { idc = 1666; text = "ui\crests\caseFile_role.paa"; x = SP_BASEX + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp6PvDetail: RscPicture { idc = -1; text = "ui\crests\caseFile_detail.paa"; x = SP_BASEX + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp6Label: RscText { idc = 1626; text = "Case File"; x = SP_BASEX; y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
 
-		// ---- 7: Ledger Slip ----
+		// ---- 7: Chalk Mark ----
 		class sp7Select: RscText { idc = 1637; x = (SP_BASEX + SP_COLSTEP) - (0.003 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp7Card: RscText { idc = 1607; text = ""; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp7Pv1: RscText { idc = -1; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.022 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.019 * safezoneH); w = 0.044 * safezoneH; h = 0.044 * safezoneH; colorBackground[] = WALDO_PAPER; style = 0; };
-		class sp7Pv2: RscText { idc = 1667; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.022 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.019 * safezoneH); w = 0.005 * safezoneH; h = 0.044 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-		class sp7Pv3: RscText { idc = -1; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.015 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.019 * safezoneH); w = 0.0015 * safezoneH; h = 0.044 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp7Pv4: RscText { idc = -1; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.011 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.033 * safezoneH); w = 0.03 * safezoneH; h = 0.001 * safezoneH; colorBackground[] = {0.25, 0.24, 0.20, 0.28}; style = 0; };
-		class sp7Pv5: RscText { idc = -1; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.011 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.047 * safezoneH); w = 0.03 * safezoneH; h = 0.001 * safezoneH; colorBackground[] = {0.25, 0.24, 0.20, 0.28}; style = 0; };
-		class sp7Label: RscText { idc = 1627; text = "Ledger Slip"; x = SP_BASEX + SP_COLSTEP; y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.088 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.019 * safezoneH; shadow = 1; };
+		class sp7PvBase: RscPicture { idc = -1; text = "ui\crests\chalkMark_base.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp7PvRole: RscPicture { idc = 1667; text = "ui\crests\chalkMark_role.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp7PvDetail: RscPicture { idc = -1; text = "ui\crests\chalkMark_detail.paa"; x = SP_BASEX + SP_COLSTEP + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp7Label: RscText { idc = 1627; text = "Chalk Mark"; x = SP_BASEX + SP_COLSTEP; y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
 
-		// ---- 8: Stamped Tag ----
+		// ---- 8: Evidence Tag ----
 		class sp8Select: RscText { idc = 1638; x = (SP_BASEX + (2 * SP_COLSTEP)) - (0.003 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) - (0.003 * safezoneH); w = SP_CARDW + (0.006 * safezoneH); h = SP_CARDH + (0.006 * safezoneH); colorBackground[] = WALDO_ACCENT; style = 0; };
 		class sp8Card: RscText { idc = 1608; text = ""; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; style = 0; };
-		class sp8Pv1: RscText { idc = 1668; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.014 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.014 * safezoneH); w = 0.028 * safezoneH; h = 0.054 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
-		class sp8Pv2: RscText { idc = -1; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.012 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.016 * safezoneH); w = 0.024 * safezoneH; h = 0.05 * safezoneH; colorBackground[] = {0.07, 0.075, 0.065, 1}; style = 0; };
-		class sp8Pv3: RscText { idc = -1; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) + (0.004 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.018 * safezoneH); w = 0.008 * safezoneH; h = 0.008 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp8Pv4: RscText { idc = -1; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.012 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.062 * safezoneH); w = 0.024 * safezoneH; h = 0.0015 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-		class sp8Label: RscText { idc = 1628; text = "Stamped Tag"; x = SP_BASEX + (2 * SP_COLSTEP); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.088 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.019 * safezoneH; shadow = 1; };
+		class sp8PvBase: RscPicture { idc = -1; text = "ui\crests\evidenceTag_base.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp8PvRole: RscPicture { idc = 1668; text = "ui\crests\evidenceTag_role.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp8PvDetail: RscPicture { idc = -1; text = "ui\crests\evidenceTag_detail.paa"; x = SP_BASEX + (2 * SP_COLSTEP) + (0.5 * SP_CARDW) - (0.036 * safezoneH); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.01 * safezoneH); w = 0.072 * safezoneH; h = 0.072 * safezoneH; };
+		class sp8Label: RscText { idc = 1628; text = "Evidence Tag"; x = SP_BASEX + (2 * SP_COLSTEP); y = (SP_BASEY + (2 * SP_ROWSTEP)) + (0.090 * safezoneH); w = SP_CARDW; h = 0.03 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.018 * safezoneH; shadow = 1; };
 	};
 
 	class Controls {

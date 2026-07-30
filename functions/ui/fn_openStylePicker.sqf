@@ -51,12 +51,10 @@ private _vcenter = {
 // on them - and amber is the crest family's own accent, so an amber frame reads
 // as "this one" without competing with the role colour it's framing.
 //
-// Only the role-coloured rects in each preview carry an idc, and how many a
-// style has depends on its construction: Punch Card has one (its whole plate),
-// Stencil Column has two (head and foot bands), Service Pips has four (all four
-// frame edges), and Bracket Sight has none at all - it's frameless, so its
-// preview is pure amber. The amber marks are static and deliberately never
-// tinted, exactly as on the live crests.
+// Exactly one control per card carries an idc: that crest's role layer. The base
+// and detail layers hold the fixed colours (amber fittings, brass, manila, plank)
+// and are never tinted, same as on the live crests. Card 0 tints ui\role.paa,
+// which is what the live badge ring tints too.
 Waldo_stylePickerPaint = {
 	params ["_d"];
 	private _role = player getVariable ["role", "Innocent"];
@@ -66,8 +64,11 @@ Waldo_stylePickerPaint = {
 		(_d displayCtrl _x) ctrlShow (_forEachIndex == _cur);
 	} forEach [1630, 1631, 1632, 1633, 1634, 1635, 1636, 1637, 1638];
 	{
-		(_d displayCtrl _x) ctrlSetBackgroundColor [_col select 0, _col select 1, _col select 2, 1];
-	} forEach [1660, 1661, 1662, 1663, 1664, 1666, 1667, 1668, 1669, 1670, 1671, 1672, 1673, 1674];
+		// ctrlSetTextColor, not ctrlSetBackgroundColor: these are RscPictures now
+		// (the crest's own role layer at card size), and tinting a picture is a
+		// text-colour multiply, not a background fill.
+		(_d displayCtrl _x) ctrlSetTextColor _col;
+	} forEach [1660, 1661, 1662, 1663, 1664, 1665, 1666, 1667, 1668];
 };
 [_display] call Waldo_stylePickerPaint;
 

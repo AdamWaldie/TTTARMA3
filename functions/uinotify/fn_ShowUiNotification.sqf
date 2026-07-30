@@ -81,36 +81,49 @@ if (_existingIndex >= 0) then {
     {if (!isNull _x) then {ctrlDelete _x;};} forEach (_old param [1, []]);
 };
 
-// TroubleInArmaville reskin: shadow + casing + accent-stripe is the one
-// material recipe every other panel in this HUD is built from (shop,
-// scoreboard, ping wheel, the round-timer bar, the credits pill) - the WMP
-// pack's own frame+accent (no shadow, near-black-blue casing) worked but
-// visibly didn't belong here. Colours are this mission's own WALDO_* values
-// (see ui/common.hpp) and its role palette (Waldo_roleColor in
-// fn_initShops.sqf: Traitor red, Detective blue, Jester purple, Innocent
-// green), not the WMP defaults - the INFO state deliberately isn't blue, so
-// a card is never mistaken for a Detective-blue "info" state next to an
-// actual Detective-blue role crest.
+// TroubleInArmaville reskin: shadow + casing + HEADER BAND + accent-stripe
+// is the exact material recipe every OTHER panel in this HUD is built from
+// (WaldoShop's shopHeader/shopAccentBar, WaldoStylePicker's spHeader/
+// spAccentBar, WaldoDebug) - a distinct near-black header band above the
+// casing body, with the accent line marking the seam between them, not
+// just a thin accent stripe pinned to the frame's own top edge with no
+// header at all (the previous version here). Colours are this mission's
+// own WALDO_* values (see ui/common.hpp) and its role palette
+// (Waldo_roleColor in fn_initShops.sqf: Traitor red, Detective blue,
+// Jester purple, Innocent green), not the WMP defaults - the INFO state
+// deliberately isn't blue, so a card is never mistaken for a
+// Detective-blue "info" state next to an actual Detective-blue role crest.
 private _shadow = _display ctrlCreate ["RscText", -1];
 private _frame = _display ctrlCreate ["RscText", -1];
+private _header = _display ctrlCreate ["RscText", -1];
 private _accent = _display ctrlCreate ["RscText", -1];
+private _sourceText = _display ctrlCreate ["RscText", -1];
 private _content = _display ctrlCreate ["RscStructuredText", -1];
 _shadow ctrlSetBackgroundColor [0, 0, 0, 0.82];
 _frame ctrlSetBackgroundColor [0.105, 0.11, 0.095, 0.96];
+_header ctrlSetBackgroundColor [0.045, 0.05, 0.045, 0.99];   // WALDO_HEADERBG
 _accent ctrlSetBackgroundColor (switch (_state) do {
     case "SUCCESS": {[0.435, 0.796, 0.455, 1]};   // matches the shop's existing "[OK] PURCHASED" green
     case "WARNING": {[0.85, 0.62, 0.20, 1]};      // WALDO_ACCENT gold
     case "ERROR":   {[0.894, 0.318, 0.294, 1]};   // matches the shop's existing "[X] NOT ENOUGH CREDITS" red
     default         {[0.62, 0.60, 0.53, 1]};      // muted neutral - deliberately NOT Detective blue
 });
+_sourceText ctrlSetBackgroundColor [0, 0, 0, 0];
+_sourceText ctrlSetText toUpper _source;
+_sourceText ctrlSetTextColor [0.62, 0.68, 0.78, 1];
+_sourceText ctrlSetFont "PuristaMedium";
+_sourceText ctrlSetFontHeight (safeZoneH * 0.014);
+// Real vertical centring is done in Waldo_fnc_ReflowUiPanels once this
+// control actually has a position/size - ST_VCENTER is documented
+// elsewhere in this mission's own UI (ui/TTTHud.hpp, above roleText) as
+// rendering fully blank when combined with anything else, so this avoids
+// it the same way every other precisely-centred label in this HUD does.
 _content ctrlSetBackgroundColor [0, 0, 0, 0];
 
 private _messageText = if ((typeName _message) isEqualTo "TEXT") then {str _message} else {_message};
 _content ctrlSetStructuredText parseText format [
-    "<t align='left' font='PuristaMedium' color='#9FB3C8' size='0.72'>%1</t><br/>" +
-    "<t align='left' font='PuristaBold' color='%2' size='1.12' shadow='1'>%3 %4</t><br/>" +
-    "<t align='left' font='PuristaMedium' color='#F2EFE3' size='0.88'>%5</t>",
-    toUpper _source,
+    "<t align='left' font='PuristaBold' color='%1' size='1.12' shadow='1'>%2 %3</t><br/>" +
+    "<t align='left' font='PuristaMedium' color='#F2EFE3' size='0.88'>%4</t>",
     _colour,
     _symbol,
     _title,
@@ -136,13 +149,17 @@ private _maximumContentH = _visibleH * 0.22;
 _content ctrlSetPosition [0, 0, _panelW - (2 * _padX), _maximumContentH];
 _content ctrlCommit 0;
 private _contentH = (((ctrlTextHeight _content) + (_visibleH * 0.006)) max (_visibleH * 0.07)) min _maximumContentH;
-private _panelH = _contentH + (2 * _padY);
 private _accentH = (_visibleH * 0.004) max 0.002;
-{_x ctrlShow true;} forEach [_shadow, _frame, _accent, _content];
+// Header band height: just tall enough for the source label at a fixed,
+// compact size - not measured like the body content, since it's always
+// exactly one short uppercase line.
+private _headerH = _visibleH * 0.026;
+private _panelH = _headerH + _accentH + _contentH + (2 * _padY);
+{_x ctrlShow true;} forEach [_shadow, _frame, _header, _accent, _sourceText, _content];
 
 private _token = format ["%1_%2", diag_tickTime, random 1e9];
-private _controls = [_shadow, _frame, _accent, _content];
-_registry pushBack [_channel, _controls, _token, _placement, _panelW, _panelH, _padX, _padY, _accentH, _contentH, _priority, diag_tickTime];
+private _controls = [_shadow, _frame, _header, _accent, _sourceText, _content];
+_registry pushBack [_channel, _controls, _token, _placement, _panelW, _panelH, _padX, _padY, _accentH, _contentH, _priority, diag_tickTime, _headerH];
 uiNamespace setVariable ["Waldo_UiPanelRegistry", _registry];
 [] call Waldo_fnc_ReflowUiPanels;
 

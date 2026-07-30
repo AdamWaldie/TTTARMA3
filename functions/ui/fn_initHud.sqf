@@ -139,7 +139,7 @@ private _styleAlways = [
 	[1340, 1341, 1342, 1343],                  // 6 - crateStencil
 	[1350, 1351, 1352, 1353],                  // 7 - caseFile
 	[1360, 1361, 1362, 1363],                  // 8 - chalkMark
-	[1370, 1371, 1372, 1373],                  // 9 - evidenceTag
+	[1370, 1371, 1372, 1373]                  // 9 - evidenceTag
 ];
 private _styleCredits = [
 	[1002, 1003, 1004, 1005, 1006],   // 0 - the whole pill (shadow/bg/highlight/accent/text)
@@ -151,7 +151,7 @@ private _styleCredits = [
 	[1344, 1345, 1346],                    // 6 - crateStencil
 	[1354, 1355, 1356],                    // 7 - caseFile
 	[1364, 1365, 1366],                    // 8 - chalkMark
-	[1374, 1375, 1376],                    // 9 - evidenceTag
+	[1374, 1375, 1376]                    // 9 - evidenceTag
 ];
 
 {

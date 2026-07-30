@@ -38,7 +38,7 @@ private _vcenter = {
 	_ctrl ctrlCommit 0;
 };
 [_display displayCtrl 1590] call _vcenter;
-{ [_display displayCtrl _x] call _vcenter; } forEach [1620, 1621, 1622, 1623, 1624, 1625, 1626, 1627, 1628];
+{ [_display displayCtrl _x] call _vcenter; } forEach [1620, 1621, 1622, 1623, 1624, 1625, 1626, 1627, 1628, 1629];
 
 // Paints the 9 cards: an amber selection frame behind the current style's card
 // only. Nothing else needs tinting - the cards are named, not previewed (three
@@ -50,11 +50,11 @@ Waldo_stylePickerPaint = {
 	private _cur = profileNamespace getVariable ["Waldo_roleCrestStylePref", 1];
 	{
 		(_d displayCtrl _x) ctrlShow (_forEachIndex == _cur);
-	} forEach [1630, 1631, 1632, 1633, 1634, 1635, 1636, 1637, 1638];
+	} forEach [1630, 1631, 1632, 1633, 1634, 1635, 1636, 1637, 1638, 1639];
 };
 [_display] call Waldo_stylePickerPaint;
 
-private _btnIdcs = [1640, 1641, 1642, 1643, 1644, 1645, 1646, 1647, 1648];
+private _btnIdcs = [1640, 1641, 1642, 1643, 1644, 1645, 1646, 1647, 1648, 1649];
 {
 	private _i = _forEachIndex;
 	(_display displayCtrl _x) ctrlAddEventHandler ["ButtonClick", {

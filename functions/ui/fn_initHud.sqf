@@ -37,18 +37,28 @@ private _color = [_role] call Waldo_roleColor;
 
 // ============================================================================
 // Selectable role crest style - entirely a per-player preference, not a
-// server/lobby setting (there is no RoleCrestStyle mission param). 0 =
-// Original (roleShadow/roleTextBG*/roleCredits* in TTTHud.hpp, untouched -
-// kept exactly as shipped, a deliberate homage to the classic GMod-TTT
-// badge - reverted back to this after briefly folding it into Style 5's
-// look, per direction: "Original should be original"); 1-7 share the "Rank
-// Disc" backing (rankDiscRim/rankDiscAccent, idc 1270/1271 - a dark casing
-// rim + gold accent ring behind the same tuned badge ring every style
-// always used) around their own distinguishing decoration; 8 (Stamped Tag)
-// replaces the ring entirely with a flat casing plate (see the big comment
-// blocks in TTTHud.hpp for each). The letter and role colour are the one
-// thing every single style keeps without exception - only the material/
-// backing around them changes.
+// server/lobby setting (there is no RoleCrestStyle mission param).
+//
+// Each style is its OWN construction system - not one recipe restyled nine
+// ways. An earlier pass built every style from Style 8's shadow/border/plate/
+// amber recipe with only the silhouette varying, which produced variations
+// rather than designs. What differs now is how each crest is BUILT:
+//
+//   0 Original       - circular medallion + full-width pill. Grandfathered;
+//                      structurally as shipped, with a light polish pass only.
+//   1 Field Medallion- medallion + nameplate. The one style that extends
+//                      Original, reusing its exact badge ring and textures.
+//   2 Stencil Column - banded: role bands at head and foot, no outline.
+//   3 Service Pips   - outline only: no plate, terrain shows through a wash.
+//   4 Punch Card     - solid role field, letter knocked out in cream.
+//   5 Bracket Sight  - frameless: amber marks and outlined text, no panel.
+//   6 Layered Chip   - offset stack: the role plate sits behind, not around.
+//   7 Ledger Slip    - paper: pale slip, ink balance, bound role margin.
+//   8 Stamped Tag    - bordered plate; the only style that frames itself.
+//
+// Amber (WALDO_ACCENT) is never role-tinted anywhere. It's the one constant
+// across nine otherwise unrelated constructions, which is what keeps them
+// reading as the same game's UI. The role colour is what varies.
 //
 // Waldo_roleCrestStylePref lives in THIS client's own profileNamespace (set
 // via the H key -> Waldo_fnc_openStylePicker, functions/ui/fn_openStylePicker.sqf),
@@ -56,10 +66,12 @@ private _color = [_role] call Waldo_roleColor;
 // anywhere else.
 // ============================================================================
 private _style = profileNamespace getVariable ["Waldo_roleCrestStylePref", 0];
-private _usesRing = (_style >= 0 && _style <= 7);
-private _usesRankDisc = (_style >= 1 && _style <= 7);
+// Styles 0 and 1 both use the badge ring - style 1's whole idea is to build on
+// Original, so it inherits the same medallion (textures and tuned position
+// included) and changes only what sits under it. Every other style replaces the
+// medallion outright.
+private _usesRing = (_style in [0, 1]);
 
-{ (_display displayCtrl _x) ctrlShow _usesRankDisc; } forEach [1270, 1271];
 { (_display displayCtrl _x) ctrlShow _usesRing; } forEach [1272, 999, 1000, 1001];
 
 if (_usesRing) then {
@@ -70,16 +82,11 @@ if (_usesRing) then {
 	_badge ctrlSetTextColor _color;
 	_badge ctrlSetText toUpper (_role select [0, 1]);
 
-	// Letter scale suits the backing it's sitting on: Rank Disc's extra rim/
-	// accent rings make the Original's exact letter size read as lost inside
-	// a visibly bigger medallion, so styles 1-7 get a modest bump. Style 0
-	// keeps its own originally-tuned size untouched. ctrlSetFontHeight (not
-	// a hardcoded hpp sizeEx) is what makes a per-style size possible on one
-	// shared control - already a proven command in this codebase
-	// (fn_openBuyMenu.sqf's shop cards use it the same way). Must run before
-	// ctrlTextHeight below, since that measurement reflects whatever size
-	// was actually just set.
-	_badge ctrlSetFontHeight ((if (_style == 0) then { 0.088 } else { 0.098 }) * safezoneH);
+	// Set explicitly rather than left to the hpp's sizeEx. Styles 0 and 1 share
+	// this one control, and ctrlTextHeight below only reports a height for the
+	// size actually in effect - leaving it implicit would make the centring
+	// depend on whether some earlier call had changed it.
+	_badge ctrlSetFontHeight (0.088 * safezoneH);
 
 	// Real measured vertical centring, not a guessed offset: ST_VCENTER does NOT
 	// mean "centre vertically" despite the name - BIKI documents it (with
@@ -107,56 +114,43 @@ if (_usesRing) then {
 	_badge ctrlCommit 0;
 };
 
-// Style 8 (Stamped Tag) doesn't use the shared ring at all - its own big
-// letter, tinted the same way, on its own flat plate. Border/divider/flash
-// are all this style's own role-tinted rects (WALDO_ACCENT gold is just the
-// hpp default/placeholder, retinted here every time like the shop's own
-// accent bar).
-if (_style == 8) then {
-	{ (_display displayCtrl _x) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1]; } forEach [1281, 1283, 1284];
-
-	private _s8Letter = _display displayCtrl 1285;
-	_s8Letter ctrlSetTextColor _color;
-	_s8Letter ctrlSetText toUpper (_role select [0, 1]);
-	private _s8H = ctrlTextHeight _s8Letter;
-	private _s8ZoneX = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH);
-	private _s8ZoneY = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.044 * safezoneH);
-	private _s8ZoneH = 0.17 * safezoneH;
-	private _s8OpticalNudgeX = if (_role == "Jester") then { -0.003 * safezoneH } else { 0 };
-	_s8Letter ctrlSetPosition [_s8ZoneX + _s8OpticalNudgeX, _s8ZoneY + ((_s8ZoneH - _s8H) / 2), 0.17 * safezoneH, _s8H];
-	_s8Letter ctrlCommit 0;
-};
-
 // Only Traitor/Detective have credits at all, so every style's credit-only
 // controls (not just their text) are hidden for everyone else instead of
 // sitting there empty.
 private _hasCredits = _role in ["Traitor", "Detective"];
 
 // _styleAlways/_styleCredits are idc's grouped by style index (0..8). Every
-// control across every style is shown/hidden exactly once per call: first
-// pass hides every style except the selected one, second pass then re-hides
-// the selected style's credit-only controls if this role has none.
+// control across every style is shown/hidden exactly once per call: the first
+// pass hides every style except the selected one, the second then re-hides the
+// selected style's credit-only controls if this role has none.
+//
+// Nothing in _styleCredits is a bordered sub-panel or an inset pocket - each
+// entry is either transparent text sitting over a plate the style already
+// fills, or (styles 1 and 2) an amber divider/rule whose whole job is to split
+// off the balance's half of the composition. That's what makes the credits
+// omittable without notice: hide them and the plate is simply plain, with no
+// hole where a panel used to be.
 private _styleAlways = [
-	[],                                             // 0 - Original: nothing beyond the credits pill below
-	[1200, 1201, 1202, 1203],                       // 1 - Signal Ring: compass ticks
-	[1210, 1211, 1212, 1213, 1214, 1215, 1216, 1217],// 2 - Corner Bracket Frame
-	[1220, 1221, 1222, 1223],                        // 3 - Fused Tag: tab + role name
-	[1230, 1231, 1232],                              // 4 - Wallet Chip: chip + role name
-	[],                                              // 5 - Satellite Chip: nothing beyond the pill below
-	[1250, 1251, 1252, 1253, 1254, 1255, 1256, 1257],// 6 - IFF Transponder: ticks
-	[],                                              // 7 - Contact Blip: shares Rank Disc now, no style-specific extras of its own
-	[1280, 1281, 1282, 1287, 1283, 1284, 1285]       // 8 - Stamped Tag: shadow/border/plate/highlight/divider/flash/letter
+	[],                                                              // 0 - Original: badge ring above, nothing else
+	[1300, 1301, 1302, 1303],                                        // 1 - Field Medallion: nameplate under the ring
+	[1310, 1311, 1312, 1313, 1314, 1315, 1316],                      // 2 - Stencil Column
+	[1320, 1321, 1322, 1323, 1324, 1325, 1326, 1327, 1328],          // 3 - Service Pips
+	[1330, 1331, 1332, 1333, 1334, 1335, 1336, 1337],                // 4 - Punch Card
+	[1340, 1341, 1342, 1343, 1344, 1345, 1346, 1347, 1348],          // 5 - Bracket Sight
+	[1360, 1361, 1362, 1363, 1364],                                  // 6 - Layered Chip
+	[1370, 1371, 1372, 1373, 1374, 1375, 1376],                      // 7 - Ledger Slip
+	[1280, 1281, 1282, 1287, 1284, 1283, 1285]                       // 8 - Stamped Tag
 ];
 private _styleCredits = [
-	[1002, 1003, 1004, 1005],   // 0 - full credits pill (shadow/bg/accent/text)
-	[1204, 1205],                // 1 - Signal Ring tag
-	[1219, 1218],                // 2 - Corner Bracket credit text (+ backing plate)
-	[1224],                      // 3 - Fused Tag credits line
-	[1233],                      // 4 - Wallet Chip credits line
-	[1240, 1241],                // 5 - Satellite Chip pill
-	[1258, 1259],                // 6 - IFF Transponder squawk tab
-	[1263, 1262],                // 7 - Contact Blip coord text (+ backing plate)
-	[1286]                       // 8 - Stamped Tag credits strip
+	[1002, 1003, 1004, 1005, 1006],   // 0 - the whole pill (shadow/bg/highlight/accent/text)
+	[1304, 1305],                      // 1 - amber tick + balance in the nameplate's right half
+	[1317],                            // 2 - balance above the foot band
+	[1329],                            // 3 - balance inside the frame's lower band
+	[1338],                            // 4 - balance stamped across the role field
+	[1349],                            // 5 - balance under the letter, no panel behind it
+	[1365],                            // 6 - balance in the front plate's lower band
+	[1377],                            // 7 - balance on the last ruled line
+	[1286]                             // 8 - balance above the foot divider
 ];
 
 {
@@ -168,36 +162,153 @@ private _styleCredits = [
 	{ (_display displayCtrl _x) ctrlShow _show; } forEach _x;
 } forEach _styleCredits;
 
-// Elements that always need the role tint regardless of credits, per style
-// (the badge ring itself, and style 8's border/divider/flash, are already
-// tinted above and common to every style/style-8-specific block
-// respectively). Rank Disc (1270/1271) is deliberately NOT role-tinted - a
-// fixed dark-casing-and-gold material, same on every role, per direction.
-switch (_style) do {
-	case 0: {   // Original: the pill's own accent line
-		(_display displayCtrl 1003) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
+// The role-coloured parts of the active style, by idc. WALDO_ACCENT gold is
+// only the hpp default/placeholder for these - they're retinted here on every
+// redraw, the same way the shop panel's own accent bar is.
+//
+// What actually carries the role colour differs per style, which is the point:
+// style 2's head and foot bands, style 3's four frame edges, style 4's entire
+// plate, style 6's rear plate, style 7's bound margin, style 8's border. Style 5
+// has no entry at all - it's frameless, so its letter is the only role-coloured
+// thing on screen.
+//
+// Every amber mark is deliberately absent from this list and stays fixed on
+// every role. Tinting the accents too would collapse each crest to a single hue.
+private _styleTinted = [
+	[1003],                           // 0 - the pill's own accent line
+	[1302],                           // 1 - the nameplate's top accent line
+	[1312, 1313],                     // 2 - head and foot bands
+	[1321, 1322, 1323, 1324],         // 3 - all four frame edges
+	[1331],                           // 4 - the whole plate
+	[],                               // 5 - frameless; the letter is the only role colour
+	[1361],                           // 6 - the rear plate, not a border
+	[1372],                           // 7 - the bound margin
+	[1281]                            // 8 - the border
+];
+{
+	(_display displayCtrl _x) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
+} forEach (_styleTinted select _style);
+
+// Styles 2-8's letter: same treatment as style 0's above (role tint, role's
+// initial, real measured vertical centring) but on that style's own control
+// inside its own construction. Style 1 is absent because it shares the badge
+// ring's letter, handled in the _usesRing block above.
+//
+// The box is per style because the constructions genuinely differ - a banded
+// column centres its letter between its two bands, the ledger slip centres it in
+// the body column right of the bound margin, and so on.
+if (_style >= 2) then {
+	// [letter idc, xOff, yOff, w, h, sizeEx] - offsets/sizes in safezoneH,
+	// measured from the same badge anchor the hpp block uses.
+	private _letterBox = switch (_style) do {
+		case 2: { [1316, 0.075, 0.036, 0.090, 0.100, 0.062] };
+		case 3: { [1328, 0.015, 0.022, 0.150, 0.150, 0.090] };
+		case 4: { [1337, 0.015, 0.032, 0.150, 0.140, 0.090] };
+		case 5: { [1348, 0.017, 0.027, 0.140, 0.140, 0.088] };
+		case 6: { [1364, 0.014, 0.024, 0.145, 0.145, 0.090] };
+		case 7: { [1376, 0.037, 0.022, 0.122, 0.130, 0.088] };
+		default { [1285, 0.079, 0.020, 0.086, 0.126, 0.070] };   // 8 - Stamped Tag
 	};
-	case 3: {   // Fused Tag: accent strip along the top of the tab
-		(_display displayCtrl 1222) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
-	};
+	_letterBox params ["_lIdc", "_lX", "_lY", "_lW", "_lH", "_lSize"];
+
+	// Style 2's column reserves its lower half for the balance, so with no
+	// credits the letter re-centres over the whole column instead of sitting high
+	// in a half-empty plate. Nothing else needs this - every other style's
+	// balance is a thin band its letter already clears.
+	if (_style == 2 && {!_hasCredits}) then { _lH = 0.122; };
+
+	private _letter = _display displayCtrl _lIdc;
+	// Style 4 is the one style whose letter is NOT role-tinted: its plate is the
+	// role colour at full opacity and the letter is knocked out of it in cream.
+	// Tinting it here would paint the letter the same colour as the field it sits
+	// on and erase it entirely.
+	if (_style != 4) then { _letter ctrlSetTextColor _color; };
+	_letter ctrlSetText toUpper (_role select [0, 1]);
+	// Before ctrlTextHeight, always - that command reports the height of the text
+	// at whatever size is in effect, so measuring first would centre against the
+	// wrong size.
+	_letter ctrlSetFontHeight (_lSize * safezoneH);
+	private _lTextH = ctrlTextHeight _letter;
+	// Same eyeballed optical nudge style 0 needs: J's hook-shaped tail sits toward
+	// the bottom-right of its bounding box, so a geometrically centred J still
+	// reads as drifted right. There's no engine measurement for optical glyph
+	// weight the way there is for height, so this stays a small constant specific
+	// to that one letter rather than a formula.
+	private _lNudge = if (_role == "Jester") then { -0.003 * safezoneH } else { 0 };
+	_letter ctrlSetPosition [
+		((safezoneW + safezoneX) - (0.175 * safezoneH)) + (_lX * safezoneH) + _lNudge,
+		((safezoneH + safezoneY) - (0.185 * safezoneH)) + (_lY * safezoneH) + (((_lH * safezoneH) - _lTextH) / 2),
+		_lW * safezoneH,
+		_lTextH
+	];
+	_letter ctrlCommit 0;
+};
+
+// Style 1's nameplate carries the role's NAME, not its initial - the medallion
+// above it already shows the letter, so repeating it would waste the bar. Set
+// once here since it never changes for this HUD instance. Its box shrinks to the
+// bar's left half when there's a balance to sit beside, and takes the whole bar
+// when there isn't, so the plate never reads as half-empty.
+if (_style == 1) then {
+	private _name = _display displayCtrl 1303;
+	_name ctrlSetText toUpper _role;
+	private _nH = ctrlTextHeight _name;
+	private _nX = if (_hasCredits) then { 0.004 } else { 0 };
+	private _nW = if (_hasCredits) then { 0.080 } else { 0.150 };
+	_name ctrlSetPosition [
+		((safezoneW + safezoneX) - (0.175 * safezoneH)) + (_nX * safezoneH),
+		((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.152 * safezoneH) + (((0.026 * safezoneH) - _nH) / 2),
+		_nW * safezoneH,
+		_nH
+	];
+	_name ctrlCommit 0;
 };
 
 // Credits text/tint per style - only runs for roles that actually have
 // credits (_hasCredits), matching the idc's shown by the pass above.
 if (_hasCredits) then {
-	// idc of the control that actually displays "<n> credits" text for the
-	// active style.
+	// idc of the control that actually displays the balance for the active
+	// style, plus the box it should be centred in (offsets in safezoneH from
+	// the badge anchor, matching that style's hpp geometry) and the format its
+	// width can actually fit.
 	//
-	// NEVER tinted to the role colour any more - every role colour is a
-	// fairly dark, saturated tone, and every one of these sits on a near-
-	// black backing panel, so role-tinted credit text was low-contrast
-	// (worst on Traitor red, but Detective/Jester weren't much better) no
-	// matter which style. They keep their hpp-declared static colour
-	// instead (cream or WALDO_ACCENT gold, both high-contrast on near-black
-	// regardless of role) - the one deliberate deviation from Original's
-	// exact original behaviour (which did tint 1002 to the role colour),
-	// kept because it's a real contrast fix, not a style change.
-	private _creditTextIdc = [1002, 1205, 1218, 1224, 1233, 1241, 1259, 1262, 1286] select _style;
+	// NEVER tinted to the role colour - every role colour is a fairly dark,
+	// saturated tone, and every one of these sits on a near-black plate, so
+	// role-tinted credit text was low-contrast (worst on Traitor red, but
+	// Detective/Jester weren't much better) no matter which style. They keep
+	// their hpp-declared cream instead, which is high-contrast on near-black
+	// regardless of role. This is the one deliberate deviation from Original's
+	// exact original behaviour (which did tint 1002), kept because it's a real
+	// contrast fix rather than a style change.
+	//
+	// Every one of these controls is ST_CENTER with no ST_VCENTER (that flag is
+	// a vertical/rotated TEXT ORIENTATION mode, not "centre vertically" - see
+	// the long comment above roleText in TTTHud.hpp), so they need the same real
+	// ctrlTextHeight centring the letters get, redone every tick since the
+	// text's rendered height changes as the number grows.
+	//
+	// Style 0 included. ST_CENTER only ever centred it horizontally, so its
+	// balance had always rendered against the top of a 0.03H pill with all the
+	// slack below it - visibly high in its own casing. Nothing about Original's
+	// design intended that; it's the same measure-don't-guess fix the rest of
+	// this HUD already had, applied to the one control that never got it.
+	private _creditBox = switch (_style) do {
+		case 1: { [1305, 0.086, 0.152, 0.060, 0.026, "%1 CR"] };
+		case 2: { [1317, 0.075, 0.136, 0.090, 0.022, "%1 CR"] };
+		case 3: { [1329, 0.023, 0.144, 0.134, 0.022, "%1 CREDITS"] };
+		case 4: { [1338, 0.015, 0.144, 0.150, 0.020, "%1 CREDITS"] };
+		case 5: { [1349, 0.017, 0.139, 0.140, 0.020, "%1 CREDITS"] };
+		case 6: { [1365, 0.014, 0.142, 0.145, 0.020, "%1 CREDITS"] };
+		// Lowercase, alone among styles 1-8: this one is a bookkeeper's paper
+		// slip, and shouting CREDITS at it would break the conceit.
+		case 7: { [1377, 0.037, 0.144, 0.122, 0.020, "%1 credits"] };
+		case 8: { [1286, 0.079, 0.153, 0.086, 0.019, "%1 CR"] };
+		// 0 - Original. Keeps its own lowercase "%1 credits" wording rather than
+		// being normalised to the other styles' CR/CREDITS - the full-width pill
+		// has room for it, and it's part of what the style is.
+		default { [1002, 0, -0.040, 0.150, 0.030, "%1 credits"] };
+	};
+	_creditBox params ["_creditTextIdc", "_cX", "_cY", "_cW", "_cBoxH", "_cFormat"];
 	private _credits = _display displayCtrl _creditTextIdc;
 
 	// Token-guarded the same way the keybind-hint fade below is (and for the
@@ -209,85 +320,26 @@ if (_hasCredits) then {
 	// fighting to set the same control's text.
 	private _creditsTickerToken = (_display getVariable ["Waldo_creditsTickerToken", 0]) + 1;
 	_display setVariable ["Waldo_creditsTickerToken", _creditsTickerToken];
-	// Styles 3/4's credits line is one of the ST_LEFT-only controls (see the
-	// hpp comment above s3RoleName) - it needs the same real
-	// ctrlTextHeight-based vertical centring roleText uses, redone every tick
-	// since the text content (and so its rendered height) changes as credits
-	// go up. Every other style's credit control keeps ST_CENTER+ST_VCENTER,
-	// which isn't affected by that bug.
-	private _vX = 0; private _vY = 0; private _vW = 0; private _vBoxH = 0;
-	if (_style == 3) then {
-		_vX = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.152 * safezoneH);
-		_vY = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.078 * safezoneH);
-		_vW = 0.144 * safezoneH;
-		_vBoxH = 0.018 * safezoneH;
-	};
-	if (_style == 4) then {
-		_vX = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.142 * safezoneH);
-		_vY = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.077 * safezoneH);
-		_vW = 0.134 * safezoneH;
-		_vBoxH = 0.02 * safezoneH;
-	};
-	private _needsVCenter = (_style in [3, 4]);
-	[_credits, _style, _display, _creditsTickerToken, _needsVCenter, _vX, _vY, _vW, _vBoxH] spawn {
-		params ["_credits", "_style", "_display", "_token", "_needsVCenter", "_vX", "_vY", "_vW", "_vBoxH"];
+
+	private _vX = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (_cX * safezoneH);
+	private _vY = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (_cY * safezoneH);
+	private _vW = _cW * safezoneH;
+	private _vBoxH = _cBoxH * safezoneH;
+
+	[_credits, _cFormat, _display, _creditsTickerToken, _vX, _vY, _vW, _vBoxH] spawn {
+		params ["_credits", "_format", "_display", "_token", "_vX", "_vY", "_vW", "_vBoxH"];
 		while {
 			!isNull ctrlParent _credits
 			&& {alive player}
 			&& {(_display getVariable ["Waldo_creditsTickerToken", 0]) == _token}
 		} do {
-			private _pts = player getVariable ["points", 0];
-			private _text = switch (_style) do {
-				case 1: { format ["%1 cr", _pts] };        // Signal Ring tag
-				case 5: { format ["%1", _pts] };            // Satellite Chip pill - narrow, no room for "credits"
-				case 6: { format ["%1", _pts] };            // IFF squawk code
-				case 7: { format ["%1 CR", _pts] };          // Contact Blip coord readout
-				case 8: { format ["%1 CR", _pts] };          // Stamped Tag credits strip
-				default { format ["%1 credits", _pts] };
-			};
-			_credits ctrlSetText _text;
-			if (_needsVCenter) then {
-				private _h = ctrlTextHeight _credits;
-				_credits ctrlSetPosition [_vX, _vY + ((_vBoxH - _h) / 2), _vW, _h];
-				_credits ctrlCommit 0;
-			};
+			_credits ctrlSetText format [_format, player getVariable ["points", 0]];
+			private _h = ctrlTextHeight _credits;
+			_credits ctrlSetPosition [_vX, _vY + ((_vBoxH - _h) / 2), _vW, _h];
+			_credits ctrlCommit 0;
 			sleep 0.5;
 		};
 	};
-};
-
-// Style 3/4 always show the role's name (identity, not shop status) - set
-// once here since it never changes for the lifetime of this HUD instance.
-// Real vertical centring (ctrlTextHeight), same reason/technique as the
-// credits line just above - these are the ST_LEFT-only controls, see the
-// hpp comment above s3RoleName.
-if (_style == 3) then {
-	private _c = _display displayCtrl 1223;
-	_c ctrlSetText _role;
-	private _h = ctrlTextHeight _c;
-	private _boxY = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.054 * safezoneH);
-	private _boxH = 0.024 * safezoneH;
-	_c ctrlSetPosition [
-		((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.152 * safezoneH),
-		_boxY + ((_boxH - _h) / 2),
-		0.144 * safezoneH,
-		_h
-	];
-	_c ctrlCommit 0;
-};
-if (_style == 4) then {
-	private _c = _display displayCtrl 1232;
-	_c ctrlSetText _role;
-	private _h = ctrlTextHeight _c;
-	private _boxY = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.053 * safezoneH);
-	private _boxH = 0.024 * safezoneH;
-	_c ctrlSetPosition [
-		((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.142 * safezoneH),
-		_boxY + ((_boxH - _h) / 2),
-		0.134 * safezoneH,
-		_h
-	];
-	_c ctrlCommit 0;
 };
 
 // Top bar keybind row: a normal game gives no other indication of what's

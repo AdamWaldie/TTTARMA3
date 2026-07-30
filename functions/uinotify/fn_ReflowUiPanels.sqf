@@ -7,10 +7,11 @@ private _gap = safeZoneH * 0.008;
     private _entries = _registry select {(_x param [3, "TOP"]) isEqualTo _placement};
     private _cursor = switch (_placement) do {
         // Pulled up further than the WMP default (0.187) - the role crest
-        // (TTTHud.hpp, all 8 RoleCrestStyle variants) lives bottom-right, and
-        // the tallest any style's decoration reaches above the very bottom
-        // edge is Style 2's credit text at ~0.235 of safezoneH (it sits above
-        // the corner brackets, not below - see s2CreditText's own comment).
+        // (TTTHud.hpp, all 9 crest styles) lives bottom-right, and the tallest
+        // any of them reaches above the very bottom edge is Style 8's drop
+        // shadow at ~0.233 of safezoneH; the seven redesigned styles all stay
+        // under 0.18 (their own comment block documents the budget every one
+        // of their rects was checked against).
         // Nothing in this mission currently uses BOTTOM_RIGHT for anything,
         // but reserving clearance past that here means it stays true if that
         // ever changes, instead of only being true by coincidence.
@@ -37,7 +38,7 @@ private _gap = safeZoneH * 0.008;
         _cursor = safeZoneY + ((safeZoneH - _total) / 2);
     };
     {
-        _x params ["_channel", "_controls", "_token", "_slot", "_panelW", "_panelH", "_padX", "_padY", "_accentH", "_contentH", "_priority", "_createdAt", ["_headerH", 0]];
+        _x params ["_channel", "_controls", "_token", "_slot", "_panelW", "_panelH", "_padX", "_padY", "_accentH", "_contentH"];
         private _panelX = switch (_slot) do {
             case "TOP_RIGHT";
             case "BOTTOM_RIGHT": {safeZoneX + safeZoneW - _panelW - (safeZoneW * 0.025)};
@@ -51,25 +52,15 @@ private _gap = safeZoneH * 0.008;
         } else {
             _cursor = _panelY + _panelH + _gap;
         };
-        _controls params ["_shadow", "_frame", "_header", "_accent", "_sourceText", "_content"];
+        _controls params ["_shadow", "_frame", "_accent", "_content"];
         // Same small offset/oversize the rest of this HUD's shadow layers use
         // (see e.g. roleCreditsShadow in TTTHud.hpp).
         private _shadowPad = _gap * 0.5;
         _shadow ctrlSetPosition [_panelX - _shadowPad, _panelY - _shadowPad, _panelW + (2 * _shadowPad), _panelH + (2 * _shadowPad)];
         _frame ctrlSetPosition [_panelX, _panelY, _panelW, _panelH];
-        _header ctrlSetPosition [_panelX, _panelY, _panelW, _headerH];
-        _accent ctrlSetPosition [_panelX, _panelY + _headerH, _panelW, _accentH];
-        _content ctrlSetPosition [_panelX + _padX, _panelY + _headerH + _accentH + _padY, _panelW - (2 * _padX), _contentH];
-        {_x ctrlCommit 0;} forEach [_shadow, _frame, _header, _accent, _content];
-        // Real vertical centring for the source label, not ST_VCENTER (see
-        // its own comment in fn_ShowUiNotification.sqf) - needs the
-        // control's real position/size set above first, so this can't move
-        // into the creation script itself.
-        _sourceText ctrlSetPosition [_panelX + _padX, _panelY, _panelW - (2 * _padX), _headerH];
-        _sourceText ctrlCommit 0;
-        private _srcH = ctrlTextHeight _sourceText;
-        _sourceText ctrlSetPosition [_panelX + _padX, _panelY + ((_headerH - _srcH) / 2), _panelW - (2 * _padX), _srcH];
-        _sourceText ctrlCommit 0;
+        _accent ctrlSetPosition [_panelX, _panelY, _panelW, _accentH];
+        _content ctrlSetPosition [_panelX + _padX, _panelY + _padY + _accentH, _panelW - (2 * _padX), _contentH - _accentH];
+        {_x ctrlCommit 0;} forEach _controls;
     } forEach _entries;
 } forEach ["TOP", "TOP_RIGHT", "CENTER", "BOTTOM_LEFT", "BOTTOM_RIGHT"];
 true

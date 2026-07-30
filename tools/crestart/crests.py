@@ -91,9 +91,6 @@ def enamel_pin():
     det.alpha_composite(shade(cloison, (240, 200, 116, 255), (132, 96, 32, 255), 118))
     det.alpha_composite(fill(edge(outer, 3), (58, 40, 12, 165)))
     det.alpha_composite(fill(edge(enam, 2, inner=False), (72, 50, 16, 140)))
-    rib = ImageChops.multiply(rectm([44, 172, 212, 214]), ellipse([12, 12, 244, 244]))
-    det.alpha_composite(shade(rib, (228, 188, 106, 255), (124, 88, 28, 255), 118))
-    det.alpha_composite(fill(edge(rib, 2), (52, 36, 10, 150)))
     return base, role, det, (40, 46, 176, 116), (52, 181, 152, 26)
 
 # ---------------------------------------------------------------- 3 Dog Tag
@@ -120,10 +117,13 @@ def dog_tag():
         cx, cy = 46 - 40 * t, 132 - 128 * t
         r = 7.5 - t * 2
         dd.ellipse([cx-r, cy-r, cx+r, cy+r], fill=(202, 204, 196, 255), outline=(58, 60, 54, 255))
-    strip = roundrect([40, 150, 216, 178], 13)
-    det.alpha_composite(fill(edge(strip, 2), AMBER + (135,)))
     det = punch(det, hole)
-    return base, role, det, (70, 78, 116, 70), (46, 152, 164, 24)
+    # Mirrored. Drawn with the eyelet and chain on the left, but the crest lives in
+    # the bottom-RIGHT of the screen: a chain running up-left points back across
+    # the HUD, while up-right reads as the tag hanging from something past the
+    # corner. It also moves the hole off the side the letter wants.
+    flip = lambda im: im.transpose(Image.FLIP_LEFT_RIGHT)
+    return flip(base), flip(role), flip(det), (70, 78, 116, 70), (46, 152, 164, 24)
 
 # ---------------------------------------------------------------- 4 Unit Patch
 def unit_patch():
@@ -210,8 +210,6 @@ def case_file():
 
     det = blank()
     dd = drawon(det)
-    for y in (170, 186):
-        dd.line([34, y, 222, y], fill=(96, 84, 56, 130), width=2)
     dd.rounded_rectangle([174, 6, 232, 44], radius=6, fill=(182, 184, 176, 255),
                          outline=(66, 68, 62, 255), width=2)
     dd.line([182, 25, 224, 25], fill=(94, 96, 90, 225), width=2)

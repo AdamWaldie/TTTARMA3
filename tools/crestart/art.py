@@ -128,3 +128,37 @@ def save(img, name, outdir="art"):
     os.makedirs(outdir, exist_ok=True)
     img.save("%s/%s.png" % (outdir, name))
     return "%s/%s.png" % (outdir, name)
+
+
+def bleed(img, iters=20):
+    """Alpha bleed (edge padding) - REQUIRED before PAA conversion.
+
+    DXT compresses RGB independently of alpha, and the GPU bilinearly filters
+    across fully-transparent pixels when the texture is drawn at any scale. Those
+    pixels still carry RGB, so leaving them at the default black makes every crest
+    render with a dark halo and every punched hole fringe. Flooding each
+    transparent pixel with the nearest opaque colour means whatever bleeds in
+    matches what it bleeds into, and the halo disappears.
+
+    Alpha is untouched - only the RGB of already-invisible pixels changes, so
+    nothing about the visible art moves.
+    """
+    import numpy as np
+    a = np.array(img)
+    rgb = a[..., :3].astype(np.float32)
+    alpha = a[..., 3]
+    known = alpha > 0
+    for _ in range(iters):
+        if known.all():
+            break
+        sums = np.zeros_like(rgb)
+        cnts = np.zeros(alpha.shape, np.float32)
+        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            sums += np.roll(rgb, (dy, dx), (0, 1)) * \
+                np.roll(known, (dy, dx), (0, 1)).astype(np.float32)[..., None]
+            cnts += np.roll(known, (dy, dx), (0, 1)).astype(np.float32)
+        fillable = (~known) & (cnts > 0)
+        rgb[fillable] = sums[fillable] / cnts[fillable][..., None]
+        known |= fillable
+    return Image.fromarray(
+        np.dstack([rgb.clip(0, 255).astype(np.uint8), alpha]), "RGBA")

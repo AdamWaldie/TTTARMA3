@@ -88,17 +88,21 @@ jobs:
         with:
           ref: ${{ steps.tag.outputs.tag }}
 
-      - name: Stage the mission once
+      # Validation gates the release: never ship a tree that would fail CI.
+      - name: Validate SQF
+        run: python3 tools/ci/sqf_validator.py
+      - name: Validate Config
+        run: python3 tools/ci/config_style_checker.py
+
+      - name: Stage the mission once (allowlist)
+        # Was an rsync --exclude blocklist, which shipped anything nobody remembered
+        # to exclude - tools/, steam/ and the crest-art generator's .py/.png were all
+        # getting in. This copies only known mission content and FAILS on anything it
+        # does not recognise, so a new asset or tool cannot slip into a release
+        # silently. LICENSE and README are the deliberate exceptions.
         run: |
-          mkdir -p stage/_mission dist
-          rsync -a \
-            --exclude=".git" \
-            --exclude=".github" \
-            --exclude="wiki" \
-            --exclude="terrains" \
-            --exclude="stage" \
-            --exclude="dist" \
-            ./ stage/_mission/
+          mkdir -p dist
+          ./tools/ci/stage_mission.sh stage/_mission
 
       - name: Build one folder, zip, and pbo per terrain
         run: |

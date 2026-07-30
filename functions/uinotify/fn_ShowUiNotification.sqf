@@ -71,10 +71,13 @@ _policy = toUpper _policy;
 if (_policy isEqualTo "AUTO") then {_policy = if (_duration <= 0) then {"REPLACE"} else {"FIFO"};};
 if !(_policy in ["FIFO", "REPLACE"]) then {_policy = "FIFO";};
 private _semantic = switch (_state) do {
-    case "SUCCESS": {["#6CE5A8", "[OK]"]};
-    case "WARNING": {["#FFD166", "[!]"]};
-    case "ERROR": {["#FF6161", "[X]"]};
-    default {["#79C7FF", "[i]"]};
+    // Colour only - no [OK]/[!]/[X]/[i] token. Those read as console output rather
+    // than as this mission's UI, and the title already says what happened: the
+    // state is carried by the accent stripe and the title's colour instead.
+    case "SUCCESS": {["#6CE5A8", ""]};
+    case "WARNING": {["#FFD166", ""]};
+    case "ERROR": {["#FF6161", ""]};
+    default {["#79C7FF", ""]};
 };
 _semantic params ["_colour", "_symbol"];
 
@@ -122,7 +125,7 @@ _content ctrlSetBackgroundColor [0, 0, 0, 0];
 private _messageText = if ((typeName _message) isEqualTo "TEXT") then {str _message} else {_message};
 _content ctrlSetStructuredText parseText format [
     "<t align='left' font='PuristaMedium' color='#9FB3C8' size='0.72'>%1</t><br/>" +
-    "<t align='left' font='PuristaBold' color='%2' size='1.12' shadow='1'>%3 %4</t><br/>" +
+    "<t align='left' font='PuristaBold' color='%2' size='1.12' shadow='1'>%3%4</t><br/>" +
     "<t align='left' font='PuristaMedium' color='#F2EFE3' size='0.88'>%5</t>",
     toUpper _source,
     _colour,

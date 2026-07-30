@@ -283,6 +283,10 @@ if __name__ == "__main__":
     for i, (name, fn) in enumerate(CRESTS, start=1):
         b, r, d, lb, cb = fn()
         save(b, "%s_base" % name); save(r, "%s_role" % name); save(d, "%s_detail" % name)
-        boxes[i] = {"name": name, "letter": lb, "credit": cb, "letterColour": LETTER[i]}
+        boxes[i] = {"name": name, "letter": lb, "credit": cb, "letterColour": LETTER[i]}   # noqa: draft only
         print("%d %-13s letter=%s credit=%s" % (i, name, lb, cb))
-    json.dump(boxes, open("art/boxes.json", "w"), indent=1)
+    # Deliberately NOT written here. fitletters.py owns art/boxes.json: it measures
+    # the letter box from each crest's body mask and clamps the balance box to the
+    # outer object. Writing a hand-authored version from here clobbered those
+    # measurements whenever this ran second.
+    print("(boxes.json not written - run fitletters.py, which owns it)")

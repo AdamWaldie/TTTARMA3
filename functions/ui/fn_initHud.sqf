@@ -112,15 +112,18 @@ if (_usesRing) then {
 if (_style == 8) then {
 	{ (_display displayCtrl _x) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1]; } forEach [1281, 1283, 1284];
 
+	// Letter box matches the ring's own 999/1000/1001 box exactly (RX/RY,
+	// 0.15H square) now that Style 8 was rescaled to the same footprint as
+	// the Rank Disc - was its own independently-sized 0.17H zone before.
 	private _s8Letter = _display displayCtrl 1285;
 	_s8Letter ctrlSetTextColor _color;
 	_s8Letter ctrlSetText toUpper (_role select [0, 1]);
 	private _s8H = ctrlTextHeight _s8Letter;
-	private _s8ZoneX = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH);
-	private _s8ZoneY = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.044 * safezoneH);
-	private _s8ZoneH = 0.17 * safezoneH;
+	private _s8ZoneX = (safezoneW + safezoneX) - (0.175 * safezoneH);
+	private _s8ZoneY = (safezoneH + safezoneY) - (0.185 * safezoneH);
+	private _s8ZoneH = 0.15 * safezoneH;
 	private _s8OpticalNudgeX = if (_role == "Jester") then { -0.003 * safezoneH } else { 0 };
-	_s8Letter ctrlSetPosition [_s8ZoneX + _s8OpticalNudgeX, _s8ZoneY + ((_s8ZoneH - _s8H) / 2), 0.17 * safezoneH, _s8H];
+	_s8Letter ctrlSetPosition [_s8ZoneX + _s8OpticalNudgeX, _s8ZoneY + ((_s8ZoneH - _s8H) / 2), 0.15 * safezoneH, _s8H];
 	_s8Letter ctrlCommit 0;
 };
 
@@ -142,7 +145,7 @@ private _styleAlways = [
 	[],                                              // 5 - Satellite Chip: nothing beyond the pill below
 	[1250, 1251, 1252, 1253, 1254, 1255, 1256, 1257],// 6 - IFF Transponder: ticks
 	[],                                              // 7 - Contact Blip: shares Rank Disc now, no style-specific extras of its own
-	[1280, 1281, 1282, 1283, 1284, 1285]             // 8 - Stamped Tag: shadow/border/plate/divider/flash/letter
+	[1280, 1281, 1282, 1287, 1283, 1284, 1285]       // 8 - Stamped Tag: shadow/border/plate/highlight/divider/flash/letter
 ];
 private _styleCredits = [
 	[1002, 1003, 1004, 1005],   // 0 - full credits pill (shadow/bg/accent/text)

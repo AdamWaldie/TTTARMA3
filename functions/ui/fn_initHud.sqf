@@ -39,37 +39,36 @@ private _color = [_role] call Waldo_roleColor;
 // Selectable role crest style - entirely a per-player preference, not a
 // server/lobby setting (there is no RoleCrestStyle mission param).
 //
-// Each style is its OWN construction system - not one recipe restyled nine
-// ways. An earlier pass built every style from Style 8's shadow/border/plate/
-// amber recipe with only the silhouette varying, which produced variations
-// rather than designs. What differs now is how each crest is BUILT:
+// Styles 1-8 are drawn artwork (ui/crests/*.paa), not arrangements of rects.
+// Three thematic wells, per direction - GMod-TTT heritage, Armaville military
+// identity, TTT evidence:
 //
-//   0 Original       - circular medallion + full-width pill. Grandfathered;
-//                      structurally as shipped, with a light polish pass only.
-//   1 Field Medallion- medallion + nameplate. The one style that extends
-//                      Original, reusing its exact badge ring and textures.
-//   2 Stencil Column - banded: role bands at head and foot, no outline.
-//   3 Service Pips   - outline only: no plate, terrain shows through a wash.
-//   4 Punch Card     - solid role field, letter knocked out in cream.
-//   5 Bracket Sight  - frameless: amber marks and outlined text, no panel.
-//   6 Layered Chip   - offset stack: the role plate sits behind, not around.
-//   7 Ledger Slip    - paper: pale slip, ink balance, bound role margin.
-//   8 Stamped Tag    - bordered plate; the only style that frames itself.
+//   0 Original      - the badge ring, grandfathered. The only style still using
+//                     idc 999/1000/1001/1272.
+//   1 Struck Coin   - milled rim, recessed field, exergue at the foot
+//   2 Enamel Pin    - cloisonne enamel in a brass cloison
+//   3 Dog Tag       - brushed steel on a bead chain, hole punched through
+//   4 Unit Patch    - satin stitch, merrowed amber edge
+//   5 Crate Stencil - spray through a stencil; the glyph is the UNPAINTED part
+//   6 Case File     - rubber clearance stamp on manila
+//   7 Chalk Mark    - chalk on asphalt
+//   8 Evidence Tag  - manila tag, brass eyelet punched top-right, string
 //
-// Amber (WALDO_ACCENT) is never role-tinted anywhere. It's the one constant
-// across nine otherwise unrelated constructions, which is what keeps them
-// reading as the same game's UI. The role colour is what varies.
+// Each is three RscPictures: a base under the role element, a luminance-only role
+// layer that ctrlSetTextColor multiplies to the role colour, and a detail layer
+// over the top whose fixed colours (amber fittings, brass, chain) must NOT be
+// tinted. That split is the whole reason a crest can be role-coloured and still
+// keep fixed amber detailing.
 //
-// Waldo_roleCrestStylePref lives in THIS client's own profileNamespace (set
-// via the H key -> Waldo_fnc_openStylePicker, functions/ui/fn_openStylePicker.sqf),
-// so it's saved across sessions/servers and never broadcast or read from
-// anywhere else.
+// Waldo_roleCrestStylePref lives in THIS client's own profileNamespace (set via
+// the H key -> Waldo_fnc_openStylePicker), so it's saved across sessions and
+// never broadcast or read from anywhere else.
 // ============================================================================
-private _style = profileNamespace getVariable ["Waldo_roleCrestStylePref", 0];
-// Styles 0 and 1 both use the badge ring - style 1's whole idea is to build on
-// Original, so it inherits the same medallion (textures and tuned position
-// included) and changes only what sits under it. Every other style replaces the
-// medallion outright.
+private _style = profileNamespace getVariable ["Waldo_roleCrestStylePref", 1];
+// Original and Field Medallion both use the badge ring. Field Medallion's whole
+// idea is to BE Original with a nameplate under it, so it inherits the same
+// medallion - textures and tuned position included. Styles 2-9 are drawn crests
+// and replace it outright.
 private _usesRing = (_style in [0, 1]);
 
 { (_display displayCtrl _x) ctrlShow _usesRing; } forEach [1272, 999, 1000, 1001];
@@ -131,26 +130,28 @@ private _hasCredits = _role in ["Traitor", "Detective"];
 // omittable without notice: hide them and the plate is simply plain, with no
 // hole where a panel used to be.
 private _styleAlways = [
-	[],                                                              // 0 - Original: badge ring above, nothing else
-	[1300, 1301, 1302, 1303],                                        // 1 - Field Medallion: nameplate under the ring
-	[1310, 1311, 1312, 1313, 1314, 1315, 1316],                      // 2 - Stencil Column
-	[1320, 1321, 1322, 1323, 1324, 1325, 1326, 1327, 1328],          // 3 - Service Pips
-	[1330, 1331, 1332, 1333, 1334, 1335, 1336, 1337],                // 4 - Punch Card
-	[1340, 1341, 1342, 1343, 1344, 1345, 1346, 1347, 1348],          // 5 - Bracket Sight
-	[1360, 1361, 1362, 1363, 1364],                                  // 6 - Layered Chip
-	[1370, 1371, 1372, 1373, 1374, 1375, 1376],                      // 7 - Ledger Slip
-	[1280, 1281, 1282, 1287, 1284, 1283, 1285]                       // 8 - Stamped Tag
+	[],                        // 0 - Original: badge ring above, nothing else
+	[1290, 1291, 1292, 1293],          // 1 - Field Medallion: nameplate under the ring
+	[1300, 1301, 1302, 1303],                  // 2 - struckCoin
+	[1310, 1311, 1312, 1313],                  // 3 - enamelPin
+	[1320, 1321, 1322, 1323],                  // 4 - dogTag
+	[1330, 1331, 1332, 1333],                  // 5 - unitPatch
+	[1340, 1341, 1342, 1343],                  // 6 - crateStencil
+	[1350, 1351, 1352, 1353],                  // 7 - caseFile
+	[1360, 1361, 1362, 1363],                  // 8 - chalkMark
+	[1370, 1371, 1372, 1373],                  // 9 - evidenceTag
 ];
 private _styleCredits = [
 	[1002, 1003, 1004, 1005, 1006],   // 0 - the whole pill (shadow/bg/highlight/accent/text)
-	[1304, 1305],                      // 1 - amber tick + balance in the nameplate's right half
-	[1317],                            // 2 - balance above the foot band
-	[1329],                            // 3 - balance inside the frame's lower band
-	[1338],                            // 4 - balance stamped across the role field
-	[1349],                            // 5 - balance under the letter, no panel behind it
-	[1365],                            // 6 - balance in the front plate's lower band
-	[1377],                            // 7 - balance on the last ruled line
-	[1286]                             // 8 - balance above the foot divider
+	[1294, 1295],                      // 1 - amber tick + balance in the nameplate's right half
+	[1304, 1305, 1306],                    // 2 - struckCoin
+	[1314, 1315, 1316],                    // 3 - enamelPin
+	[1324, 1325, 1326],                    // 4 - dogTag
+	[1334, 1335, 1336],                    // 5 - unitPatch
+	[1344, 1345, 1346],                    // 6 - crateStencil
+	[1354, 1355, 1356],                    // 7 - caseFile
+	[1364, 1365, 1366],                    // 8 - chalkMark
+	[1374, 1375, 1376],                    // 9 - evidenceTag
 ];
 
 {
@@ -162,78 +163,84 @@ private _styleCredits = [
 	{ (_display displayCtrl _x) ctrlShow _show; } forEach _x;
 } forEach _styleCredits;
 
-// The role-coloured parts of the active style, by idc. WALDO_ACCENT gold is
-// only the hpp default/placeholder for these - they're retinted here on every
-// redraw, the same way the shop panel's own accent bar is.
+// The role colour is applied by tinting exactly ONE control per style: the crest's
+// role layer. ctrlSetTextColor on an RscPicture multiplies the texture, and that
+// layer is authored as luminance only, so multiplying it produces the role colour
+// with the material's own shading intact.
 //
-// What actually carries the role colour differs per style, which is the point:
-// style 2's head and foot bands, style 3's four frame edges, style 4's entire
-// plate, style 6's rear plate, style 7's bound margin, style 8's border. Style 5
-// has no entry at all - it's frameless, so its letter is the only role-coloured
-// thing on screen.
-//
-// Every amber mark is deliberately absent from this list and stays fixed on
-// every role. Tinting the accents too would collapse each crest to a single hue.
-private _styleTinted = [
-	[1003],                           // 0 - the pill's own accent line
-	[1302],                           // 1 - the nameplate's top accent line
-	[1312, 1313],                     // 2 - head and foot bands
-	[1321, 1322, 1323, 1324],         // 3 - all four frame edges
-	[1331],                           // 4 - the whole plate
-	[],                               // 5 - frameless; the letter is the only role colour
-	[1361],                           // 6 - the rear plate, not a border
-	[1372],                           // 7 - the bound margin
-	[1281]                            // 8 - the border
-];
-{
-	(_display displayCtrl _x) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
-} forEach (_styleTinted select _style);
-
-// Styles 2-8's letter: same treatment as style 0's above (role tint, role's
-// initial, real measured vertical centring) but on that style's own control
-// inside its own construction. Style 1 is absent because it shares the badge
-// ring's letter, handled in the _usesRing block above.
-//
-// The box is per style because the constructions genuinely differ - a banded
-// column centres its letter between its two bands, the ledger slip centres it in
-// the body column right of the bound margin, and so on.
-if (_style >= 2) then {
-	// [letter idc, xOff, yOff, w, h, sizeEx] - offsets/sizes in safezoneH,
-	// measured from the same badge anchor the hpp block uses.
-	private _letterBox = switch (_style) do {
-		case 2: { [1316, 0.075, 0.036, 0.090, 0.100, 0.062] };
-		case 3: { [1328, 0.015, 0.022, 0.150, 0.150, 0.090] };
-		case 4: { [1337, 0.015, 0.032, 0.150, 0.140, 0.090] };
-		case 5: { [1348, 0.017, 0.027, 0.140, 0.140, 0.088] };
-		case 6: { [1364, 0.014, 0.024, 0.145, 0.145, 0.090] };
-		case 7: { [1376, 0.037, 0.022, 0.122, 0.130, 0.088] };
-		default { [1285, 0.079, 0.020, 0.086, 0.126, 0.070] };   // 8 - Stamped Tag
+// The base and detail layers are deliberately never touched. They hold the fixed
+// colours - amber fittings, brass eyelet, bead chain, manila card, crate plank,
+// asphalt - and tinting them would collapse each crest to a single hue, which is
+// the exact failure the drawn artwork exists to avoid.
+if (_style > 1) then {
+	private _roleLayer = switch (_style) do {
+		case 2: { 1301 };
+		case 3: { 1311 };
+		case 4: { 1321 };
+		case 5: { 1331 };
+		case 6: { 1341 };
+		case 7: { 1351 };
+		case 8: { 1361 };
+		case 9: { 1371 };
 	};
-	_letterBox params ["_lIdc", "_lX", "_lY", "_lW", "_lH", "_lSize"];
+	(_display displayCtrl _roleLayer) ctrlSetTextColor _color;
+};
+// Original's own role-tinted parts: the badge ring is handled in the _usesRing
+// block above, so this is just its credits pill's accent line.
+// Original's credits-pill accent line, and Field Medallion's nameplate accent
+// line. Both are flat rects rather than a texture layer, so they take a
+// background colour, not a text colour.
+if (_style == 0) then {
+	(_display displayCtrl 1003) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
+};
+if (_style == 1) then {
+	(_display displayCtrl 1292) ctrlSetBackgroundColor [_color select 0, _color select 1, _color select 2, 1];
+};
 
-	// Style 2's column reserves its lower half for the balance, so with no
-	// credits the letter re-centres over the whole column instead of sitting high
-	// in a half-empty plate. Nothing else needs this - every other style's
-	// balance is a thin band its letter already clears.
-	if (_style == 2 && {!_hasCredits}) then { _lH = 0.122; };
+// Styles 2-9's letter. The box and size are MEASURED, not chosen:
+// tools/crestart/fitletters.py takes each crest's body mask, subtracts the
+// balance band, grows the largest rectangle that stays wholly inside it, and
+// verifies the glyph is contained. This table is generated from that output, so it
+// can't drift from the artwork.
+//
+// The letter's colour differs per crest, and that matters more than it sounds. The
+// material already carries the role colour, so a role-tinted letter on a
+// role-coloured field half-vanishes:
+//   "cream" - a knockout, where the letter sits on the role element itself
+//   "role"  - ink, for the two paper crests where the letter sits on pale card
+//   "plank" - the crate's own olive, because on a real stencil the glyph is the
+//             UNPAINTED part showing the surface through it
+if (_style > 1) then {
+	// [letter idc, xOff, yOff, w, h, sizeEx, colour] - offsets/sizes in safezoneH
+	// from the badge anchor, matching the hpp block exactly.
+	private _letterBox = switch (_style) do {
+		case 2: { [1303, 0.039922, 0.038047, 0.080156, 0.080156, 0.072734, "cream"] };   // struckCoin
+		case 3: { [1313, 0.038437, 0.038789, 0.083125, 0.083125, 0.074961, "cream"] };   // enamelPin
+		case 4: { [1323, 0.0325, 0.062539, 0.089063, 0.038594, 0.034883, "cream"] };   // dogTag
+		case 5: { [1333, 0.026562, 0.034336, 0.10687, 0.068281, 0.061602, "cream"] };   // unitPatch
+		case 6: { [1343, 0.013203, 0.044727, 0.13359, 0.068281, 0.061602, "plank"] };   // crateStencil
+		case 7: { [1353, 0.051797, 0.040273, 0.062344, 0.050469, 0.045273, "role"] };   // caseFile
+		case 8: { [1363, 0.031016, 0.041016, 0.097969, 0.083125, 0.074961, "cream"] };   // chalkMark
+		case 9: { [1373, 0.060703, 0.052891, 0.053437, 0.0475, 0.043047, "role"] };   // evidenceTag
+	};
+	_letterBox params ["_lIdc", "_lX", "_lY", "_lW", "_lH", "_lSize", "_lColour"];
 
 	private _letter = _display displayCtrl _lIdc;
-	// Style 4 is the one style whose letter is NOT role-tinted: its plate is the
-	// role colour at full opacity and the letter is knocked out of it in cream.
-	// Tinting it here would paint the letter the same colour as the field it sits
-	// on and erase it entirely.
-	if (_style != 4) then { _letter ctrlSetTextColor _color; };
+	_letter ctrlSetTextColor (switch (_lColour) do {
+		case "role":  { _color };
+		case "plank": { [0.227, 0.243, 0.165, 1] };
+		default       { [0.95, 0.93, 0.86, 1] };
+	});
 	_letter ctrlSetText toUpper (_role select [0, 1]);
 	// Before ctrlTextHeight, always - that command reports the height of the text
-	// at whatever size is in effect, so measuring first would centre against the
-	// wrong size.
+	// at whatever size is in effect, so measuring first centres against the wrong
+	// size.
 	_letter ctrlSetFontHeight (_lSize * safezoneH);
 	private _lTextH = ctrlTextHeight _letter;
-	// Same eyeballed optical nudge style 0 needs: J's hook-shaped tail sits toward
-	// the bottom-right of its bounding box, so a geometrically centred J still
-	// reads as drifted right. There's no engine measurement for optical glyph
-	// weight the way there is for height, so this stays a small constant specific
-	// to that one letter rather than a formula.
+	// Same eyeballed optical nudge Original needs: J's hook-shaped tail sits toward
+	// the bottom-right of its bounding box, so a geometrically centred J still reads
+	// as drifted right. There's no engine measurement for optical glyph weight the
+	// way there is for height, so this stays a small constant for that one letter.
 	private _lNudge = if (_role == "Jester") then { -0.003 * safezoneH } else { 0 };
 	_letter ctrlSetPosition [
 		((safezoneW + safezoneX) - (0.175 * safezoneH)) + (_lX * safezoneH) + _lNudge,
@@ -244,13 +251,13 @@ if (_style >= 2) then {
 	_letter ctrlCommit 0;
 };
 
-// Style 1's nameplate carries the role's NAME, not its initial - the medallion
-// above it already shows the letter, so repeating it would waste the bar. Set
-// once here since it never changes for this HUD instance. Its box shrinks to the
-// bar's left half when there's a balance to sit beside, and takes the whole bar
-// when there isn't, so the plate never reads as half-empty.
+// Field Medallion's nameplate carries the role's NAME, not its initial - the
+// medallion above it already shows the letter, so repeating it would waste the
+// bar. Set once here since it never changes for this HUD instance. Its box shrinks
+// to the bar's left half when there's a balance to sit beside, and takes the whole
+// bar when there isn't, so the plate never reads as half-empty.
 if (_style == 1) then {
-	private _name = _display displayCtrl 1303;
+	private _name = _display displayCtrl 1293;
 	_name ctrlSetText toUpper _role;
 	private _nH = ctrlTextHeight _name;
 	private _nX = if (_hasCredits) then { 0.004 } else { 0 };
@@ -293,19 +300,18 @@ if (_hasCredits) then {
 	// design intended that; it's the same measure-don't-guess fix the rest of
 	// this HUD already had, applied to the one control that never got it.
 	private _creditBox = switch (_style) do {
-		case 1: { [1305, 0.086, 0.152, 0.060, 0.026, "%1 CR"] };
-		case 2: { [1317, 0.075, 0.136, 0.090, 0.022, "%1 CR"] };
-		case 3: { [1329, 0.023, 0.144, 0.134, 0.022, "%1 CREDITS"] };
-		case 4: { [1338, 0.015, 0.144, 0.150, 0.020, "%1 CREDITS"] };
-		case 5: { [1349, 0.017, 0.139, 0.140, 0.020, "%1 CREDITS"] };
-		case 6: { [1365, 0.014, 0.142, 0.145, 0.020, "%1 CREDITS"] };
-		// Lowercase, alone among styles 1-8: this one is a bookkeeper's paper
-		// slip, and shouting CREDITS at it would break the conceit.
-		case 7: { [1377, 0.037, 0.144, 0.122, 0.020, "%1 credits"] };
-		case 8: { [1286, 0.079, 0.153, 0.086, 0.019, "%1 CR"] };
+		case 1: { [1295, 0.086, 0.152, 0.060, 0.026, "%1 CR"] };   // Field Medallion
+		case 2: { [1306, 0.020625, 0.12711, 0.11875, 0.02375, "%1 CR"] };   // struckCoin
+		case 3: { [1316, 0.023594, 0.12934, 0.11281, 0.019297, "%1 CR"] };   // enamelPin
+		case 4: { [1326, 0.019141, 0.10781, 0.12172, 0.017813, "%1 CR"] };   // dogTag
+		case 5: { [1336, 0.0325, 0.1093, 0.095, 0.017813, "%1 CR"] };   // unitPatch
+		case 6: { [1346, 0.019141, 0.11969, 0.12172, 0.017813, "%1 CR"] };   // crateStencil
+		case 7: { [1356, 0.0072656, 0.14344, 0.14547, 0.017813, "%1 CREDITS"] };   // caseFile
+		case 8: { [1366, 0.026562, 0.14641, 0.10687, 0.019297, "%1 CREDITS"] };   // chalkMark
+		case 9: { [1376, 0.045859, 0.14344, 0.080156, 0.019297, "%1 CR"] };   // evidenceTag
 		// 0 - Original. Keeps its own lowercase "%1 credits" wording rather than
-		// being normalised to the other styles' CR/CREDITS - the full-width pill
-		// has room for it, and it's part of what the style is.
+		// being normalised to the other styles' CR/CREDITS - the full-width pill has
+		// room for it, and it's part of what the style is.
 		default { [1002, 0, -0.040, 0.150, 0.030, "%1 credits"] };
 	};
 	_creditBox params ["_creditTextIdc", "_cX", "_cY", "_cW", "_cBoxH", "_cFormat"];

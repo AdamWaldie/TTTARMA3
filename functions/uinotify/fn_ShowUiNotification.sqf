@@ -49,6 +49,21 @@ if (isNull _display) exitWith {
     ""
 };
 
+// A card is created on display 46, and in practice that drew OVER this mission's
+// own dialogs rather than under them - a Golden Airdrop card landed on top of the
+// style picker and covered its title. Rather than fight the engine's layering,
+// hold the card while one of our dialogs is open and let the existing FIFO queue
+// carry it: the dialog's onUnload drains the queue on close, so nothing is lost,
+// it just arrives a moment later. Guarded on _fromQueue so a card being drained
+// can't re-queue itself forever.
+if ((uiNamespace getVariable ["Waldo_uiModalOpen", false]) && {!_fromQueue}) exitWith {
+    private _queue = +(uiNamespace getVariable ["Waldo_UiPanelQueue", []]);
+    _queue pushBack [_title, _message, _state, _duration, _placement, _channel, _source,
+                     _policy, _priority, _allowLocalOverride, false];
+    uiNamespace setVariable ["Waldo_UiPanelQueue", _queue];
+    "QUEUED"
+};
+
 _state = toUpper _state;
 _channel = toUpper _channel;
 _placement = [_channel, _placement, _allowLocalOverride] call Waldo_fnc_ResolveUiPanelPlacement;

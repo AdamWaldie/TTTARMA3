@@ -81,49 +81,35 @@ if (_existingIndex >= 0) then {
     {if (!isNull _x) then {ctrlDelete _x;};} forEach (_old param [1, []]);
 };
 
-// TroubleInArmaville reskin: shadow + casing + HEADER BAND + accent-stripe
-// is the exact material recipe every OTHER panel in this HUD is built from
-// (WaldoShop's shopHeader/shopAccentBar, WaldoStylePicker's spHeader/
-// spAccentBar, WaldoDebug) - a distinct near-black header band above the
-// casing body, with the accent line marking the seam between them, not
-// just a thin accent stripe pinned to the frame's own top edge with no
-// header at all (the previous version here). Colours are this mission's
-// own WALDO_* values (see ui/common.hpp) and its role palette
-// (Waldo_roleColor in fn_initShops.sqf: Traitor red, Detective blue,
-// Jester purple, Innocent green), not the WMP defaults - the INFO state
-// deliberately isn't blue, so a card is never mistaken for a
-// Detective-blue "info" state next to an actual Detective-blue role crest.
+// Back to the simpler shadow + casing + accent-stripe recipe (its original
+// design intent, before a header-band experiment made it feel like a
+// different, wider kind of panel than the compact nameplate it's meant to
+// be). Colours are this mission's own WALDO_* values (see ui/common.hpp)
+// and its role palette (Waldo_roleColor in fn_initShops.sqf: Traitor red,
+// Detective blue, Jester purple, Innocent green), not the WMP defaults -
+// the INFO state deliberately isn't blue, so a card is never mistaken for
+// a Detective-blue "info" state next to an actual Detective-blue role
+// crest.
 private _shadow = _display ctrlCreate ["RscText", -1];
 private _frame = _display ctrlCreate ["RscText", -1];
-private _header = _display ctrlCreate ["RscText", -1];
 private _accent = _display ctrlCreate ["RscText", -1];
-private _sourceText = _display ctrlCreate ["RscText", -1];
 private _content = _display ctrlCreate ["RscStructuredText", -1];
 _shadow ctrlSetBackgroundColor [0, 0, 0, 0.82];
-_frame ctrlSetBackgroundColor [0.105, 0.11, 0.095, 0.96];
-_header ctrlSetBackgroundColor [0.045, 0.05, 0.045, 0.99];   // WALDO_HEADERBG
+_frame ctrlSetBackgroundColor [0.07, 0.075, 0.065, 1];   // fully opaque near-black casing
 _accent ctrlSetBackgroundColor (switch (_state) do {
     case "SUCCESS": {[0.435, 0.796, 0.455, 1]};   // matches the shop's existing "[OK] PURCHASED" green
     case "WARNING": {[0.85, 0.62, 0.20, 1]};      // WALDO_ACCENT gold
     case "ERROR":   {[0.894, 0.318, 0.294, 1]};   // matches the shop's existing "[X] NOT ENOUGH CREDITS" red
-    default         {[0.62, 0.60, 0.53, 1]};      // muted neutral - deliberately NOT Detective blue
+    default         {[0.85, 0.62, 0.20, 1]};      // WALDO_ACCENT gold - the shared amber thread every role UI now uses
 });
-_sourceText ctrlSetBackgroundColor [0, 0, 0, 0];
-_sourceText ctrlSetText toUpper _source;
-_sourceText ctrlSetTextColor [0.62, 0.68, 0.78, 1];
-_sourceText ctrlSetFont "PuristaMedium";
-_sourceText ctrlSetFontHeight (safeZoneH * 0.014);
-// Real vertical centring is done in Waldo_fnc_ReflowUiPanels once this
-// control actually has a position/size - ST_VCENTER is documented
-// elsewhere in this mission's own UI (ui/TTTHud.hpp, above roleText) as
-// rendering fully blank when combined with anything else, so this avoids
-// it the same way every other precisely-centred label in this HUD does.
 _content ctrlSetBackgroundColor [0, 0, 0, 0];
 
 private _messageText = if ((typeName _message) isEqualTo "TEXT") then {str _message} else {_message};
 _content ctrlSetStructuredText parseText format [
-    "<t align='left' font='PuristaBold' color='%1' size='1.12' shadow='1'>%2 %3</t><br/>" +
-    "<t align='left' font='PuristaMedium' color='#F2EFE3' size='0.88'>%4</t>",
+    "<t align='left' font='PuristaMedium' color='#9FB3C8' size='0.72'>%1</t><br/>" +
+    "<t align='left' font='PuristaBold' color='%2' size='1.12' shadow='1'>%3 %4</t><br/>" +
+    "<t align='left' font='PuristaMedium' color='#F2EFE3' size='0.88'>%5</t>",
+    toUpper _source,
     _colour,
     _symbol,
     _title,
@@ -132,16 +118,15 @@ _content ctrlSetStructuredText parseText format [
 
 private _visibleW = safeZoneW;
 private _visibleH = safeZoneH;
-// Capped at the round timer bar's own width (0.36 * safezoneW, see
-// topBarTimerBG in ui/TTTHud.hpp) or narrower - CENTER/default (used by
-// "TOP" placements like the airdrop card) used to run out to 0.44-0.48W,
-// nearly half the screen, dwarfing the bar it sits right underneath.
+// Narrower across the board than the round timer bar (0.36 * safezoneW) -
+// a nameplate-style card reads as compact and pinned to its corner, not as
+// a second wide banner competing with the timer bar above it.
 private _panelW = switch (_placement) do {
-    case "BOTTOM_RIGHT": {_visibleW * 0.235};
-    case "TOP_RIGHT": {_visibleW * 0.28};
-    case "BOTTOM_LEFT": {_visibleW * 0.34};
-    case "CENTER": {_visibleW * 0.30};
-    default {_visibleW * 0.28};
+    case "BOTTOM_RIGHT": {_visibleW * 0.19};
+    case "TOP_RIGHT": {_visibleW * 0.22};
+    case "BOTTOM_LEFT": {_visibleW * 0.26};
+    case "CENTER": {_visibleW * 0.24};
+    default {_visibleW * 0.22};
 };
 private _padX = _visibleW * 0.010;
 private _padY = _visibleH * 0.008;
@@ -149,17 +134,13 @@ private _maximumContentH = _visibleH * 0.22;
 _content ctrlSetPosition [0, 0, _panelW - (2 * _padX), _maximumContentH];
 _content ctrlCommit 0;
 private _contentH = (((ctrlTextHeight _content) + (_visibleH * 0.006)) max (_visibleH * 0.07)) min _maximumContentH;
+private _panelH = _contentH + (2 * _padY);
 private _accentH = (_visibleH * 0.004) max 0.002;
-// Header band height: just tall enough for the source label at a fixed,
-// compact size - not measured like the body content, since it's always
-// exactly one short uppercase line.
-private _headerH = _visibleH * 0.026;
-private _panelH = _headerH + _accentH + _contentH + (2 * _padY);
-{_x ctrlShow true;} forEach [_shadow, _frame, _header, _accent, _sourceText, _content];
+{_x ctrlShow true;} forEach [_shadow, _frame, _accent, _content];
 
 private _token = format ["%1_%2", diag_tickTime, random 1e9];
-private _controls = [_shadow, _frame, _header, _accent, _sourceText, _content];
-_registry pushBack [_channel, _controls, _token, _placement, _panelW, _panelH, _padX, _padY, _accentH, _contentH, _priority, diag_tickTime, _headerH];
+private _controls = [_shadow, _frame, _accent, _content];
+_registry pushBack [_channel, _controls, _token, _placement, _panelW, _panelH, _padX, _padY, _accentH, _contentH, _priority, diag_tickTime];
 uiNamespace setVariable ["Waldo_UiPanelRegistry", _registry];
 [] call Waldo_fnc_ReflowUiPanels;
 

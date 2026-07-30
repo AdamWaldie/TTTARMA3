@@ -397,14 +397,14 @@ private _setCrestStyle = {
 	saveProfileNamespace;
 	[] call Waldo_fnc_initHud;
 };
-["HUD", "Role Crest: Original",              "Sets your saved role crest preference to this style (same as pressing H)", "local", { [0] call _setCrestStyle }] call Waldo_debugRegister;
-["HUD", "Role Crest: Signal Ring",           "Sets your saved role crest preference to this style (same as pressing H)", "local", { [1] call _setCrestStyle }] call Waldo_debugRegister;
-["HUD", "Role Crest: Corner Bracket Frame",  "Sets your saved role crest preference to this style (same as pressing H)", "local", { [2] call _setCrestStyle }] call Waldo_debugRegister;
-["HUD", "Role Crest: Fused Tag",             "Sets your saved role crest preference to this style (same as pressing H)", "local", { [3] call _setCrestStyle }] call Waldo_debugRegister;
-["HUD", "Role Crest: Wallet Chip",           "Sets your saved role crest preference to this style (same as pressing H)", "local", { [4] call _setCrestStyle }] call Waldo_debugRegister;
-["HUD", "Role Crest: Satellite Chip",        "Sets your saved role crest preference to this style (same as pressing H)", "local", { [5] call _setCrestStyle }] call Waldo_debugRegister;
-["HUD", "Role Crest: IFF Transponder",       "Sets your saved role crest preference to this style (same as pressing H)", "local", { [6] call _setCrestStyle }] call Waldo_debugRegister;
-["HUD", "Role Crest: Contact Blip",          "Sets your saved role crest preference to this style (same as pressing H)", "local", { [7] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Original",                      "Sets your saved role crest preference to this style (same as pressing H)", "local", { [0] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Rank Bar",                      "Sets your saved role crest preference to this style (same as pressing H)", "local", { [1] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Stencil Column",                "Sets your saved role crest preference to this style (same as pressing H)", "local", { [2] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Service Pips",                  "Sets your saved role crest preference to this style (same as pressing H)", "local", { [3] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Punch Card",                    "Sets your saved role crest preference to this style (same as pressing H)", "local", { [4] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Bracket Sight",                 "Sets your saved role crest preference to this style (same as pressing H)", "local", { [5] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Layered Chip",                  "Sets your saved role crest preference to this style (same as pressing H)", "local", { [6] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Ledger Slip",                   "Sets your saved role crest preference to this style (same as pressing H)", "local", { [7] call _setCrestStyle }] call Waldo_debugRegister;
 
 // HUD - notification-card system (functions/uinotify/) previews. All fire
 // real Waldo_fnc_ShowUiNotification calls, not mockups, so what's on screen

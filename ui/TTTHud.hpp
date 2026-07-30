@@ -97,46 +97,15 @@ class RscTitles
 			// (github.com/woozymasta/paa) rather than a hand-rolled one, since a
 			// subtly wrong PAA would just trade one silent load failure for
 			// another.
-			// "Rank Disc" shared backing for every ring style. A thin gold
-			// bezel line plus a dark casing margin just behind the badge,
-			// so it reads as a coin's rim instead of a flat sticker. MUST
-			// be declared before roleShadow/the rest of the badge below -
-			// Arma draws sibling controls in declaration order, later on
-			// top of earlier - so this sits BEHIND the badge ring instead
-			// of covering the letter.
-			//
-			// Back to flat RscText rects, NOT RscPicture textures - tried
-			// two different texture approaches for this (reusing
-			// ui\rolebg.paa, then two dedicated freshly-generated .paa
-			// files) and neither one's tint ever actually applied in-game;
-			// the dedicated files rendered as their raw untinted grey/white
-			// shading instead of dark casing / gold, confirmed live via
-			// screenshots. Flat colorBackground[] is the one technique
-			// that's rendered correctly with zero exceptions anywhere else
-			// in this file. Sized tight (only a few % of H beyond the
-			// 0.15H ring) rather than the earlier wide double-halo, which
-			// read as "warped and stacked" concentric circles instead of a
-			// clean rim.
-			class rankDiscRim: RscText
-			{
-				idc = 1270;
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.011 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.011 * safezoneH);
-				w = 0.172 * safezoneH;
-				h = 0.172 * safezoneH;
-				colorBackground[] = {0.06, 0.065, 0.055, 1};
-				style = 0;
-			};
-			class rankDiscAccent: RscText
-			{
-				idc = 1271;
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.004 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.004 * safezoneH);
-				w = 0.158 * safezoneH;
-				h = 0.158 * safezoneH;
-				colorBackground[] = WALDO_ACCENT;   // flat gold, not role-tinted
-				style = 0;
-			};
+
+			// The old "Rank Disc" shared backing (rankDiscRim/rankDiscAccent,
+			// idc 1270/1271) is gone. It existed because styles 1-7 had no
+			// material of their own - they were decorations hung off style 0's
+			// badge ring, so they needed something behind that ring to make
+			// them read as a crest rather than as loose marks. Every one of
+			// them now owns its own shadow/border/plate (see the block further
+			// down), so a shared backing has nothing left to back, and keeping
+			// it would just double up a second rim behind each style's own.
 			// idc 1272, not -1: style 8 (Stamped Tag) doesn't use the ring at
 			// all and needs to hide this too, or its soft shadow blob would
 			// linger behind style 8's own plate with nothing left to belong to.
@@ -150,15 +119,12 @@ class RscTitles
 				h = 0.15 * safezoneH;
 				color = [0,0,0,0.8];
 			};
-			// Retired - Waldo_fnc_initHud always keeps this hidden now,
-			// regardless of style. Used to be the white "face" showing
-			// through the ring's hole; direction changed to let the Rank
-			// Disc's own gold accent ring show through instead ("wheres the
-			// amber and black circles" - a plain white halo on top of the
-			// dark-rim-plus-gold-accent backing looked disconnected from it).
-			// Left declared (not deleted) only because retextures like it
-			// are cheap to keep around in case a future style wants a white
-			// face again.
+			// The white "face" showing through the ring's hole. Was briefly
+			// retired while style 0 borrowed another style's look; it's back
+			// and shown for style 0 only, along with the rest of the ring,
+			// because style 0 is the untouched original and this disc is part
+			// of that original. No other style shows it - they all replace the
+			// ring outright rather than decorating it.
 			class roleTextBGBG: RscPicture
 			{
 				idc = 999;
@@ -258,336 +224,162 @@ class RscTitles
 			};
 
 			// ====================================================================
-			// Selectable role crest styles (RoleCrestStyle mission param, styles
-			// 1-7; style 0 is the roleShadow/roleTextBG*/roleCredits* block above,
-			// unchanged). Every style below reuses the SAME badge ring - idc 999
-			// (rolebg), 1000 (role, tinted+lettered), 1001 (letter) - as its
-			// centrepiece; only the decoration around it differs. That ring's own
-			// position/size is never touched here, on purpose: it's the one thing
-			// that was actually tuned live against a running client (see the
-			// comments above roleText), so every new style inherits that exact
-			// anchor instead of re-guessing it.
+			// Role crest styles 1-7. Style 0 above is grandfathered and must stay
+			// untouched - it is the original GMod-TTT homage, textures and all.
 			//
-			// None of these overlap the ring on the side that would need them
-			// drawn BEHIND it (Arma draws siblings in declaration order, later on
-			// top of earlier, and these are all declared after the ring) - tabs
-			// and chips that read as "attached to" the ring in the mockups sit
-			// flush against its edge instead of tucking underneath it, so draw
-			// order never matters for them. The one style that genuinely needs
-			// something behind the ring (Contact Blip's pulse rings) is declared
-			// up near roleShadow instead, for that reason.
+			// Everything from here down is a deliberate break from how styles 1-7
+			// used to work. They were decorations pinned around style 0's badge
+			// ring, which meant seven variations on one silhouette; the direction
+			// was that each style needs its own thematic approach and styling, so
+			// each one below is now a self-contained crest with its own footprint,
+			// composition and idea. None of them touch the ring (idc 999/1000/
+			// 1001/1272) at all - Waldo_fnc_initHud hides it for every style but 0.
 			//
-			// Waldo_fnc_initHud shows only the active style's controls and hides
-			// the rest, and - independently - hides each style's credit-only
-			// controls for roles with no credits (Jester/Innocent), the same way
-			// it already does for style 0's 1002-1005.
+			// The shared visual family is Style 8 (Stamped Tag)'s recipe, which is
+			// the one that landed: a black drop shadow, a role-coloured border, a
+			// near-black casing plate, amber (WALDO_ACCENT) as the fixed accent on
+			// top of it, and the role letter role-tinted over the plate. Amber
+			// marks are NEVER role-tinted - they are the constant thread that ties
+			// all eight styles together, and the role colour is what varies.
+			//
+			// Flat RscText rects only, no RscPicture. Two separate attempts at
+			// texture-based tinting for new crest elements (reusing ui\rolebg.paa,
+			// then two dedicated freshly-generated .paa files) both failed to
+			// apply their tint in-game, confirmed live via screenshots. Flat
+			// colorBackground[] is the one technique that has rendered correctly
+			// with zero exceptions anywhere in this file.
+			//
+			// Credits handling, per the direction that credit displays must either
+			// be worked into the design or omitted without notice: every style's
+			// balance is a transparent-background text control sitting over its own
+			// plate, in a band the plate already fills. Jester/Innocent have no
+			// credits, so Waldo_fnc_initHud simply hides that one control and the
+			// plate underneath is plain - there is no bordered sub-panel or inset
+			// pocket anywhere that could leave a visible hole. The two styles whose
+			// composition genuinely reserves space for the balance (1's right cell,
+			// 2's lower half) put their amber divider/rule in the credits group too
+			// and have their letter re-centred over the full plate in script, so
+			// they collapse cleanly rather than sitting half-empty.
+			//
+			// Every rect below was checked against the screen edge before being
+			// written: with the anchor at RX/RY, no control may extend past
+			// RX + 0.175*safezoneH or RY + 0.185*safezoneH. That check caught real
+			// overflows in styles 5 and 6 while these were being laid out.
 			// ====================================================================
+#define RX ((safezoneW + safezoneX) - (0.175 * safezoneH))
+#define RY ((safezoneH + safezoneY) - (0.185 * safezoneH))
+			// Fully opaque and a touch darker than WALDO_CASING: that macro's 0.96
+			// alpha let bright terrain bleed through and read as a warm brown
+			// instead of a dark plate. Same value style 8's plate settled on.
+#define CREST_PLATE {0.07, 0.075, 0.065, 1}
+// Same value, two names on purpose. ROLE_LETTER is only a placeholder - every
+// letter gets ctrlSetTextColor'd to the role colour on each redraw, so what's
+// declared here never actually shows. CREAM is the real, final colour of the
+// balance text and is deliberately never role-tinted: every role colour is dark
+// and saturated, and these all sit on a near-black plate, so role-tinted credit
+// text was low-contrast on every style (worst on Traitor red).
+#define ROLE_LETTER {0.95, 0.93, 0.86, 1}
+#define CREAM {0.95, 0.93, 0.86, 1}
 
-			// ---- Style 1: Signal Ring - compass ticks + a small credits tag
-			// clipped to the ring's lower-right edge. ----
-			class s1TickN: RscText { idc = 1200; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.073 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.017 * safezoneH); w = 0.004 * safezoneH; h = 0.014 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
-			class s1TickS: RscText { idc = 1201; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.073 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.153 * safezoneH); w = 0.004 * safezoneH; h = 0.014 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
-			class s1TickE: RscText { idc = 1202; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.153 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.073 * safezoneH); w = 0.014 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
-			class s1TickW: RscText { idc = 1203; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.017 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.073 * safezoneH); w = 0.014 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
-			// x offset was 0.09H (right edge at 0.19H) - the ring itself only has
-			// a 0.175H budget from its own left edge before hitting the true
-			// right edge of the safe area (RX = right_edge - 0.175H), so that
-			// pushed the tag 0.015H past the edge of the screen. 0.07H (right
-			// edge at 0.17H) keeps a small margin instead.
-			class s1TagBG: RscText {
-				idc = 1204;
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.07 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.128 * safezoneH);
-				w = 0.10 * safezoneH;
-				h = 0.026 * safezoneH;
-				colorBackground[] = WALDO_HEADERBG;
-				style = 0;
-			};
-			class s1TagText: RscText {
-				idc = 1205;
-				text = "";
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.07 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.128 * safezoneH);
-				w = 0.10 * safezoneH;
-				h = 0.026 * safezoneH;
-				colorBackground[] = {0,0,0,0};
-				colorText[] = WALDO_ACCENT;   // static gold - no longer role-tinted, see fn_initHud.sqf
-				style = ST_CENTER + ST_VCENTER;
-				font = "PuristaBold";
-				sizeEx = 0.018 * safezoneH;
-				shadow = 1;
-			};
+			// ---- Style 1: Rank Bar - a landscape shoulder-slide. Letter in its own
+			// left cell, an amber divider, then the balance in the wide right
+			// cell. The divider belongs to the credits group, so a role with no
+			// credits gets a plain lettered bar and the letter is re-centred
+			// across the whole plate in script - no empty right half. ----
+			class s1Shadow: RscText { idc = 1300; x = RX - (0.039 * safezoneH); y = RY + (0.085 * safezoneH); w = 0.208 * safezoneH; h = 0.094 * safezoneH; colorBackground[] = WALDO_SHADOW; style = 0; };
+			class s1Border: RscText { idc = 1301; x = RX - (0.041 * safezoneH); y = RY + (0.083 * safezoneH); w = 0.212 * safezoneH; h = 0.098 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
+			class s1Plate: RscText { idc = 1302; x = RX - (0.035 * safezoneH); y = RY + (0.089 * safezoneH); w = 0.2 * safezoneH; h = 0.086 * safezoneH; colorBackground[] = CREST_PLATE; style = 0; };
+			class s1Letter: RscText { idc = 1303; text = ""; x = RX - (0.035 * safezoneH); y = RY + (0.089 * safezoneH); w = 0.08 * safezoneH; h = 0.086 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = ROLE_LETTER; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.062 * safezoneH; shadow = false; };
+			class s1Divider: RscText { idc = 1304; x = RX + (0.045 * safezoneH); y = RY + (0.097 * safezoneH); w = 0.003 * safezoneH; h = 0.07 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s1Credits: RscText { idc = 1305; text = ""; x = RX + (0.054 * safezoneH); y = RY + (0.089 * safezoneH); w = 0.111 * safezoneH; h = 0.086 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = CREAM; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.024 * safezoneH; shadow = 1; };
 
-			// ---- Style 2: Corner Bracket Frame - four L-brackets (Arma's own
-			// target-marking convention) around the ring, plain credits text
-			// underneath, no pill. ----
-			class s2BrTLh: RscText { idc = 1210; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.02 * safezoneH); w = 0.03 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s2BrTLv: RscText { idc = 1211; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.02 * safezoneH); w = 0.004 * safezoneH; h = 0.03 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s2BrTRh: RscText { idc = 1212; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.14 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.02 * safezoneH); w = 0.03 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s2BrTRv: RscText { idc = 1213; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.166 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.02 * safezoneH); w = 0.004 * safezoneH; h = 0.03 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s2BrBLh: RscText { idc = 1214; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.166 * safezoneH); w = 0.03 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s2BrBLv: RscText { idc = 1215; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.14 * safezoneH); w = 0.004 * safezoneH; h = 0.03 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s2BrBRh: RscText { idc = 1216; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.14 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.166 * safezoneH); w = 0.03 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			class s2BrBRv: RscText { idc = 1217; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.166 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.14 * safezoneH); w = 0.004 * safezoneH; h = 0.03 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
-			// Above the brackets, not below: the badge anchor only leaves 0.035H
-			// of headroom below the ring before the safezone's own bottom edge,
-			// and the brackets alone (0.02H pad + 0.03H arm) already use all but
-			// 0.015H of that - nowhere near enough room for a text row without
-			// spilling past the visible safe area. Above has the same room the
-			// original style's credits pill already proved out (it sits at
-			// RY - 0.04H).
-			//
-			// s2CreditBG: this was bare floating text with just a drop shadow -
-			// the only credit readout in the whole crest with nothing solid
-			// behind it, so against a bright terrain background it washed out
-			// unlike every other style's pill/tab/chip. Same WALDO_HEADERBG
-			// plate every other credit readout uses, sized to the text.
-			class s2CreditBG: RscText {
-				idc = 1219;
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.05 * safezoneH);
-				w = 0.19 * safezoneH;
-				h = 0.022 * safezoneH;
-				colorBackground[] = WALDO_HEADERBG;
-				style = 0;
-			};
-			class s2CreditText: RscText {
-				idc = 1218;
-				text = "";
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.02 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.05 * safezoneH);
-				w = 0.19 * safezoneH;
-				h = 0.022 * safezoneH;
-				colorBackground[] = {0,0,0,0};
-				colorText[] = {0.95, 0.93, 0.86, 1};
-				style = ST_CENTER;
-				font = "PuristaBold";
-				sizeEx = 0.018 * safezoneH;
-				shadow = 1;
-			};
+			// ---- Style 2: Stencil Column - a narrow vertical crate stencil. Letter
+			// stacked over an amber rule with the balance beneath it. Rule is in
+			// the credits group; with no credits the letter re-centres over the
+			// full column height in script. ----
+			class s2Shadow: RscText { idc = 1310; x = RX + (0.071 * safezoneH); y = RY + (0.018 * safezoneH); w = 0.098 * safezoneH; h = 0.158 * safezoneH; colorBackground[] = WALDO_SHADOW; style = 0; };
+			class s2Border: RscText { idc = 1311; x = RX + (0.069 * safezoneH); y = RY + (0.016 * safezoneH); w = 0.102 * safezoneH; h = 0.162 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
+			class s2Plate: RscText { idc = 1312; x = RX + (0.075 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.09 * safezoneH; h = 0.15 * safezoneH; colorBackground[] = CREST_PLATE; style = 0; };
+			class s2Letter: RscText { idc = 1313; text = ""; x = RX + (0.075 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.09 * safezoneH; h = 0.1 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = ROLE_LETTER; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.062 * safezoneH; shadow = false; };
+			class s2Rule: RscText { idc = 1314; x = RX + (0.083 * safezoneH); y = RY + (0.122 * safezoneH); w = 0.074 * safezoneH; h = 0.003 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s2Credits: RscText { idc = 1315; text = ""; x = RX + (0.075 * safezoneH); y = RY + (0.132 * safezoneH); w = 0.09 * safezoneH; h = 0.028 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = CREAM; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.02 * safezoneH; shadow = 1; };
 
-			// ---- Style 3: Fused Tag - a name-tab flush against the ring's left
-			// edge (touching, not underlapping, so draw order can't hide it under
-			// the ring). Role name always shows (identity, not shop status); the
-			// credits line is the only part gated on _hasCredits. ----
-			class s3TabShadow: RscText {
-				idc = 1220;
-				x = (((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.16 * safezoneH)) - (0.004 * safezoneH);
-				y = (((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.05 * safezoneH)) - (0.004 * safezoneH);
-				w = (0.16 * safezoneH) + (0.008 * safezoneH);
-				h = (0.05 * safezoneH) + (0.008 * safezoneH);
-				colorBackground[] = WALDO_SHADOW;
-				style = 0;
-			};
-			class s3TabBG: RscText {
-				idc = 1221;
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.16 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.05 * safezoneH);
-				w = 0.16 * safezoneH;
-				h = 0.05 * safezoneH;
-				colorBackground[] = WALDO_HEADERBG;
-				style = 0;
-			};
-			class s3TabAccent: RscText {
-				idc = 1222;
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.16 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.05 * safezoneH);
-				w = 0.16 * safezoneH;
-				h = 0.004 * safezoneH;
-				colorBackground[] = WALDO_ACCENT;   // tinted to the role colour at runtime
-				style = 0;
-			};
-			// ST_LEFT alone, NOT "+ ST_VCENTER" - see the long-documented reason
-			// above roleText (this file's own BIKI-sourced note: ST_VCENTER is a
-			// vertical/rotated TEXT ORIENTATION flag, not "centre vertically",
-			// and "should not be mixed with any other styles"). This control and
-			// its siblings below (s3Credits/s4RoleName/s4Credits) were the only
-			// ones in the whole crest that combined ST_VCENTER with another
-			// style and rendered fully blank in testing - real vertical
-			// centring is done in script instead (Waldo_fnc_initHud), the same
-			// ctrlTextHeight technique roleText already uses.
-			class s3RoleName: RscText {
-				idc = 1223;
-				text = "";
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.152 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.054 * safezoneH);
-				w = 0.144 * safezoneH;
-				h = 0.024 * safezoneH;
-				colorBackground[] = {0,0,0,0};
-				colorText[] = {0.95, 0.93, 0.86, 1};
-				style = ST_LEFT;
-				font = "PuristaBold";
-				sizeEx = 0.018 * safezoneH;
-				shadow = 1;
-			};
-			class s3Credits: RscText {
-				idc = 1224;
-				text = "";
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.152 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.078 * safezoneH);
-				w = 0.144 * safezoneH;
-				h = 0.018 * safezoneH;
-				colorBackground[] = {0,0,0,0};
-				colorText[] = WALDO_ACCENT;   // static gold - no longer role-tinted, see fn_initHud.sqf
-				style = ST_LEFT;
-				font = "PuristaMedium";
-				sizeEx = 0.015 * safezoneH;
-				shadow = 1;
-			};
+			// ---- Style 3: Service Pips - a rank-insignia plate. Three amber pips
+			// stepping out of the bottom-right corner, always shown (they read as
+			// insignia, not as data), with the balance tucked into the opposite
+			// bottom-left corner as bare text over the plate - nothing to leave a
+			// hole behind when a role has no credits. ----
+			class s3Shadow: RscText { idc = 1320; x = RX + (0.011 * safezoneH); y = RY + (0.018 * safezoneH); w = 0.158 * safezoneH; h = 0.158 * safezoneH; colorBackground[] = WALDO_SHADOW; style = 0; };
+			class s3Border: RscText { idc = 1321; x = RX + (0.009 * safezoneH); y = RY + (0.016 * safezoneH); w = 0.162 * safezoneH; h = 0.162 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
+			class s3Plate: RscText { idc = 1322; x = RX + (0.015 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.15 * safezoneH; h = 0.15 * safezoneH; colorBackground[] = CREST_PLATE; style = 0; };
+			class s3Pip1: RscText { idc = 1324; x = RX + (0.123 * safezoneH); y = RY + (0.158 * safezoneH); w = 0.032 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s3Pip2: RscText { idc = 1325; x = RX + (0.131 * safezoneH); y = RY + (0.148 * safezoneH); w = 0.024 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s3Pip3: RscText { idc = 1326; x = RX + (0.139 * safezoneH); y = RY + (0.138 * safezoneH); w = 0.016 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s3Letter: RscText { idc = 1323; text = ""; x = RX + (0.015 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.15 * safezoneH; h = 0.15 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = ROLE_LETTER; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.09 * safezoneH; shadow = false; };
+			class s3Credits: RscText { idc = 1327; text = ""; x = RX + (0.025 * safezoneH); y = RY + (0.14 * safezoneH); w = 0.07 * safezoneH; h = 0.022 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = CREAM; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.019 * safezoneH; shadow = 1; };
 
-			// ---- Style 4: Wallet Chip - avatar-plus-balance chip flush against
-			// the ring's left edge. Role name always shows; credits line is the
-			// only part gated on _hasCredits. ----
-			class s4ChipShadow: RscText {
-				idc = 1230;
-				x = (((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.15 * safezoneH)) - (0.004 * safezoneH);
-				y = (((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.049 * safezoneH)) - (0.004 * safezoneH);
-				w = (0.15 * safezoneH) + (0.008 * safezoneH);
-				h = (0.052 * safezoneH) + (0.008 * safezoneH);
-				colorBackground[] = WALDO_SHADOW;
-				style = 0;
-			};
-			class s4ChipBG: RscText {
-				idc = 1231;
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.15 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.049 * safezoneH);
-				w = 0.15 * safezoneH;
-				h = 0.052 * safezoneH;
-				colorBackground[] = WALDO_CASING;
-				style = 0;
-			};
-			// ST_LEFT alone - see s3RoleName's comment above, same bug.
-			class s4RoleName: RscText {
-				idc = 1232;
-				text = "";
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.142 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.053 * safezoneH);
-				w = 0.134 * safezoneH;
-				h = 0.024 * safezoneH;
-				colorBackground[] = {0,0,0,0};
-				colorText[] = {0.95, 0.93, 0.86, 1};
-				style = ST_LEFT;
-				font = "PuristaBold";
-				sizeEx = 0.018 * safezoneH;
-				shadow = 1;
-			};
-			class s4Credits: RscText {
-				idc = 1233;
-				text = "";
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.142 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.077 * safezoneH);
-				w = 0.134 * safezoneH;
-				h = 0.02 * safezoneH;
-				colorBackground[] = {0,0,0,0};
-				colorText[] = WALDO_ACCENT;   // static gold - no longer role-tinted, see fn_initHud.sqf
-				style = ST_LEFT;
-				font = "PuristaMedium";
-				sizeEx = 0.015 * safezoneH;
-				shadow = 1;
-			};
+			// ---- Style 4: Punch Card - a records-office tab. A row of five amber
+			// punch marks along the top edge (the closest flat rects get to a
+			// perforated card), letter below them, balance stamped along the
+			// bottom as bare text over the plate. ----
+			class s4Shadow: RscText { idc = 1330; x = RX + (0.011 * safezoneH); y = RY + (0.018 * safezoneH); w = 0.158 * safezoneH; h = 0.158 * safezoneH; colorBackground[] = WALDO_SHADOW; style = 0; };
+			class s4Border: RscText { idc = 1331; x = RX + (0.009 * safezoneH); y = RY + (0.016 * safezoneH); w = 0.162 * safezoneH; h = 0.162 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
+			class s4Plate: RscText { idc = 1332; x = RX + (0.015 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.15 * safezoneH; h = 0.15 * safezoneH; colorBackground[] = CREST_PLATE; style = 0; };
+			class s4Punch1: RscText { idc = 1334; x = RX + (0.04 * safezoneH); y = RY + (0.031 * safezoneH); w = 0.012 * safezoneH; h = 0.012 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s4Punch2: RscText { idc = 1335; x = RX + (0.062 * safezoneH); y = RY + (0.031 * safezoneH); w = 0.012 * safezoneH; h = 0.012 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s4Punch3: RscText { idc = 1336; x = RX + (0.084 * safezoneH); y = RY + (0.031 * safezoneH); w = 0.012 * safezoneH; h = 0.012 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s4Punch4: RscText { idc = 1337; x = RX + (0.106 * safezoneH); y = RY + (0.031 * safezoneH); w = 0.012 * safezoneH; h = 0.012 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s4Punch5: RscText { idc = 1338; x = RX + (0.128 * safezoneH); y = RY + (0.031 * safezoneH); w = 0.012 * safezoneH; h = 0.012 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s4Letter: RscText { idc = 1333; text = ""; x = RX + (0.015 * safezoneH); y = RY + (0.032 * safezoneH); w = 0.15 * safezoneH; h = 0.14 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = ROLE_LETTER; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.09 * safezoneH; shadow = false; };
+			class s4Credits: RscText { idc = 1339; text = ""; x = RX + (0.015 * safezoneH); y = RY + (0.144 * safezoneH); w = 0.15 * safezoneH; h = 0.02 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = CREAM; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.019 * safezoneH; shadow = 1; };
 
-			// ---- Style 5: Satellite Chip - the ring on its own (closest to the
-			// original GMod-TTT look), with a small credits pill clipped onto its
-			// lower-right edge, like a notification badge on an avatar. ----
-			class s5SatBG: RscText {
-				idc = 1240;
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.095 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.13 * safezoneH);
-				w = 0.075 * safezoneH;
-				h = 0.024 * safezoneH;
-				colorBackground[] = WALDO_HEADERBG;
-				style = 0;
-			};
-			class s5SatText: RscText {
-				idc = 1241;
-				text = "";
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.095 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.13 * safezoneH);
-				w = 0.075 * safezoneH;
-				h = 0.024 * safezoneH;
-				colorBackground[] = {0,0,0,0};
-				colorText[] = {0.95, 0.93, 0.86, 1};
-				style = ST_CENTER + ST_VCENTER;
-				font = "PuristaBold";
-				sizeEx = 0.016 * safezoneH;
-				shadow = 1;
-			};
+			// ---- Style 5: Bracket Sight - Arma's own target-marking convention. Four
+			// amber L-arms floating clear of the plate's border, so the crest
+			// reads as something the player has locked onto. Balance sits inside
+			// the plate's lower band as bare text. ----
+			class s5Shadow: RscText { idc = 1340; x = RX + (0.013 * safezoneH); y = RY + (0.023 * safezoneH); w = 0.148 * safezoneH; h = 0.148 * safezoneH; colorBackground[] = WALDO_SHADOW; style = 0; };
+			class s5Border: RscText { idc = 1341; x = RX + (0.011 * safezoneH); y = RY + (0.021 * safezoneH); w = 0.152 * safezoneH; h = 0.152 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
+			class s5Plate: RscText { idc = 1342; x = RX + (0.017 * safezoneH); y = RY + (0.027 * safezoneH); w = 0.14 * safezoneH; h = 0.14 * safezoneH; colorBackground[] = CREST_PLATE; style = 0; };
+			class s5ArmTLh: RscText { idc = 1344; x = RX + (0.003 * safezoneH); y = RY + (0.013 * safezoneH); w = 0.026 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s5ArmTLv: RscText { idc = 1345; x = RX + (0.003 * safezoneH); y = RY + (0.013 * safezoneH); w = 0.004 * safezoneH; h = 0.026 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s5ArmTRh: RscText { idc = 1346; x = RX + (0.145 * safezoneH); y = RY + (0.013 * safezoneH); w = 0.026 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s5ArmTRv: RscText { idc = 1347; x = RX + (0.167 * safezoneH); y = RY + (0.013 * safezoneH); w = 0.004 * safezoneH; h = 0.026 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s5ArmBLh: RscText { idc = 1348; x = RX + (0.003 * safezoneH); y = RY + (0.177 * safezoneH); w = 0.026 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s5ArmBLv: RscText { idc = 1349; x = RX + (0.003 * safezoneH); y = RY + (0.155 * safezoneH); w = 0.004 * safezoneH; h = 0.026 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s5ArmBRh: RscText { idc = 1350; x = RX + (0.145 * safezoneH); y = RY + (0.177 * safezoneH); w = 0.026 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s5ArmBRv: RscText { idc = 1351; x = RX + (0.167 * safezoneH); y = RY + (0.155 * safezoneH); w = 0.004 * safezoneH; h = 0.026 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s5Letter: RscText { idc = 1343; text = ""; x = RX + (0.017 * safezoneH); y = RY + (0.027 * safezoneH); w = 0.14 * safezoneH; h = 0.14 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = ROLE_LETTER; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.088 * safezoneH; shadow = false; };
+			class s5Credits: RscText { idc = 1352; text = ""; x = RX + (0.017 * safezoneH); y = RY + (0.139 * safezoneH); w = 0.14 * safezoneH; h = 0.02 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = CREAM; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.019 * safezoneH; shadow = 1; };
 
-			// ---- Style 6: IFF Transponder - eight ticks standing in for a radar
-			// sweep (a real true rotating sweep would need a per-frame script
-			// loop; this is the static approximation), plus a squawk-code tab
-			// (credits) centred below the ring. ----
-			class s6TickN:  RscText { idc = 1250; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.073 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.018 * safezoneH); w = 0.004 * safezoneH; h = 0.012 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
-			class s6TickS:  RscText { idc = 1251; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.073 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.156 * safezoneH); w = 0.004 * safezoneH; h = 0.012 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
-			class s6TickE:  RscText { idc = 1252; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.156 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.073 * safezoneH); w = 0.012 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
-			class s6TickW:  RscText { idc = 1253; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.018 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.073 * safezoneH); w = 0.012 * safezoneH; h = 0.004 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
-			class s6TickNE: RscText { idc = 1254; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.152 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.014 * safezoneH); w = 0.006 * safezoneH; h = 0.006 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
-			class s6TickSE: RscText { idc = 1255; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.152 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.158 * safezoneH); w = 0.006 * safezoneH; h = 0.006 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
-			class s6TickSW: RscText { idc = 1256; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.014 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.158 * safezoneH); w = 0.006 * safezoneH; h = 0.006 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
-			class s6TickNW: RscText { idc = 1257; x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) - (0.014 * safezoneH); y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) - (0.014 * safezoneH); w = 0.006 * safezoneH; h = 0.006 * safezoneH; colorBackground[] = {0.61, 0.60, 0.54, 0.65}; style = 0; };
-			// y offset was 0.16H (bottom edge at 0.186H) - 0.001H past the 0.185H
-			// budget below the ring. 0.157H gives a small margin instead.
-			class s6SquawkBG: RscText {
-				idc = 1258;
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.02 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.157 * safezoneH);
-				w = 0.11 * safezoneH;
-				h = 0.026 * safezoneH;
-				colorBackground[] = WALDO_HEADERBG;
-				style = 0;
-			};
-			class s6SquawkText: RscText {
-				idc = 1259;
-				text = "";
-				x = ((safezoneW + safezoneX) - (0.175 * safezoneH)) + (0.02 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.157 * safezoneH);
-				w = 0.11 * safezoneH;
-				h = 0.026 * safezoneH;
-				colorBackground[] = {0,0,0,0};
-				colorText[] = {0.95, 0.93, 0.86, 1};
-				style = ST_CENTER + ST_VCENTER;
-				font = "PuristaBold";
-				sizeEx = 0.017 * safezoneH;
-				shadow = 1;
-			};
+			// ---- Style 6: Layered Chip - two plates offset like stacked casino chips,
+			// the role colour showing as the one underneath rather than as a
+			// border around the front one. An amber bevel line catches the front
+			// plate's top edge; balance sits in its lower band. ----
+			class s6Shadow: RscText { idc = 1360; x = RX + (0.01 * safezoneH); y = RY + (0.02 * safezoneH); w = 0.163 * safezoneH; h = 0.163 * safezoneH; colorBackground[] = WALDO_SHADOW; style = 0; };
+			class s6BackPlate: RscText { idc = 1361; x = RX + (0.024 * safezoneH); y = RY + (0.034 * safezoneH); w = 0.145 * safezoneH; h = 0.145 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
+			class s6FrontPlate: RscText { idc = 1362; x = RX + (0.014 * safezoneH); y = RY + (0.024 * safezoneH); w = 0.145 * safezoneH; h = 0.145 * safezoneH; colorBackground[] = CREST_PLATE; style = 0; };
+			class s6Bevel: RscText { idc = 1363; x = RX + (0.014 * safezoneH); y = RY + (0.024 * safezoneH); w = 0.145 * safezoneH; h = 0.003 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s6Letter: RscText { idc = 1364; text = ""; x = RX + (0.014 * safezoneH); y = RY + (0.024 * safezoneH); w = 0.145 * safezoneH; h = 0.145 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = ROLE_LETTER; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.09 * safezoneH; shadow = false; };
+			class s6Credits: RscText { idc = 1365; text = ""; x = RX + (0.014 * safezoneH); y = RY + (0.142 * safezoneH); w = 0.145 * safezoneH; h = 0.02 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = CREAM; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.019 * safezoneH; shadow = 1; };
 
-			// ---- Style 7: Contact Blip credits readout. Now shares the Rank
-			// Disc backing (idc 1270/1271, declared up near roleShadow above)
-			// with every other non-original style instead of its own bespoke
-			// pulse rings. This is just the muted grid-reference-style text
-			// underneath, echoing the ping wheel's own text colour (#BFBCAF)
-			// rather than the gold accent. ----
-			//
-			// s7CoordBG: same fix as s2CreditBG above - this was the other
-			// credit readout with nothing solid behind it, and its text is
-			// deliberately muted/desaturated on top of that, so it had the
-			// worst contrast of any style against a bright terrain
-			// background. A subtle translucent backing (not the full-opaque
-			// WALDO_HEADERBG the pill styles use) keeps the "minimal grid
-			// readout" feel while still guaranteeing it's readable.
-			class s7CoordBG: RscText {
-				idc = 1263;
-				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.16 * safezoneH);
-				w = 0.15 * safezoneH;
-				h = 0.022 * safezoneH;
-				colorBackground[] = {0, 0, 0, 0.55};
-				style = 0;
-			};
-			class s7CoordText: RscText {
-				idc = 1262;
-				text = "";
-				x = (safezoneW + safezoneX) - (0.175 * safezoneH);
-				y = ((safezoneH + safezoneY) - (0.185 * safezoneH)) + (0.16 * safezoneH);
-				w = 0.15 * safezoneH;
-				h = 0.022 * safezoneH;
-				colorBackground[] = {0,0,0,0};
-				colorText[] = {0.95, 0.93, 0.86, 1};
-				style = ST_CENTER;
-				font = "PuristaMedium";
-				sizeEx = 0.016 * safezoneH;
-				shadow = 1;
-			};
+			// ---- Style 7: Ledger Slip - a bookkeeper's margin. An amber rule down the
+			// left with faint ruled lines across the plate (declared before the
+			// letter so it writes over them), the letter set in the body column,
+			// and the balance on the last ruled line. ----
+			class s7Shadow: RscText { idc = 1370; x = RX + (0.011 * safezoneH); y = RY + (0.018 * safezoneH); w = 0.158 * safezoneH; h = 0.158 * safezoneH; colorBackground[] = WALDO_SHADOW; style = 0; };
+			class s7Border: RscText { idc = 1371; x = RX + (0.009 * safezoneH); y = RY + (0.016 * safezoneH); w = 0.162 * safezoneH; h = 0.162 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };   // tinted to the role colour at runtime
+			class s7Plate: RscText { idc = 1372; x = RX + (0.015 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.15 * safezoneH; h = 0.15 * safezoneH; colorBackground[] = CREST_PLATE; style = 0; };
+			class s7Rule: RscText { idc = 1373; x = RX + (0.045 * safezoneH); y = RY + (0.028 * safezoneH); w = 0.003 * safezoneH; h = 0.138 * safezoneH; colorBackground[] = WALDO_ACCENT; style = 0; };
+			class s7Line1: RscText { idc = 1374; x = RX + (0.051 * safezoneH); y = RY + (0.074 * safezoneH); w = 0.108 * safezoneH; h = 0.002 * safezoneH; colorBackground[] = {0.95, 0.93, 0.86, 0.16}; style = 0; };
+			class s7Line2: RscText { idc = 1375; x = RX + (0.051 * safezoneH); y = RY + (0.122 * safezoneH); w = 0.108 * safezoneH; h = 0.002 * safezoneH; colorBackground[] = {0.95, 0.93, 0.86, 0.16}; style = 0; };
+			class s7Letter: RscText { idc = 1376; text = ""; x = RX + (0.051 * safezoneH); y = RY + (0.022 * safezoneH); w = 0.108 * safezoneH; h = 0.13 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = ROLE_LETTER; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.088 * safezoneH; shadow = false; };
+			class s7Credits: RscText { idc = 1377; text = ""; x = RX + (0.051 * safezoneH); y = RY + (0.144 * safezoneH); w = 0.108 * safezoneH; h = 0.02 * safezoneH; colorBackground[] = {0,0,0,0}; colorText[] = CREAM; style = ST_CENTER; font = "PuristaMedium"; sizeEx = 0.019 * safezoneH; shadow = 1; };
+
+#undef RX
+#undef RY
+#undef CREST_PLATE
+#undef ROLE_LETTER
+#undef CREAM
 
 			// ---- Style 8: Stamped Tag - the one style that drops role.paa/
 			// rolebg.paa/roleshadow.paa entirely (idc 999/1000/1001/roleShadow
@@ -1364,13 +1156,13 @@ class WaldoStylePicker {
 		};
 
 		class sp0Card: RscText { idc = 1600; text = "Original"; x = SP_BASEX; y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.02 * safezoneH; shadow = 1; };
-		class sp1Card: RscText { idc = 1601; text = "Signal Ring"; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.02 * safezoneH; shadow = 1; };
-		class sp2Card: RscText { idc = 1602; text = "Corner Bracket"; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.02 * safezoneH; shadow = 1; };
-		class sp3Card: RscText { idc = 1603; text = "Fused Tag"; x = SP_BASEX; y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.02 * safezoneH; shadow = 1; };
-		class sp4Card: RscText { idc = 1604; text = "Wallet Chip"; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.02 * safezoneH; shadow = 1; };
-		class sp5Card: RscText { idc = 1605; text = "Satellite Chip"; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.02 * safezoneH; shadow = 1; };
-		class sp6Card: RscText { idc = 1606; text = "IFF Transponder"; x = SP_BASEX; y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.02 * safezoneH; shadow = 1; };
-		class sp7Card: RscText { idc = 1607; text = "Contact Blip"; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.02 * safezoneH; shadow = 1; };
+		class sp1Card: RscText { idc = 1601; text = "Rank Bar"; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.02 * safezoneH; shadow = 1; };
+		class sp2Card: RscText { idc = 1602; text = "Stencil Column"; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.02 * safezoneH; shadow = 1; };
+		class sp3Card: RscText { idc = 1603; text = "Service Pips"; x = SP_BASEX; y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.02 * safezoneH; shadow = 1; };
+		class sp4Card: RscText { idc = 1604; text = "Punch Card"; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.02 * safezoneH; shadow = 1; };
+		class sp5Card: RscText { idc = 1605; text = "Bracket Sight"; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY + SP_ROWSTEP; w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.02 * safezoneH; shadow = 1; };
+		class sp6Card: RscText { idc = 1606; text = "Layered Chip"; x = SP_BASEX; y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.02 * safezoneH; shadow = 1; };
+		class sp7Card: RscText { idc = 1607; text = "Ledger Slip"; x = SP_BASEX + SP_COLSTEP; y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.02 * safezoneH; shadow = 1; };
 		class sp8Card: RscText { idc = 1608; text = "Stamped Tag"; x = SP_BASEX + (2 * SP_COLSTEP); y = SP_BASEY + (2 * SP_ROWSTEP); w = SP_CARDW; h = SP_CARDH; colorBackground[] = WALDO_HEADERBG; colorText[] = {0.95,0.93,0.86,1}; style = ST_CENTER; font = "PuristaBold"; sizeEx = 0.02 * safezoneH; shadow = 1; };
 	};
 

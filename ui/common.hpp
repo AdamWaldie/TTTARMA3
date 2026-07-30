@@ -13,6 +13,15 @@
 #define WALDO_HEADERBG   {0.045,0.05,0.045,0.99}
 #define WALDO_CONTENTBG  {0.03,0.032,0.03,0.97}
 #define WALDO_ACCENT     {0.85,0.62,0.20,1}
+// Role-crest materials. Shared by the HUD's own crest controls and by the style
+// picker's card previews, which sit in a different dialog - so these belong here
+// rather than being #define'd and #undef'd around one block.
+// WALDO_PLATE is fully opaque and a touch darker than WALDO_CASING: that macro's
+// 0.96 alpha let bright terrain bleed through and read as a warm brown instead of
+// a dark plate. PAPER/INK exist for Ledger Slip, the one light-coloured crest.
+#define WALDO_PLATE      {0.07,0.075,0.065,1}
+#define WALDO_PAPER      {0.86,0.84,0.76,1}
+#define WALDO_INK        {0.16,0.155,0.13,1}
 #define WALDO_BTN        {0.15,0.16,0.13,0.92}
 #define WALDO_BTNACTIVE  {0.24,0.25,0.20,1}
 

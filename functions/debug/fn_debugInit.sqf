@@ -398,7 +398,7 @@ private _setCrestStyle = {
 	[] call Waldo_fnc_initHud;
 };
 ["HUD", "Role Crest: Original",                      "Sets your saved role crest preference to this style (same as pressing H)", "local", { [0] call _setCrestStyle }] call Waldo_debugRegister;
-["HUD", "Role Crest: Rank Bar",                      "Sets your saved role crest preference to this style (same as pressing H)", "local", { [1] call _setCrestStyle }] call Waldo_debugRegister;
+["HUD", "Role Crest: Field Medallion",               "Sets your saved role crest preference to this style (same as pressing H)", "local", { [1] call _setCrestStyle }] call Waldo_debugRegister;
 ["HUD", "Role Crest: Stencil Column",                "Sets your saved role crest preference to this style (same as pressing H)", "local", { [2] call _setCrestStyle }] call Waldo_debugRegister;
 ["HUD", "Role Crest: Service Pips",                  "Sets your saved role crest preference to this style (same as pressing H)", "local", { [3] call _setCrestStyle }] call Waldo_debugRegister;
 ["HUD", "Role Crest: Punch Card",                    "Sets your saved role crest preference to this style (same as pressing H)", "local", { [4] call _setCrestStyle }] call Waldo_debugRegister;

@@ -51,10 +51,12 @@ private _vcenter = {
 // on them - and amber is the crest family's own accent, so an amber frame reads
 // as "this one" without competing with the role colour it's framing.
 //
-// Only the role-coloured rect in each preview has an idc; each style has one
-// (style 0 has two - its ring and the role line under its pill). The amber
-// marks are static and deliberately never tinted, exactly as on the live
-// crests.
+// Only the role-coloured rects in each preview carry an idc, and how many a
+// style has depends on its construction: Punch Card has one (its whole plate),
+// Stencil Column has two (head and foot bands), Service Pips has four (all four
+// frame edges), and Bracket Sight has none at all - it's frameless, so its
+// preview is pure amber. The amber marks are static and deliberately never
+// tinted, exactly as on the live crests.
 Waldo_stylePickerPaint = {
 	params ["_d"];
 	private _role = player getVariable ["role", "Innocent"];
@@ -65,7 +67,7 @@ Waldo_stylePickerPaint = {
 	} forEach [1630, 1631, 1632, 1633, 1634, 1635, 1636, 1637, 1638];
 	{
 		(_d displayCtrl _x) ctrlSetBackgroundColor [_col select 0, _col select 1, _col select 2, 1];
-	} forEach [1660, 1661, 1662, 1663, 1664, 1665, 1666, 1667, 1668, 1669];
+	} forEach [1660, 1661, 1662, 1663, 1664, 1666, 1667, 1668, 1669, 1670, 1671, 1672, 1673, 1674];
 };
 [_display] call Waldo_stylePickerPaint;
 

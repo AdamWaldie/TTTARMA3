@@ -31,8 +31,8 @@ _charge allowDamage false;
 	3
 ]] remoteExec ["addAction", 0, _charge];
 
-[_charge] spawn {
-	params ["_charge"];
+[_charge, _owner] spawn {
+	params ["_charge", "_owner"];
 	private _boomAt = time + 15;
 	while { time < _boomAt && {!isNull _charge} && {!(_charge getVariable ["Waldo_c4Defused", false])} } do {
 		sleep 0.5;

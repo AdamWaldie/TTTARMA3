@@ -288,31 +288,47 @@ player allowDamage false;
 	};
 };
 
-// --- K - toggle the in-round scoreboard: a MISSION event handler, not
-// display-46's, on purpose. Every other key above only makes sense while
-// actually playing (buy menu, activation items, ping wheel), so binding
-// them to display 46 (the alive/in-round HUD) is correct - but the vanilla
-// "Spectator" respawn template opens its own separate display while dead,
-// which never has focus on display 46, so a display-46 handler simply never
-// sees a K press from a spectator at all. addMissionEventHandler fires
-// regardless of which display currently has focus, so this is the one key
-// spectators need to be able to use too.
-if (isNil { missionNamespace getVariable "Waldo_scoreboardKeyEH" }) then {
-	missionNamespace setVariable ["Waldo_scoreboardKeyHeld", false];
-	private _sbEh = addMissionEventHandler ["KeyDown", {
-		params ["_key"];
-		if (_key == 37 && {!(missionNamespace getVariable ["Waldo_scoreboardKeyHeld", false])}) then {
-			missionNamespace setVariable ["Waldo_scoreboardKeyHeld", true];
-			[] spawn Waldo_fnc_scoreboard;
-		};
-		false
-	}];
-	private _sbEhUp = addMissionEventHandler ["KeyUp", {
-		params ["_key"];
-		if (_key == 37) then { missionNamespace setVariable ["Waldo_scoreboardKeyHeld", false]; };
-		false
-	}];
-	missionNamespace setVariable ["Waldo_scoreboardKeyEH", [_sbEh, _sbEhUp]];
+// --- K - toggle the in-round scoreboard, on EVERY open display, not just
+// display 46. "KeyDown"/"KeyUp" are DISPLAY event handlers, not Mission
+// event handlers - addMissionEventHandler ["KeyDown", ...] throws "Unknown
+// enum value: KeyDown" outright (confirmed via RPT) and aborted the rest of
+// this entire script, which is exactly why nothing after this point was
+// working (HUD, MPKilled handling, the Jester damage guards, everything).
+// Mission event handlers simply don't cover key input at all.
+//
+// The actual problem this was trying to solve is real, though: every other
+// key above only makes sense on display 46 (the alive/in-round HUD:  buy
+// menu, activation items, ping wheel), but the vanilla "Spectator" respawn
+// template opens its own separate display while dead, which never has
+// focus on display 46, so a display-46-only handler never sees a spectator's
+// K press. Rather than hardcode the Spectator display's IDD (undocumented
+// and liable to change), this polls allDisplays once a second and attaches
+// the handler to every display that doesn't already have one - covers
+// display 46, the Spectator display, and anything else, self-healing as
+// displays open and close, with a per-display guard so nothing double-fires.
+[] spawn {
+	while { true } do {
+		{
+			if (isNil { _x getVariable "Waldo_scoreboardKeyEH" }) then {
+				_x setVariable ["Waldo_scoreboardKeyHeld", false];
+				private _sbEh = _x displayAddEventHandler ["KeyDown", {
+					params ["_d", "_key"];
+					if (_key == 37 && {!(_d getVariable ["Waldo_scoreboardKeyHeld", false])}) then {
+						_d setVariable ["Waldo_scoreboardKeyHeld", true];
+						[] spawn Waldo_fnc_scoreboard;
+					};
+					false
+				}];
+				private _sbEhUp = _x displayAddEventHandler ["KeyUp", {
+					params ["_d", "_key"];
+					if (_key == 37) then { _d setVariable ["Waldo_scoreboardKeyHeld", false]; };
+					false
+				}];
+				_x setVariable ["Waldo_scoreboardKeyEH", [_sbEh, _sbEhUp]];
+			};
+		} forEach allDisplays;
+		sleep 1;
+	};
 };
 
 // --- Wait for the round to go live ---

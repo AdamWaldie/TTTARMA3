@@ -569,6 +569,39 @@ if (!isNil "CBA_fnc_addEventHandler") then {
 	}] call CBA_fnc_addEventHandler;
 };
 
+// Independent safety valve for ace_medical_deathBlocked: everything above
+// already clears it (synchronously, the instant a non-Jester attacker takes
+// over; and via a polling loop hard-capped at 6s), but both of those live
+// inside the SAME code path that set it - if that spawned script were ever
+// interrupted (a disconnect, an unrelated error mid-loop), nothing else
+// would ever clear the flag, and the affected unit would stay permanently
+// un-killable through ACE's medical system for the rest of the round. This
+// loop doesn't trust any of that: it watches the flag's OWN state directly,
+// with its own separate timer, and force-clears it once it's been
+// continuously true for more than 10s, regardless of what set it, why, or
+// whether anything else was supposed to be handling it. A blanket
+// "can't die at all" flag getting stuck is exactly the kind of unintended
+// consequence this must never allow.
+[] spawn {
+	private _blockedSince = -1;
+	while { true } do {
+		if (alive player) then {
+			if (player getVariable ["ace_medical_deathBlocked", false]) then {
+				if (_blockedSince < 0) then { _blockedSince = time; };
+				if ((time - _blockedSince) > 10) then {
+					player setVariable ["ace_medical_deathBlocked", false];
+					_blockedSince = -1;
+				};
+			} else {
+				_blockedSince = -1;
+			};
+		} else {
+			_blockedSince = -1;
+		};
+		sleep 2;
+	};
+};
+
 // ACE unconscious -> death (this TTT ruleset has no downed/incapacitated state
 // - going unconscious always means dead), EXCEPT for the Jester (source-less
 // setDamage would wipe the "who killed me" attribution the Jester win depends

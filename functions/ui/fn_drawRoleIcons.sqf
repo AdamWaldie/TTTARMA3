@@ -33,17 +33,25 @@ private _eh = addMissionEventHandler ["Draw3D", {
 	// Draw a role tag above _pos; short label past 25m, size scaled to
 	// roughly counter perspective shrink so it stays legible out to ~150m
 	// instead of shrinking to a speck (capped so it doesn't balloon at
-	// extreme range).
+	// extreme range). Legibility redesign: drawIcon3D's own built-in
+	// "shadow" (2 = outline) was already maxed out and still washed out
+	// against a bright sky/pale terrain/snow - the same washed-out-glyph
+	// problem already diagnosed and fixed for the radar countdown text. A
+	// second, larger, near-black copy of the same glyph drawn first (same
+	// world position - drawIcon3D always billboards to face the camera, so
+	// both layers land pixel-centred on the same screen point with no manual
+	// offset needed) gives a real outline no engine shadow setting can, and
+	// PuristaBold (this HUD's own "must-read-fast" font, same as the role
+	// letter badge) reads faster at a glance than the Medium weight did.
+	// Base size raised too (0.045 -> 0.06) - the old floor was already too
+	// small even at close range, not just far away.
 	private _drawTag = {
 		params ["_pos", "_color", "_word", "_dist"];
 		private _far = _dist > 25;
-		drawIcon3D [
-			"", _color, _pos, 1, 0, 0,
-			[_word, _word select [0, 1]] select _far,   // full word / first letter
-			2,
-			(0.045 + (_dist * 0.0022)) min 0.16,
-			"PuristaMedium", "center"
-		];
+		private _label = [_word, _word select [0, 1]] select _far;   // full word / first letter
+		private _size = (0.06 + (_dist * 0.0022)) min 0.18;
+		drawIcon3D ["", [0.03, 0.03, 0.03, (_color select 3)], _pos, 1, 0, 0, _label, 0, _size * 1.18, "PuristaBold", "center"];
+		drawIcon3D ["", _color, _pos, 1, 0, 0, _label, 2, _size, "PuristaBold", "center"];
 	};
 
 	private _myRole = player getVariable ["role", "Innocent"];

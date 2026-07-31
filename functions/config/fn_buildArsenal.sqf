@@ -104,33 +104,43 @@ private _blacklist = [];    // overpowered optics excluded from loot
 			switch (true) do {
 				case (_cls isKindOf ["Pistol", _root]):   { _pistols   pushBack _cls; };
 				case (_cls isKindOf ["Launcher", _root]): {
-					// Exclude anything that needs a lock before it'll fire at all,
-					// checked three ways - checking only canLock on the FIRST listed
-					// magazine's ammo still let the Titan MPRL through in live
-					// testing: it's a MULTI-ROLE launcher (magazines[] lists both
-					// Titan_AT and Titan_AA), so index-0-only could clear it on
-					// whichever mode happened to sort first even though both actually
-					// need a lock.
-					//   1. ANY of its compatible magazines' ammo has canLock set, not
-					//      just the first.
-					//   2. The weapon's own CfgWeapons-level canLock - some launcher
-					//      configs drive the lock UI/reticle from here, not the ammo.
-					//   3. A hard classname blacklist for families confirmed
-					//      lock-gated in testing regardless of what their config
-					//      claims - a config-driven filter is only as good as the
-					//      config it's reading, and a vanilla/mod port that doesn't
-					//      set these attributes "properly" still can't be handed to a
-					//      Traitor as a point-and-fire weapon.
+					// Exclude anything that isn't genuinely point-and-fire, checked
+					// across every angle found so far - each previous pass only
+					// caught part of this:
+					//   1/2/3. Needs a LOCK before it'll fire: ANY of its compatible
+					//      magazines' ammo has canLock set (not just the first -
+					//      Titan MPRL is multi-role, magazines[] lists both Titan_AT
+					//      and Titan_AA, so index-0-only cleared it on whichever mode
+					//      sorted first even though both need a lock); the weapon's
+					//      own CfgWeapons-level canLock (some configs drive the lock
+					//      UI from here, not the ammo); a hard classname blacklist
+					//      for families confirmed lock-gated regardless of what their
+					//      config claims.
+					//   4. Needs manual guidance AFTER firing - a completely
+					//      different mechanic from needing a lock BEFORE firing, and
+					//      not caught by any canLock check at all. manualControl on
+					//      the ammo means the missile flies toward wherever the
+					//      shooter's crosshairs point post-launch (SACLOS/wire-guided,
+					//      e.g. a TOW) - the shooter has to actively steer it instead
+					//      of firing and moving on, exactly as "not a simple
+					//      point-and-fire weapon" as needing a lock is. SOG Prairie
+					//      Fire ships a real TOW launcher, which is likely the
+					//      specific launcher that kept slipping through here despite
+					//      not requiring any lock at all.
 					private _weaponNeedsLock = (getNumber (configFile >> "CfgWeapons" >> _cls >> "canLock")) != 0;
 					private _anyMagNeedsLock = (_mags findIf {
 						private _ammo = getText (configFile >> "CfgMagazines" >> _x >> "ammo");
 						(getNumber (configFile >> "CfgAmmo" >> _ammo >> "canLock")) != 0
 					}) != -1;
+					private _anyMagManualControl = (_mags findIf {
+						private _ammo = getText (configFile >> "CfgMagazines" >> _x >> "ammo");
+						(getNumber (configFile >> "CfgAmmo" >> _ammo >> "manualControl")) != 0
+					}) != -1;
 					private _lc = toLower _cls;
-					private _blacklisted = (["titan", "igla", "strela", "javelin", "stinger", "verba", "manpad", "9k38", "9m133", "fim92"] findIf {
+					private _blacklisted = (["titan", "igla", "strela", "javelin", "stinger", "verba", "manpad", "9k38", "9m133", "fim92", "tow", "bgm71", "bgm-71", "malyutka", "9m14", "konkurs", "9m113", "fagot", "9m111", "metis"] findIf {
 						_lc find _x != -1
 					}) != -1;
-					if (!_weaponNeedsLock && !_anyMagNeedsLock && !_blacklisted) then { _launchers pushBack _cls; };
+					if (!_weaponNeedsLock && !_anyMagNeedsLock && !_anyMagManualControl && !_blacklisted) then { _launchers pushBack _cls; };
 				};
 				case (_cls isKindOf ["Rifle", _root]): {          // rifle-family primary
 					private _mag  = _mags select 0;
@@ -224,6 +234,12 @@ missionNamespace setVariable ["TraitorRifleMag", _sniperMag, true];
 missionNamespace setVariable ["TraitorRifleOptics", _sniperOptic, true];
 
 // ---- publish: traitor shop launcher ----
+// Full candidate list logged every time (not just the count) - the launcher
+// filter has needed hardening more than once already on live-test reports
+// alone with no way to see what actually passed it, so the next report
+// comes with the RPT already showing exactly what was in the pool and what
+// got picked, instead of another round of guessing at the filter logic.
+diag_log format ["[Waldo][server] buildArsenal: launcher candidates (%1) = %2", count _launchers, _launchers];
 private _launcher = "launch_NLAW_F";
 private _launcherMag = "NLAW_F";
 if !(_launchers isEqualTo []) then {
@@ -231,6 +247,7 @@ if !(_launchers isEqualTo []) then {
 	private _m = [_w] call _magOf;
 	if (_m != "") then { _launcher = _w; _launcherMag = _m; };
 };
+diag_log format ["[Waldo][server] buildArsenal: launcher picked = %1 (mag %2)", _launcher, _launcherMag];
 missionNamespace setVariable ["TraitorLauncher", _launcher, true];
 missionNamespace setVariable ["TraitorLauncherMag", _launcherMag, true];
 

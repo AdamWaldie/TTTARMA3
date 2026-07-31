@@ -457,6 +457,12 @@ class Params {
 		texts[]  = {"0 (off)", "1", "2", "3"};
 		default  = 1;
 	};
+	class civKillBonusEvery {               // 31 (30 is a retired gap - see the note below)
+		title = "Traitor Bonus: 1 Credit per N Civilians Killed";
+		values[] = {0, 3, 5, 8};
+		texts[]  = {"Off", "Every 3", "Every 5", "Every 8"};
+		default  = 5;
+	};
 
 	// No HUD/role-crest-style param on purpose: that's entirely a per-player
 	// preference now (H key, see Waldo_fnc_initHud/fn_initClient.sqf), not

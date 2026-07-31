@@ -146,6 +146,27 @@ if (_victimRole == "Detective" && {!(missionNamespace getVariable ["Waldo_detect
 	if (_reward > 0) then { { _x setVariable ["points", (_x getVariable ["points", 0]) + _reward, true]; } forEach _traitors; };
 };
 
+// Civilian bonus: every Nth Innocent a Traitor kills (round-wide tally across
+// the whole team, not per-killer - matches the team-wide payout style of the
+// two rewards above) pays every Traitor _reward credits. Innocent only -
+// Detective/Jester kills are already paid/penalised by the blocks above and
+// below, and double-dipping the same kill into both would make hunting the
+// Detective or the Jester the bonus-farming target instead of civilians.
+if (_victimRole == "Innocent" && {_culpritRole == "Traitor"}) then {
+	private _every = missionNamespace getVariable ["Waldo_civKillBonusEvery", 5];
+	if (_every > 0) then {
+		private _tally = (missionNamespace getVariable ["Waldo_civKillTally", 0]) + 1;
+		missionNamespace setVariable ["Waldo_civKillTally", _tally, true];
+		if ((_tally % _every) == 0 && {_reward > 0}) then {
+			{ _x setVariable ["points", (_x getVariable ["points", 0]) + _reward, true]; } forEach _traitors;
+			[
+				"CIVILIAN BONUS", format ["The Traitors have killed %1 civilians - every Traitor gains %2 credits.", _tally, _reward],
+				"SUCCESS", 8, "TOP_RIGHT", "CIVBONUS", "TRAITOR"
+			] remoteExec ["Waldo_fnc_ShowUiNotification", _traitors];
+		};
+	};
+};
+
 // Jester clean kill: a non-Traitor player (and not self / environment) killed the Jester.
 // isPlayer is required - a non-player culprit (a vehicle, an explosive/environment prop
 // with no "role" variable) has _culpritRole default to "" via getVariable's safe default,

@@ -32,7 +32,7 @@ missionNamespace setVariable ["Waldo_minTraitors",       param [7, 1], true];
 missionNamespace setVariable ["Waldo_maxTraitors",       param [8, 0], true];   // 0 = unlimited
 missionNamespace setVariable ["DetectiveEnabled",       (param [9, 1]) != 0, true];
 missionNamespace setVariable ["DetectiveMinPlayers",     param [10, 5], true];
-missionNamespace setVariable ["JesterEnabled",          (param [11, 0]) != 0, true];
+missionNamespace setVariable ["JesterEnabled",          (param [11, 1]) != 0, true];
 missionNamespace setVariable ["JesterAlways",           (param [12, 0]) != 0, true];
 missionNamespace setVariable ["JesterPercentagechance", (param [13, 30]) / 100, true];
 

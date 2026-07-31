@@ -202,7 +202,7 @@ Waldo_traitorShop = [
 		{ [] call Waldo_fnc_suicideBomb; true },
 		"Detonate yourself (press your assigned key)"],
 
-	["Radar", 2, "passive",
+	["Radar", 1, "passive",
 		{ [] call Waldo_fnc_traitorRadar; },
 		{},
 		"Pulses everyone's position (and role) for 30s, then refreshes"],

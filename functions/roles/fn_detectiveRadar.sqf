@@ -23,6 +23,7 @@ if (_useCBA) then {
 };
 
 player setVariable ["radar", 1];
+player setVariable ["Waldo_radarNextPing", time + 45];
 
 private _eh = addMissionEventHandler ["Draw3D", {
 	private _radar = player getVariable ["radar", 0];
@@ -41,6 +42,7 @@ if (_useCBA) then {
 		params ["_args", "_handle"];
 		if (!alive player) exitWith { [_handle] call CBA_fnc_removePerFrameHandler; };
 		player setVariable ["radar", 1];
+		player setVariable ["Waldo_radarNextPing", time + 45];
 	}, 45] call CBA_fnc_addPerFrameHandler;
 	player setVariable ["Waldo_radarPFH", _pfh];
 } else {
@@ -49,7 +51,12 @@ if (_useCBA) then {
 		params ["_token"];
 		while { alive player && {(player getVariable ["Waldo_radarToken", 0]) == _token} } do {
 			sleep 45;
-			if ((player getVariable ["Waldo_radarToken", 0]) == _token) then { player setVariable ["radar", 1]; };
+			if ((player getVariable ["Waldo_radarToken", 0]) == _token) then {
+				player setVariable ["radar", 1];
+				player setVariable ["Waldo_radarNextPing", time + 45];
+			};
 		};
 	};
 };
+
+[45] call Waldo_fnc_radarCountdown;

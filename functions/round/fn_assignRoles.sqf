@@ -99,7 +99,7 @@ missionNamespace setVariable ["DetectiveList", _detectives, true];
 // The old chance check compared a 0..100 roll to a 0..1 fraction, so the
 // Jester almost never appeared. Compare against the fraction directly.
 private _jesters = [];
-if ((missionNamespace getVariable ["JesterEnabled", false]) && {_count >= 5}) then {
+if ((missionNamespace getVariable ["JesterEnabled", true]) && {_count >= 5}) then {
 	// "Jester: Always Appears" skips the chance roll.
 	private _jchance = missionNamespace getVariable ["JesterPercentagechance", 0.3];
 	private _jRoll = (missionNamespace getVariable ["JesterAlways", false]) || {random 1 <= _jchance};
@@ -117,6 +117,27 @@ if ((missionNamespace getVariable ["JesterEnabled", false]) && {_count >= 5}) th
 	};
 };
 missionNamespace setVariable ["JesterList", _jesters, true];
+
+// --- Tell each Traitor who their teammates (and the Jester) are ---
+// TraitorList/JesterList were only ever broadcast as data - nothing ever
+// actually told a Traitor player any of this, despite it being the whole
+// documented point of being on a team (and of "Traitors are told who the
+// Jester is"). One private card per Traitor, teammates excluded from their
+// own list.
+{
+	private _teammates = (_traitors - [_x]) apply { name _x };
+	private _msg = if (count _teammates > 0) then {
+		format ["Fellow Traitors: %1", _teammates joinString ", "]
+	} else {
+		"You are the only Traitor this round."
+	};
+	if (count _jesters > 0) then {
+		_msg = _msg + format ["<br/>The Jester is %1.", name (_jesters select 0)];
+	};
+	[
+		"TRAITOR TEAM", _msg, "INFO", 15, "TOP_RIGHT", "TRAITORTEAM", "TRAITOR"
+	] remoteExec ["Waldo_fnc_ShowUiNotification", _x];
+} forEach _traitors;
 
 // --- Karma: apply carry-over penalties now that starting points are set ---
 if (missionNamespace getVariable ["KarmaEnabled", true]) then { [] call Waldo_fnc_applyKarma; };

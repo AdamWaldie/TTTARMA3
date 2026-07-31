@@ -104,18 +104,22 @@ private _blacklist = [];    // overpowered optics excluded from loot
 			switch (true) do {
 				case (_cls isKindOf ["Pistol", _root]):   { _pistols   pushBack _cls; };
 				case (_cls isKindOf ["Launcher", _root]): {
-					// Exclude AA-classed/lock-on launchers (Titan AA, Igla, Strela,
-					// and modded equivalents) - this is infantry PvP with no air
-					// targets, so a launcher whose ammo needs an air lock before it'll
-					// even fire is either dead weight or looks flat-out broken to
-					// whoever draws it. airLock is the standard CfgAmmo flag Arma's
-					// own AA missiles set; ground-usable launchers (NLAW, RPG, Titan
-					// AT, unguided rockets) don't set it, same idea as the thermal-
-					// optics blacklist above but inline since only one flag matters.
+					// Exclude anything that needs a lock before it'll fire at all
+					// (Titan AT/AA, Igla, Strela, PCML, and modded equivalents), not
+					// just AA-classed ones - this used to only check airLock (can
+					// this lock onto AIR targets), which is 0 for a GROUND-locking
+					// guided AT launcher too, so Titan AT and its kind kept slipping
+					// through: they're not "AA", but they still need a lock, in a
+					// mode with no lock-on trainer/tone setup for a player who just
+					// bought "Rocket Launcher" expecting to point and fire.
+					// canLock is the actual master flag for "needs a lock at all"
+					// (0 = no lock capability, disposables like NLAW/RPG-42 leave it
+					// unset) - airLock/groundLock only say WHICH targets a
+					// lock-capable weapon can lock onto.
 					private _mag0 = _mags select 0;
 					private _ammo0 = getText (configFile >> "CfgMagazines" >> _mag0 >> "ammo");
-					private _isAA = getNumber (configFile >> "CfgAmmo" >> _ammo0 >> "airLock") == 1;
-					if (!_isAA) then { _launchers pushBack _cls; };
+					private _needsLock = (getNumber (configFile >> "CfgAmmo" >> _ammo0 >> "canLock")) != 0;
+					if (!_needsLock) then { _launchers pushBack _cls; };
 				};
 				case (_cls isKindOf ["Rifle", _root]): {          // rifle-family primary
 					private _mag  = _mags select 0;

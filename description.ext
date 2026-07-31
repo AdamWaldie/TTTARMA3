@@ -233,6 +233,7 @@ class CfgFunctions
 			file = "functions\roles";
 			class traitorRadar {};      // Waldo_fnc_traitorRadar
 			class detectiveRadar {};    // Waldo_fnc_detectiveRadar
+			class radarCountdown {};    // Waldo_fnc_radarCountdown (client: "next pulse in Xs" corner label)
 			class warpSmoke {};         // Waldo_fnc_warpSmoke
 			class suicideBomb {};       // Waldo_fnc_suicideBomb
 			class flowerPower {};       // Waldo_fnc_flowerPower
@@ -334,7 +335,7 @@ class Params {
 		title = "Enable Jester Role";
 		values[] = {0, 1};
 		texts[]  = {"Disabled", "Enabled"};
-		default  = 0;
+		default  = 1;   // one of the four documented roles - on by default, not opt-in
 	};
 	class JesterAlways {                    // 12
 		title = "Jester: Always Appears";

@@ -141,13 +141,21 @@ if (!isNull _culprit && {_culprit != _unit}) then {
 // (JIP-safe).
 [_unit, [
 	"<t color='#ffd23f'>Identify Body</t>",
-	// addAction's own _this is [_target, _caller, _actionId, _arguments], NOT
-	// just the caller - passing it through as the second element made
-	// Waldo_fnc_identifyBody's _finder that whole 4-element array instead of
-	// the caller unit, breaking the "who identified this" attribution
-	// entirely. _target/_caller are already the right values as magic
-	// variables here; no need to touch _this at all.
-	{ [_target, _caller] remoteExec ["Waldo_fnc_identifyBody", 2]; },
+	// _target/_caller are only auto-bound magic variables inside the
+	// CONDITION string (below) - the STATEMENT here only ever gets them
+	// through _this ([_target, _caller, _actionId, _arguments], per BI's own
+	// addAction docs). Referencing _target/_caller directly without
+	// extracting them first throws "Undefined variable in expression" the
+	// instant the action is used - confirmed via RPT, and since SQF doesn't
+	// hard-abort on an undefined-variable error, it silently continued with
+	// a truncated argument array, which is what made Waldo_fnc_identifyBody
+	// itself throw on _body immediately after (params ["_body", "_finder"]
+	// had nothing to fill them from). An earlier version of this comment
+	// argued the opposite - that was the bug, not a fix.
+	{
+		params ["_target", "_caller"];
+		[_target, _caller] remoteExec ["Waldo_fnc_identifyBody", 2];
+	},
 	nil, 4, true, false, "",
 	"!(_target getVariable ['Waldo_roleRevealed', false])",
 	2.5

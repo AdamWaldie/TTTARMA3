@@ -42,9 +42,13 @@ _decoy setDamage 1;   // instantly a corpse
 // consume the action before a Detective gets to it.
 [_decoy, [
 	"<t color='#ffd23f'>Identify Body</t>",
-	// addAction's own _this is [_target, _caller, _actionId, _arguments], not
-	// just the caller - see the identical fix in Waldo_fnc_onKilled.
-	{ [_target, _caller] remoteExec ["Waldo_fnc_identifyBody", 2]; },
+	// _target/_caller are only auto-bound inside the CONDITION string, not
+	// the statement - see the identical fix (and the real reason) in
+	// Waldo_fnc_onKilled.
+	{
+		params ["_target", "_caller"];
+		[_target, _caller] remoteExec ["Waldo_fnc_identifyBody", 2];
+	},
 	nil, 4, true, false, "",
 	"!(_target getVariable ['Waldo_roleRevealed', false])",
 	2.5

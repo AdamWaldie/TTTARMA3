@@ -466,6 +466,18 @@ class Params {
 		texts[]  = {"Off", "Every 3", "Every 5", "Every 8"};
 		default  = 5;
 	};
+	class spectatorsSeeAllRoles {            // 32
+		title = "Spectators See All Roles";
+		values[] = {0, 1};
+		// Off by default: a dead player broadcasting every living role to
+		// anyone they still talk to (or just narrating what they see) leaks
+		// exactly the information the round is built around. Off still
+		// falls through to each spectator's own per-role visibility (own
+		// team, the public Detective) rather than hiding everything - see
+		// Waldo_fnc_drawRoleIcons/Waldo_fnc_scoreboard.
+		texts[]  = {"No (own role's visibility only)", "Yes (see everyone)"};
+		default  = 0;
+	};
 
 	// No HUD/role-crest-style param on purpose: that's entirely a per-player
 	// preference now (H key, see Waldo_fnc_initHud/fn_initClient.sqf), not

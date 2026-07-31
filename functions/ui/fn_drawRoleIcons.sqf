@@ -47,9 +47,16 @@ private _eh = addMissionEventHandler ["Draw3D", {
 	};
 
 	private _myRole = player getVariable ["role", "Innocent"];
-	// Dead/spectating: out of the round, sees everyone - same rule the
-	// scoreboard already uses.
-	private _viewerOut = !alive player;
+	// Dead/spectating: sees everyone, but ONLY when the lobby's "Spectators
+	// See All Roles" param is on (off by default - a dead player broadcasting
+	// every living role to anyone they talk to, or simply narrating what
+	// they see, otherwise leaks exactly the information the round is built
+	// around). With it off, a dead viewer falls through to the SAME per-role
+	// rules as a living player - _myRole still reads their own role
+	// (setVariable persists through death), so a Traitor who dies still sees
+	// their fellow Traitors/the Jester in spectator, and everyone still
+	// always sees the Detective, same as before they died.
+	private _viewerOut = !alive player && {missionNamespace getVariable ["Waldo_spectatorsSeeAllRoles", false]};
 
 	{
 		private _eyePos = getPosATL _x;

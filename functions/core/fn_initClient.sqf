@@ -414,42 +414,56 @@ Waldo_fnc_installDamageEH = {
 			[_unit] call Waldo_fnc_deadRingerTrigger;
 			0
 		} else {
-			// Jester deals no damage full stop. The Fired EH in Waldo_fnc_makeJester
-			// deletes their bullets/thrown munitions before they connect, but that
-			// only covers stuff that actually fires a projectile - melee (bare
-			// fists, and modded melee like SOG Prairie Fire's knives) hits here
-			// directly with no Fired event ever raised, so it was going straight
-			// through. This is the universal backstop: whatever the mechanism, if
-			// the instigator is the Jester, the damage is zeroed here.
+			// Jester deals (essentially) no damage. The Fired EH in
+			// Waldo_fnc_makeJester deletes their bullets/thrown munitions
+			// before they connect, but that only covers stuff that actually
+			// fires a projectile - melee (bare fists, and modded melee like
+			// SOG Prairie Fire's knives) hits here directly with no Fired
+			// event ever raised, so it was going straight through. This is
+			// the universal backstop: whatever the mechanism, if the
+			// instigator is the Jester, damage is capped here.
+			//
+			// Capped, not hard-zeroed: a hit that visibly connects but does
+			// exactly 0 damage is a dead giveaway the instant anyone tests
+			// it twice ("this person literally can't be hurt" reads very
+			// differently from "I got lucky/grazed that hit"). The actual
+			// requirement is "cannot kill," not "cannot be felt" - so a
+			// small, real fraction of the proposed damage is allowed
+			// through (WALDO_JESTER_SAFE_FLOOR below is the hard ceiling on
+			// how far that can ever push the victim's OVERALL damage, so
+			// stacking hits still can't add up to lethal).
 			if (!isNull _instigator && {_instigator != _unit} && {(_instigator getVariable ["role", ""]) == "Jester"}) then {
-				// Second-layer backstop for anything that still gets past the
-				// return-0 above WITHOUT being an outright single lethal hit -
-				// a DoT tick from the same attack reapplying damage a moment
-				// later, for instance. Starts (or refreshes, on a repeat hit) a
-				// short watchdog that force-corrects the unit's damage back to
-				// its pre-hit baseline for the next 1.5s. setDamage does not
-				// itself trigger HandleDamage, so this can't recurse into
-				// itself - but it cannot save a unit that died in the same
-				// synchronous hit this return value lost arbitration on, which
-				// is exactly why staying the LAST-added EH (above) is the real
-				// defence, not this.
+				private _safeFloor = 0.85;   // never below ~15% health from Jester hits alone
 				private _preHit = damage _unit;
+				private _visible = (_damage * 0.2) min ((_safeFloor - _preHit) max 0);
+				// Second-layer backstop for anything that still gets past the
+				// capped return above WITHOUT being an outright single
+				// lethal hit - a DoT tick from the same attack reapplying
+				// damage a moment later, for instance. Starts (or refreshes,
+				// on a repeat hit) a short watchdog that force-corrects the
+				// unit's damage back down to the same safe floor for the
+				// next 1.5s (not the pre-hit baseline - that would erase the
+				// small, deliberate graze this is supposed to leave
+				// visible). setDamage does not itself trigger HandleDamage,
+				// so this can't recurse into itself - but it cannot save a
+				// unit that died in the same synchronous hit this return
+				// value lost arbitration on, which is exactly why staying
+				// the LAST-added EH (above) is the real defence, not this.
 				_unit setVariable ["Waldo_jesterGuardUntil", time + 1.5];
-				_unit setVariable ["Waldo_jesterGuardBaseline", _preHit min (_unit getVariable ["Waldo_jesterGuardBaseline", _preHit])];
 				if (isNil { _unit getVariable "Waldo_jesterGuardRunning" }) then {
 					_unit setVariable ["Waldo_jesterGuardRunning", true];
-					[_unit] spawn {
-						params ["_u"];
+					[_unit, _safeFloor] spawn {
+						params ["_u", "_floor"];
 						while { alive _u && {time < (_u getVariable ["Waldo_jesterGuardUntil", 0])} } do {
-							if ((damage _u) > (_u getVariable ["Waldo_jesterGuardBaseline", 0])) then {
-								_u setDamage (_u getVariable ["Waldo_jesterGuardBaseline", 0]);
+							if ((damage _u) > _floor) then {
+								_u setDamage _floor;
 							};
 							sleep 0.05;
 						};
 						_u setVariable ["Waldo_jesterGuardRunning", nil];
 					};
 				};
-				0
+				_visible
 			} else {
 				_damage
 			}
@@ -463,6 +477,56 @@ Waldo_fnc_installDamageEH = {
 		sleep 3;
 		if (alive player) then { [] call Waldo_fnc_installDamageEH; };
 	};
+};
+
+// ACE Medical cooperative layer: ACE's OWN docs are explicit that another
+// mod/mission adding its own HandleDamage EH "is virtually guaranteed to
+// break ACE's handling" - so fighting for last-added position (above) isn't
+// just imperfect against ACE specifically, it's the one thing ACE says not
+// to do. Rather than trying to detect "is ACE Medical actually active" and
+// branch (its medical level is a runtime CBA setting, not something safe to
+// infer from whether the addon is merely loaded), this hooks ACE's own
+// ace_medical_woundReceived CBA event - fired with the shooter already
+// resolved, no attribution guessing needed - whenever the shooter is the
+// Jester.
+//
+// This does NOT fully heal the wound (an earlier version of this did, and
+// it looked exactly as suspicious as it sounds - a real injury that just
+// vanishes a second later is as much a tell as taking no damage at all).
+// Instead it sets ace_medical_deathBlocked, a documented ACE variable that
+// stops ACE's OWN medical simulation from being able to kill this unit,
+// without touching the wound/bleeding/pain it already registered - the
+// injury looks and plays out like a real, survived hit, while ACE's own
+// gradual bleed-out/critical-condition check simply can't end this life
+// while it's set. Cleared again after a short window rather than left set,
+// so a later, legitimate lethal hit from someone else still kills
+// normally - deliberately short, accepting the (minor) tradeoff that this
+// flag is coarse enough to briefly stop ANY death, not just a Jester-
+// caused one, for a player standing near the Jester.
+//
+// This runs ADDITIONALLY to the HandleDamage EH above, not instead of it:
+// if ACE Medical isn't actually intercepting damage (disabled, or the addon
+// merely present), this whole block silently never fires and the
+// HandleDamage EH remains the sole, correct defence. Every ACE symbol is
+// isNil-checked before use - this must never hard-error if a future ACE
+// version renames something.
+if (!isNil "CBA_fnc_addEventHandler") then {
+	["ace_medical_woundReceived", {
+		params ["_woundedUnit", "_allDamages", "_shooter"];
+		if (
+			_woundedUnit == player
+			&& {!isNull _shooter}
+			&& {_shooter != _woundedUnit}
+			&& {(_shooter getVariable ["role", ""]) == "Jester"}
+		) then {
+			_woundedUnit setVariable ["ace_medical_deathBlocked", true];
+			[_woundedUnit] spawn {
+				params ["_u"];
+				sleep 4;
+				if (!isNull _u) then { _u setVariable ["ace_medical_deathBlocked", false]; };
+			};
+		};
+	}] call CBA_fnc_addEventHandler;
 };
 
 // ACE unconscious -> death (this TTT ruleset has no downed/incapacitated state

@@ -54,16 +54,40 @@ private _eh = addMissionEventHandler ["Draw3D", {
 	{
 		private _eyePos = getPosATL _x;
 		_eyePos set [2, (_eyePos select 2) + 2];
+		private _dist = player distance _x;
+
 		// "FIRE" LOD, not "VIEW": VIEW factors in lighting (it's the same LOD
 		// the engine's own AI-spotting/shadow checks use), so a tag would
 		// blink out the moment its target stepped into a shadow or a dim
 		// interior despite having a clear, unobstructed line to them. FIRE is
 		// pure collision geometry - blocked only by an actual wall/object.
-		private _visible = if (_viewerOut) then { 1 } else { [objNull, "FIRE"] checkVisibility [eyePos player, eyePos _x] };
+		//
+		// Two more sources of false "not visible" reports showed up in
+		// testing on top of that:
+		//   - checkVisibility's FIRE-LOD raycast gets flaky at range (can
+		//     report blocked on a completely open sightline) - past ~150m
+		//     it's skipped outright. The tag's own size scaling already
+		//     exists specifically to keep far tags legible, so hiding them
+		//     from raycast flakiness right where that matters most defeats
+		//     the point, and at that range "can you actually make out a
+		//     wall-hack-proof detail" isn't really the concern anymore
+		//     anyway.
+		//   - a single raycast can clip incidental geometry a player can
+		//     plainly see past - a stray leaf, a fence rail, a thin bit of
+		//     scenery - which read as tags randomly vanishing in "shadow or
+		//     semi-invisible cover" even at close range. Sampling both eye
+		//     height and chest height and passing if EITHER is clear
+		//     absorbs that without giving up the wall-blocking check
+		//     entirely.
+		private _visible = if (_viewerOut || {_dist > 150}) then { 1 } else {
+			private _chestPos = getPosASL _x;
+			_chestPos set [2, (_chestPos select 2) + 1.4];
+			(([objNull, "FIRE"] checkVisibility [eyePos player, eyePos _x]) != 0)
+			|| {([objNull, "FIRE"] checkVisibility [eyePos player, _chestPos]) != 0}
+		};
 
 		if (_visible != 0 && {_x != player}) then {
 			private _xRole = _x getVariable ["role", "Innocent"];
-			private _dist = player distance _x;
 
 			if (_viewerOut) then {
 				if (alive _x) then {

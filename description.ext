@@ -8,7 +8,7 @@ overviewPicture = "ui\TroubleInArmaville.jpg";
 loadScreen = "ui\TroubleInArmaville.jpg";
 author = "WaldoTheWarfighter"; // Author
 onLoadName = "Trouble in ArmaVille"; // Mission name
-onLoadMission = "Version 3.0"; // Description
+onLoadMission = "Version 3.1"; // Description
 
 class Header
 {

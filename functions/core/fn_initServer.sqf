@@ -29,6 +29,20 @@ Waldo_logPhase = {
 waitUntil { missionNamespace getVariable ["Waldo_configReady", false] };
 ["config-ready"] call Waldo_logPhase;
 
+// --- Re-roll the dynamic arsenal for THIS round ---
+// Waldo_fnc_loadParams already ran it once (that copy exists purely to
+// guard Waldo_configReady - nothing may read the shop/loot globals before
+// they exist). This mission runs one round per mission life (endRound ->
+// BIS_fnc_endMissionServer -> the server cycles the mission), so a full
+// mission reload already re-rolls it - but Waldo_fnc_initServer is also
+// literally "one full round" by its own contract, and the debug menu's
+// "Reassign All Roles" action can effectively start a fresh round without
+// going through a mission reload at all. Re-running it here, unconditionally,
+// makes "fresh pools every round" true regardless of which path got taken,
+// instead of depending on assumptions about the server's mission rotation.
+[] call Waldo_fnc_buildArsenal;
+["arsenal-rerolled"] call Waldo_logPhase;
+
 // --- Player-ready barrier ---
 // Size-dependent setup (arena size, traitor count) must not run before
 // players have loaded in. Wait until at least one alive player exists and the

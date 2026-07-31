@@ -33,7 +33,9 @@ private _eh = addMissionEventHandler ["Draw3D", {
 		drawIcon3D ["", _color, getPosATL _x, 1, 0, 0, "O", 2,
 			0.10 - (_distance / 2500), "PuristaMedium", "center"];
 	} forEach (allUnits + allDeadMen);
-	player setVariable ["radar", (_radar - 0.002)];
+	// See Waldo_fnc_traitorRadar - diag_deltaTime keeps the fade frame-rate
+	// independent instead of shrinking as FPS rises.
+	player setVariable ["radar", (_radar - (0.1 * diag_deltaTime))];
 }];
 player setVariable ["Waldo_radarEH", _eh];
 

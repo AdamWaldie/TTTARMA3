@@ -39,7 +39,12 @@ private _eh = addMissionEventHandler ["Draw3D", {
 		drawIcon3D ["", _color, getPosATL _x, 1, 0, 0, "O", 2,
 			0.10 - (_distance / 2500), "PuristaMedium", "center"];
 	} forEach allUnits;
-	player setVariable ["radar", (_radar - 0.002)];
+	// diag_deltaTime (real seconds since the last frame), not a flat
+	// per-frame decrement - the old -0.002/frame decay was frame-RATE
+	// dependent, not frame-TIME dependent, so the pulse's actually-visible
+	// window shrank as FPS rose (twice the frame rate halved how long it
+	// stayed up). 0.1/s is a flat ~10s fade regardless of FPS.
+	player setVariable ["radar", (_radar - (0.1 * diag_deltaTime))];
 }];
 player setVariable ["Waldo_radarEH", _eh];
 

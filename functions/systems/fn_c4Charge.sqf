@@ -47,14 +47,21 @@ _charge allowDamage false;
 
 	private _p = getPosATL _charge;
 	deleteVehicle _charge;
-	// DemoCharge_Remote_Ammo, not Bo_Mk82 (a full 500lb aerial bomb) - this is a
-	// planted demolition charge, not an airstrike, and Bo_Mk82's stock blast
-	// radius was leveling far more than the room it was placed in.
-	private _bomb = createVehicle ["DemoCharge_Remote_Ammo", _p, [], 0, "NONE"];   // same blast the suicide bomb uses
+	// DemoCharge_Remote_Ammo_Scripted, not Bo_Mk82 (a full 500lb aerial bomb) -
+	// this is a planted demolition charge, not an airstrike, and Bo_Mk82's stock
+	// blast radius was leveling far more than the room it was placed in. Must be
+	// the "_Scripted" variant and not plain DemoCharge_Remote_Ammo: the
+	// non-scripted ammo is a real remote charge that just sits armed waiting for
+	// a detonation signal, so createVehicle alone never makes it go off (unlike
+	// a bomb, which detonates on its own contact fuze).
+	private _bomb = createVehicle ["DemoCharge_Remote_Ammo_Scripted", _p, [], 0, "NONE"];   // same blast the suicide bomb uses
 	// A createVehicle'd bomb has no shooter by default, so anyone it kills would
 	// resolve to a null culprit in Waldo_fnc_onKilled - no karma penalty for
 	// blowing up a teammate, no DNA on the corpse, no round-kill credit. Tag the
 	// planter as both shooter and instigator so C4 kills attribute exactly like
 	// a gunshot would.
 	_bomb setShotParents [_owner, _owner];
+	// The scripted charge only detonates when damaged - this is what actually
+	// triggers the blast.
+	_bomb setDamage 1;
 };

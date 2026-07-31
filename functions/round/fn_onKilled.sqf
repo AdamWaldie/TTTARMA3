@@ -29,16 +29,25 @@ _unit setVariable ["Waldo_deathProcessed", true, true];
 private _traitors = missionNamespace getVariable ["TraitorList", []];
 private _detectives = missionNamespace getVariable ["DetectiveList", []];
 
-// Extend the round for every death, capped so a chaotic high-kill round
-// can't run "overtime" (the stretch between the civilian clock hitting zero
-// and the real deadline, timelimit) longer than the round's own base
-// length. This used to add roundDeadLength on every single death with no
-// ceiling at all, so a round with a lot of killing (and revives creating
-// more deaths to extend it further) could end up with overtime longer than
-// the round itself.
+// Extend the round for every death - diminishing returns rather than a hard
+// wall. This used to add roundDeadLength on every single death with no
+// ceiling at all (a chaotic high-kill round, with revives creating more
+// deaths to extend it further, could run "overtime" - the stretch between
+// the civilian clock hitting zero and the real deadline, timelimit - longer
+// than the round itself), then a flat `min roundBaseLength` cap that just
+// stopped extending outright past that point - the Nth death mattered
+// exactly as much as the 1st right up until it suddenly mattered not at
+// all. Hyperbolic saturation instead: Waldo_deathBonusRaw accumulates
+// uncapped (the "if every death counted in full" total), and the bonus
+// actually applied is cap * raw / (raw + cap) - strictly increasing with
+// every death (so nothing ever hard-stops extending the round), but each
+// additional death's marginal contribution shrinks as the total climbs,
+// approaching (never quite reaching) roundBaseLength extra seconds.
 private _dead = missionNamespace getVariable ["roundDeadLength", 30];
-private _deathBonusCap = missionNamespace getVariable ["roundBaseLength", 180];
-private _deathBonus = ((missionNamespace getVariable ["Waldo_deathBonusTotal", 0]) + _dead) min _deathBonusCap;
+private _cap = missionNamespace getVariable ["roundBaseLength", 180];
+private _raw = (missionNamespace getVariable ["Waldo_deathBonusRaw", 0]) + _dead;
+missionNamespace setVariable ["Waldo_deathBonusRaw", _raw, true];
+private _deathBonus = _cap * (_raw / (_raw + _cap));
 missionNamespace setVariable ["Waldo_deathBonusTotal", _deathBonus, true];
 private _traitorBonus = missionNamespace getVariable ["roundTraitorLength", 45];
 missionNamespace setVariable ["timelimit", (missionNamespace getVariable ["Waldo_startTime", 0]) + _traitorBonus + _deathBonus, true];

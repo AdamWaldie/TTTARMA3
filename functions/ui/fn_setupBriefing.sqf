@@ -22,6 +22,18 @@ player createDiaryRecord ["WaldoHowToPlay", [
 ]];
 
 player createDiaryRecord ["WaldoHowToPlay", [
+	"The Round Clock & Overtime",
+	"<t align='left'>Every round has a planned base length, shown as the round timer from the start. " +
+	"Every death - anyone's - extends the clock a bit, so a round with a lot of killing runs longer than " +
+	"a quiet one.<br/><br/>" +
+	"Each extra death matters a little less than the last, though - there's no single death after which " +
+	"extensions just stop, but a chaotic round can't run away forever either.<br/><br/>" +
+	"Once the clock runs past its planned base length, that's <t color='#FFD166'>OVERTIME</t> - you'll see " +
+	"a banner for it. The round is no longer running on its original timer at that point, only on however " +
+	"much extra time the deaths so far have bought it.</t>"
+]];
+
+player createDiaryRecord ["WaldoHowToPlay", [
 	"The Roles",
 	"<t align='left'>" +
 	"<t color='#26bf1e'>Innocent</t> - the majority. No powers, no extra information - work it out from " +

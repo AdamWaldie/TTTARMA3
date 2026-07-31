@@ -16,10 +16,25 @@ private _start = missionNamespace getVariable ["Waldo_startTime", 180];
 private _airdropWait = round ((random (missionNamespace getVariable ["airdropRandomTimer", 75])) + (missionNamespace getVariable ["airdropBaseTimer", 75]));
 private _airdropTimer = 0;
 private _timer = 0;
+private _overtimeAnnounced = false;
 
 while { missionNamespace getVariable ["gameOn", false] } do {
 
 	private _timelimit = missionNamespace getVariable ["timelimit", _start];
+
+	// The round has run past its planned length (_start, the "civilian
+	// clock") and is only still going because of the traitor/death-bonus
+	// tail on top of it (see Waldo_fnc_onKilled) - tell everyone once, right
+	// as that happens, instead of leaving it as an unexplained gap between
+	// what the timer showed at round start and how long the round actually
+	// ran.
+	if (!_overtimeAnnounced && {_timer >= _start}) then {
+		_overtimeAnnounced = true;
+		[
+			"OVERTIME", "The round has run past its planned length - it continues as long as unresolved deaths keep extending the clock.",
+			"WARNING", 8, "TOP", "OVERTIME", "ROUND"
+		] remoteExec ["Waldo_fnc_ShowUiNotification", -2];
+	};
 
 	// Dev/test: a frozen round keeps rendering the HUD but stops the clock,
 	// airdrops and win checks so a system can be inspected mid-round. Always

@@ -14,7 +14,7 @@
 
 ![Detective HUD](Images/RoleDetective.jpg)
 
-**Jester.** Deals no damage (a `Fired` event handler deletes their own projectiles) and cannot win the normal way. Traitors are told who the Jester is. If a non-Traitor kills them, the Jester wins instead and nobody else does; being killed by a Traitor accomplishes nothing for the Jester.
+**Jester.** Deals no damage (a `Fired` event handler deletes their own projectiles) and cannot win the normal way. Traitors are told who the Jester is. If a non-Traitor kills them, the Jester wins instead and nobody else does; being killed by a Traitor accomplishes nothing for the Jester - and costs the Traitor who did it a kill-reward's worth of credits, since it doesn't advance the Traitors' own win condition either.
 
 ![Jester HUD](Images/RoleJester.jpg)
 

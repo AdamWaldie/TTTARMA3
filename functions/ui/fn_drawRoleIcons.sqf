@@ -52,7 +52,12 @@ private _eh = addMissionEventHandler ["Draw3D", {
 	{
 		private _eyePos = getPosATL _x;
 		_eyePos set [2, (_eyePos select 2) + 2];
-		private _visible = if (_viewerOut) then { 1 } else { [objNull, "VIEW"] checkVisibility [eyePos player, eyePos _x] };
+		// "FIRE" LOD, not "VIEW": VIEW factors in lighting (it's the same LOD
+		// the engine's own AI-spotting/shadow checks use), so a tag would
+		// blink out the moment its target stepped into a shadow or a dim
+		// interior despite having a clear, unobstructed line to them. FIRE is
+		// pure collision geometry - blocked only by an actual wall/object.
+		private _visible = if (_viewerOut) then { 1 } else { [objNull, "FIRE"] checkVisibility [eyePos player, eyePos _x] };
 
 		if (_visible != 0 && {_x != player}) then {
 			private _xRole = _x getVariable ["role", "Innocent"];

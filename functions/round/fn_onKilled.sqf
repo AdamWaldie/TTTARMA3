@@ -137,6 +137,23 @@ if (_victimRole == "Jester" && {!isNull _culprit} && {_culprit != _unit} && {isP
 	missionNamespace setVariable ["JESTERCLEANKILL", true, true];
 };
 
+// A Traitor killing the Jester is otherwise a completely free kill (line 141
+// exempts every Traitor kill from the RDM/karma penalty below, since killing
+// non-Traitors is literally their win condition) - but the Jester is a
+// special case: killing them doesn't advance the Traitors' own win condition
+// at all, it just denies the Jester the "a non-Traitor killed me" win they're
+// otherwise going for. Docking the same amount a correct kill would have
+// earned keeps it a real cost instead of a shrug.
+if (_victimRole == "Jester" && {_culpritRole == "Traitor"} && {!isNull _culprit} && {_culprit != _unit}) then {
+	if (_reward > 0) then {
+		_culprit setVariable ["points", ((_culprit getVariable ["points", 0]) - _reward) max 0, true];
+	};
+	[
+		"JESTER KILLED", format ["Killing the Jester cost you %1 credits - no win condition advanced.", _reward],
+		"WARNING", 8, "TOP_RIGHT", "JESTERPENALTY", "TRAITOR"
+	] remoteExec ["Waldo_fnc_ShowUiNotification", _culprit];
+};
+
 // Killing as a Traitor is never "guilty".
 if (_culpritRole == "Traitor") then { _guilty = false; };
 

@@ -26,6 +26,10 @@ private _logPhase = {
 
 waitUntil { !isNull player };
 
+// "How To Play" map-screen diary - static content, no round/role dependency,
+// so it's available to read from the moment a player connects.
+[] call Waldo_fnc_setupBriefing;
+
 // Wait for the server to publish config (modpack + params) before reading it.
 waitUntil { missionNamespace getVariable ["Waldo_configReady", false] };
 ["config-ready"] call _logPhase;

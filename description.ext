@@ -163,6 +163,7 @@ class CfgFunctions
 			class spawnDecoyCorpse {};  // Waldo_fnc_spawnDecoyCorpse (server: Dead Ringer decoy)
 			class flowerSpawn {};       // Waldo_fnc_flowerSpawn (server: creates one networked flower)
 			class setupDeadChatFilter {}; // Waldo_fnc_setupDeadChatFilter (client: blocks alive<->dead text chat)
+			class deleteBody {};        // Waldo_fnc_deleteBody (server: Body Remover's actual deletion)
 		};
 
 		class ui
@@ -187,6 +188,7 @@ class CfgFunctions
 			class useActivationSlot {};    // Waldo_fnc_useActivationSlot (fires the item bound to Y/U/J)
 			class assignActivationSlot {}; // Waldo_fnc_assignActivationSlot (buy menu: rebind an item to a key)
 			class registerActivationSlot {}; // Waldo_fnc_registerActivationSlot (shared: slot/backlog assignment)
+			class setupBriefing {};        // Waldo_fnc_setupBriefing (client: "How To Play" map-screen diary)
 		};
 
 		// Vendored from AdamWaldie/WaldosMissionPack (MissionScripts/MissionFlowAndUi,

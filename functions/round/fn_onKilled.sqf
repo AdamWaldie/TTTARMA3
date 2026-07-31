@@ -42,9 +42,15 @@ private _detectives = missionNamespace getVariable ["DetectiveList", []];
 // actually applied is cap * raw / (raw + cap) - strictly increasing with
 // every death (so nothing ever hard-stops extending the round), but each
 // additional death's marginal contribution shrinks as the total climbs,
-// approaching (never quite reaching) roundBaseLength extra seconds.
+// approaching (never quite reaching) the cap.
+//
+// The cap itself is HALF of roundBaseLength, not the full base length - a
+// stale, dragged-out round is worse than a slightly early one, so worst
+// case (asymptotically, i.e. never quite hit) a round can grow by half its
+// planned length from deaths plus the flat traitor bonus on top, not
+// double it.
 private _dead = missionNamespace getVariable ["roundDeadLength", 30];
-private _cap = missionNamespace getVariable ["roundBaseLength", 180];
+private _cap = (missionNamespace getVariable ["roundBaseLength", 180]) * 0.5;
 private _raw = (missionNamespace getVariable ["Waldo_deathBonusRaw", 0]) + _dead;
 missionNamespace setVariable ["Waldo_deathBonusRaw", _raw, true];
 private _deathBonus = _cap * (_raw / (_raw + _cap));

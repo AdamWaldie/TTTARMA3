@@ -478,6 +478,25 @@ class Params {
 		texts[]  = {"No (own role's visibility only)", "Yes (see everyone)"};
 		default  = 0;
 	};
+	class JesterMinPlayers {                 // 33
+		title = "Jester: Minimum Players";
+		// Was a hardcoded ">= 5" in Waldo_fnc_assignRoles with no lobby
+		// control at all, unlike the Detective's own DetectiveMinPlayers
+		// (index 10) - same idea, made configurable, default raised to 10.
+		values[] = {5, 6, 8, 10, 12};
+		texts[]  = {"5", "6", "8", "10", "12"};
+		default  = 10;
+	};
+	class startCreditsPerNPlayers {          // 34
+		title = "Additional Starting Credit per N Players";
+		// Waldo_fnc_assignRoles scales Traitor/Detective starting credits as
+		// startingCredits (index 15) + floor(playerCount / N) - N was a
+		// hardcoded 8 with no lobby control at all. Same idea as every other
+		// "N players per X" scaling in this block, made configurable.
+		values[] = {4, 5, 6, 8, 10, 12};
+		texts[]  = {"4", "5", "6", "8", "10", "12"};
+		default  = 8;
+	};
 
 	// No HUD/role-crest-style param on purpose: that's entirely a per-player
 	// preference now (H key, see Waldo_fnc_initHud/fn_initClient.sqf), not

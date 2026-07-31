@@ -17,7 +17,11 @@ private _hour = switch (missionNamespace getVariable ["timeOfDay", 2]) do {
 	case 2: { 11 + floor (random 3) };   // Day   11:00-13:xx
 	case 3: { 18 + floor (random 2) };   // Dusk  18:00-19:xx
 	case 4: { 22 + floor (random 3) };   // Night 22:00-00:xx (wraps to 24 -> 0)
-	default { floor (random 24) };       // Random - any hour, day or night
+	// Random - dawn through evening (05:00-20:xx), never full dark night.
+	// Used to be any hour 0-23, which could just as easily land in the
+	// middle of the night as at noon - "Random" is meant to vary the
+	// LIGHTING mood, not gamble on whether anyone can see anything at all.
+	default { 5 + floor (random 16) };
 };
 
 setDate [2035, 7, 6, (_hour % 24), floor (random 60)];

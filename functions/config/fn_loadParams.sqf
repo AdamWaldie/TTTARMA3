@@ -54,7 +54,7 @@ missionNamespace setVariable ["allowRain",  (param [22, 1]) != 0,   true];
 missionNamespace setVariable ["chanceRain", (param [23, 40]) / 100, true];
 missionNamespace setVariable ["allowFog",   (param [24, 1]) != 0,   true];
 missionNamespace setVariable ["chanceFog",  (param [25, 20]) / 100, true];
-missionNamespace setVariable ["timeOfDay",   param [26, 0],         true];
+missionNamespace setVariable ["timeOfDay",   param [26, 2],         true];
 
 // --- Arena ---
 missionNamespace setVariable ["Waldo_arenaScale", param [27, 100], true];

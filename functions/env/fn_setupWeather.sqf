@@ -10,7 +10,9 @@ if (!isServer) exitWith {};
 
 // Time of day from the single lobby selector:
 //   0 Random, 1 Dawn, 2 Day, 3 Dusk, 4 Night.
-private _hour = switch (missionNamespace getVariable ["timeOfDay", 0]) do {
+// Default (both here and the lobby param) is 2 (Day) - out of the box every
+// round is fought in daylight; a host has to opt into Random/Dawn/Dusk/Night.
+private _hour = switch (missionNamespace getVariable ["timeOfDay", 2]) do {
 	case 1: { 5  + floor (random 2) };   // Dawn  05:00-06:xx
 	case 2: { 11 + floor (random 3) };   // Day   11:00-13:xx
 	case 3: { 18 + floor (random 2) };   // Dusk  18:00-19:xx

@@ -430,7 +430,7 @@ class Params {
 		title = "Time of Day";
 		values[] = {0, 1, 2, 3, 4};
 		texts[]  = {"Random", "Dawn", "Day", "Dusk", "Night"};
-		default  = 0;
+		default  = 2;   // Day - out of the box, every round is fought in daylight
 	};
 
 	// === ARENA ===

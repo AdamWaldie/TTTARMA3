@@ -63,14 +63,17 @@ _charge allowDamage false;
 
 	private _p = getPosATL _charge;
 	deleteVehicle _charge;
-	// DemoCharge_Remote_Ammo_Scripted, not Bo_Mk82 (a full 500lb aerial bomb) -
-	// this is a planted demolition charge, not an airstrike, and Bo_Mk82's stock
-	// blast radius was leveling far more than the room it was placed in. Must be
-	// the "_Scripted" variant and not plain DemoCharge_Remote_Ammo: the
-	// non-scripted ammo is a real remote charge that just sits armed waiting for
-	// a detonation signal, so createVehicle alone never makes it go off (unlike
-	// a bomb, which detonates on its own contact fuze).
-	private _bomb = createVehicle ["DemoCharge_Remote_Ammo_Scripted", _p, [], 0, "NONE"];   // same blast the suicide bomb uses
+	// Sh_82_HE (an 82mm mortar HE shell), not Bo_Mk82 (a full 500lb aerial
+	// bomb - levelled far more than the room this was placed in) and not
+	// plain DemoCharge_Remote_Ammo_Scripted either (confirmed live: still
+	// too small even at the room-clearing "satchel charge" tier this
+	// mission's own placed charge already uses). Sh_82_HE is a genuine step
+	// up in blast (~18m lethal radius vs. the satchel's ~5m) while staying
+	// nowhere near an aerial bomb's footprint. Standard shell/bomb-type
+	// ammo (unlike the DemoCharge_Remote family) detonates directly off
+	// setDamage 1 below, same as Bo_Mk82 did - no "_Scripted" variant
+	// needed or available for it.
+	private _bomb = createVehicle ["Sh_82_HE", _p, [], 0, "NONE"];   // same blast the suicide bomb uses
 	// A createVehicle'd bomb has no shooter by default, so anyone it kills would
 	// resolve to a null culprit in Waldo_fnc_onKilled - no karma penalty for
 	// blowing up a teammate, no DNA on the corpse, no round-kill credit. Tag the

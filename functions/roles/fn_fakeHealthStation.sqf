@@ -59,7 +59,16 @@ clearBackpackCargoGlobal _station;
 	"<t color='#3FE07A' size='1.4'>HEALTH STATION</t>",
 	{
 		params ["_target", "_caller"];
-		if (_caller != (_target getVariable ["Waldo_fakeOwner", objNull])) then {
+		private _owner = _target getVariable ["Waldo_fakeOwner", objNull];
+		// Diagnostic, not a guess this time - "doesn't explode when used"
+		// reported even after the addAction itself started showing up. The
+		// owner is DELIBERATELY exempt by design ("safe from your own
+		// trap") - if a solo tester is buying and then using their own
+		// trap, this is exactly what's supposed to happen, not a bug. This
+		// log makes that distinction visible in the next .rpt instead of
+		// guessing which case it actually was.
+		diag_log format ["[Waldo][client] fakeHealthStation used: caller=%1 owner=%2 exempt=%3", name _caller, ([name _owner, "<none>"] select (isNull _owner)), _caller isEqualTo _owner];
+		if (_caller != _owner) then {
 			[_target] remoteExec ["Waldo_fnc_fakeHealthStationBoom", 2];
 		};
 	},

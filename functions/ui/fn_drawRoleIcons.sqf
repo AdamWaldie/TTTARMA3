@@ -30,27 +30,27 @@ if (_old >= 0) then { removeMissionEventHandler ["Draw3D", _old]; };
 
 private _eh = addMissionEventHandler ["Draw3D", {
 
-	// Draw a role tag above _pos; short label past 25m, size scaled to
-	// roughly counter perspective shrink so it stays legible out to ~150m
-	// instead of shrinking to a speck (capped so it doesn't balloon at
-	// extreme range). Legibility redesign: drawIcon3D's own built-in
-	// "shadow" (2 = outline) was already maxed out and still washed out
-	// against a bright sky/pale terrain/snow - the same washed-out-glyph
-	// problem already diagnosed and fixed for the radar countdown text. A
-	// second, larger, near-black copy of the same glyph drawn first (same
-	// world position - drawIcon3D always billboards to face the camera, so
-	// both layers land pixel-centred on the same screen point with no manual
-	// offset needed) gives a real outline no engine shadow setting can, and
-	// PuristaBold (this HUD's own "must-read-fast" font, same as the role
-	// letter badge) reads faster at a glance than the Medium weight did.
-	// Base size raised too (0.045 -> 0.06) - the old floor was already too
-	// small even at close range, not just far away.
+	// Draw a role tag above _pos. REVERTED the double-layer "outline" attempt
+	// from the previous pass - confirmed live (screenshot) that a second,
+	// larger copy drawn at the "same" position does NOT land pixel-aligned
+	// with the first; drawIcon3D's own text anchoring shifts with size in a
+	// way that isn't a clean scale-in-place, so the two layers rendered as a
+	// smeared double-exposure (offset down-and-right), actively LESS legible
+	// than a single glyph, not more. Back to one drawIcon3D call with its own
+	// built-in shadow=2 outline, which is real but far more modest than the
+	// fake outline was trying to be.
+	//
+	// Also confirmed live: sizing was WAY oversized at range, ballooning to
+	// cover the player model instead of sitting as a small tag above it. The
+	// distance-based growth (meant to counter perspective shrink) was both
+	// too steep a rate and capped too high. Short label past 25m is kept -
+	// that part read fine - just made small and RESTRAINED at range instead
+	// of growing toward the old 0.16-0.18 cap.
 	private _drawTag = {
 		params ["_pos", "_color", "_word", "_dist"];
 		private _far = _dist > 25;
 		private _label = [_word, _word select [0, 1]] select _far;   // full word / first letter
-		private _size = (0.06 + (_dist * 0.0022)) min 0.18;
-		drawIcon3D ["", [0.03, 0.03, 0.03, (_color select 3)], _pos, 1, 0, 0, _label, 0, _size * 1.18, "PuristaBold", "center"];
+		private _size = (0.035 + (_dist * 0.0008)) min 0.07;
 		drawIcon3D ["", _color, _pos, 1, 0, 0, _label, 2, _size, "PuristaBold", "center"];
 	};
 

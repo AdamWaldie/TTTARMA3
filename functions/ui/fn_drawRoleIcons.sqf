@@ -19,6 +19,9 @@
 // would; a near-flat near/far size pair used to make far tags read as
 // smaller even though they need to be bigger to stay legible at all. The
 // handler id is stored so a second call replaces rather than stacks it.
+// No line-of-sight/occlusion gate - a tag is visible through walls/terrain
+// rather than risk randomly not showing when it's supposed to (see the
+// comment inline below for what that used to chase).
 //////////////////////////////////////////////////////////////////
 
 // Replace any previous handler (guards against stacking).
@@ -45,10 +48,7 @@ private _eh = addMissionEventHandler ["Draw3D", {
 
 	private _myRole = player getVariable ["role", "Innocent"];
 	// Dead/spectating: out of the round, sees everyone - same rule the
-	// scoreboard already uses. checkVisibility is skipped for this viewer too,
-	// since it's keyed off eyePos player, which for a dead/spectating player
-	// is the corpse's eye position, not the free-roam spectator camera - it
-	// would otherwise randomly hide tags behind the corpse's own LOS.
+	// scoreboard already uses.
 	private _viewerOut = !alive player;
 
 	{
@@ -56,37 +56,15 @@ private _eh = addMissionEventHandler ["Draw3D", {
 		_eyePos set [2, (_eyePos select 2) + 2];
 		private _dist = player distance _x;
 
-		// "FIRE" LOD, not "VIEW": VIEW factors in lighting (it's the same LOD
-		// the engine's own AI-spotting/shadow checks use), so a tag would
-		// blink out the moment its target stepped into a shadow or a dim
-		// interior despite having a clear, unobstructed line to them. FIRE is
-		// pure collision geometry - blocked only by an actual wall/object.
-		//
-		// Two more sources of false "not visible" reports showed up in
-		// testing on top of that:
-		//   - checkVisibility's FIRE-LOD raycast gets flaky at range (can
-		//     report blocked on a completely open sightline) - past ~150m
-		//     it's skipped outright. The tag's own size scaling already
-		//     exists specifically to keep far tags legible, so hiding them
-		//     from raycast flakiness right where that matters most defeats
-		//     the point, and at that range "can you actually make out a
-		//     wall-hack-proof detail" isn't really the concern anymore
-		//     anyway.
-		//   - a single raycast can clip incidental geometry a player can
-		//     plainly see past - a stray leaf, a fence rail, a thin bit of
-		//     scenery - which read as tags randomly vanishing in "shadow or
-		//     semi-invisible cover" even at close range. Sampling both eye
-		//     height and chest height and passing if EITHER is clear
-		//     absorbs that without giving up the wall-blocking check
-		//     entirely.
-		private _visible = if (_viewerOut || {_dist > 150}) then { 1 } else {
-			private _chestPos = getPosASL _x;
-			_chestPos set [2, (_chestPos select 2) + 1.4];
-			(([objNull, "FIRE"] checkVisibility [eyePos player, eyePos _x]) != 0)
-			|| {([objNull, "FIRE"] checkVisibility [eyePos player, _chestPos]) != 0}
-		};
-
-		if (_visible != 0 && {_x != player}) then {
+		// No line-of-sight gate. This used to require an unobstructed
+		// checkVisibility raycast, which chased three different false
+		// negatives across live testing - lighting (fixed: FIRE LOD not
+		// VIEW), range flakiness, and incidental geometry (a leaf, a fence
+		// rail) blocking a sightline a player could plainly see past. A tag
+		// that's SUPPOSED to be showing but randomly isn't is a worse bug
+		// than a tag that's technically visible through a wall - reliability
+		// wins here, so the check is gone rather than patched a fourth time.
+		if (_x != player) then {
 			private _xRole = _x getVariable ["role", "Innocent"];
 
 			if (_viewerOut) then {

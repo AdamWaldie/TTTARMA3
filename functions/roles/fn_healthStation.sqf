@@ -61,4 +61,11 @@ clearBackpackCargoGlobal _station;
 	if (!isNull _station) then { deleteVehicle _station; };
 };
 
-diag_log format ["[Waldo][server] healthStation deployed at %1", _pos];
+// Reported "no interactions" with no bug found on static review of the
+// addAction call itself (it matches Defuse Charge's own working
+// remoteExec ["addAction", ...] pattern exactly, and this mission's
+// description.ext has no CfgRemoteExec block at all, so remoteExec is
+// unrestricted by default - that's not blocking it either). Logging the
+// object's actual identity/position so the next .rpt confirms whether the
+// crate is even being created where expected, rather than guessing again.
+diag_log format ["[Waldo][server] healthStation deployed at %1 (netId=%2, typeOf=%3, isNull=%4)", _pos, netId _station, typeOf _station, isNull _station];

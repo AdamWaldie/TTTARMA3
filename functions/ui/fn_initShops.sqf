@@ -229,7 +229,15 @@ Waldo_traitorShop = [
 		{
 			player addWeaponGlobal (missionNamespace getVariable ["TraitorRifle", "srifle_LRR_F"]);
 			player addPrimaryWeaponItem (missionNamespace getVariable ["TraitorRifleOptics", "optic_LRPS"]);
-			player addMagazines [(missionNamespace getVariable ["TraitorRifleMag", "7Rnd_408_Mag"]), 3];
+			// addMagazines (plural) only ever drops loose mags into inventory - it
+			// never chambers one, so the rifle used to spawn empty and needed a
+			// manual reload before it could fire. The singular addMagazine DOES
+			// auto-load into a compatible empty weapon the unit already holds, so
+			// one singular call (the loaded round) + addMagazines for the rest
+			// (spares) gets the same total count with the weapon ready to fire.
+			private _rifleMag = missionNamespace getVariable ["TraitorRifleMag", "7Rnd_408_Mag"];
+			player addMagazine _rifleMag;
+			player addMagazines [_rifleMag, 2];
 		},
 		{},
 		"A powerful long-range rifle"],
@@ -244,7 +252,11 @@ Waldo_traitorShop = [
 			player addWeaponGlobal (missionNamespace getVariable ["ShopPistol", "hgun_P07_F"]);
 			private _s = missionNamespace getVariable ["ShopPistolSuppressor", ""];
 			if (_s != "") then { player addHandgunItem _s; };
-			player addMagazines [(missionNamespace getVariable ["ShopPistolMag", "16Rnd_9x21_Mag"]), 3];
+			// See the Long Rifle entry above - addMagazine (singular) auto-loads
+			// into the empty pistol; addMagazines never does.
+			private _pistolMag = missionNamespace getVariable ["ShopPistolMag", "16Rnd_9x21_Mag"];
+			player addMagazine _pistolMag;
+			player addMagazines [_pistolMag, 2];
 		},
 		{},
 		"A suppressed sidearm - quiet kills leave no gunshot to give you away"],

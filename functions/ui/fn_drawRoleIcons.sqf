@@ -3,8 +3,10 @@
 // CLIENT: installs ONE managed Draw3D handler that reveals roles per the
 // viewer's own role:
 //   - everyone sees the Detective,
-//   - Traitors see other Traitors and the Jester,
-//   - the Jester sees the Traitors,
+//   - Traitors see other Traitors and the Jester (the Jester does NOT see
+//     the Traitors back - the Jester's win condition is being killed by a
+//     non-Traitor, so knowing who to avoid would be a one-sided advantage
+//     with no corresponding cost),
 //   - Detectives additionally see the role of nearby corpses and of anyone
 //     they have "tested".
 //   - a dead/spectating viewer is out of the round and sees every living
@@ -72,8 +74,8 @@ private _eh = addMissionEventHandler ["Draw3D", {
 				if (_xRole == "Detective") then {
 					[_eyePos, [0.01, 0.45, 1, 1], "Detective", _dist] call _drawTag;
 				};
-				// Traitors see other Traitors; the Jester also sees Traitors.
-				if (_xRole == "Traitor" && {_myRole == "Traitor" || _myRole == "Jester"}) then {
+				// Traitors see other Traitors.
+				if (_xRole == "Traitor" && {_myRole == "Traitor"}) then {
 					[_eyePos, [0.75, 0.21, 0.21, 1], "Traitor", _dist] call _drawTag;
 				};
 				// Traitors see the Jester.

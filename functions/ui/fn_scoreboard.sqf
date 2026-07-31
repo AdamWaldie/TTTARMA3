@@ -5,7 +5,8 @@
 // and their role — but role is shown only where the viewer is allowed to know
 // it: own role; any player once a Detective has identified their body
 // (Waldo_roleRevealed - publicly "confirmed"); the public Detective; Traitors
-// see fellow Traitors + the Jester; the Jester sees Traitors; and a dead viewer
+// see fellow Traitors + the Jester (never the reverse - the Jester does not
+// see Traitors here, matching Waldo_fnc_drawRoleIcons); and a dead viewer
 // (out of the round) sees everything. Nothing is tracked between rounds.
 //
 // Being dead alone no longer reveals a role - identification does (see
@@ -45,8 +46,7 @@ private _rowFor = {
 		|| _viewerOut
 		|| _revealed
 		|| (_role == "Detective")
-		|| {_myRole == "Traitor" && {(_p in _traitors) || {_role == "Jester"}}}
-		|| {_myRole == "Jester"  && {_p in _traitors}};
+		|| {_myRole == "Traitor" && {(_p in _traitors) || {_role == "Jester"}}};
 
 	private _roleTxt = if (_reveal) then { toUpper (_role + (["", " (confirmed)"] select _revealed)) } else { "UNKNOWN" };
 	private _hex     = if (_reveal) then { [_role] call _hexOf } else { "#9EA290" };

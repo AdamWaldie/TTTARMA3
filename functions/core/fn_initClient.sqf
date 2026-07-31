@@ -18,6 +18,13 @@ if (!hasInterface) exitWith {};   // dedicated server / headless: nothing to do
 // before the mission gets a chance to move them anywhere.
 player allowDamage false;
 
+// The engine's own built-in scoreboard shows raw kill/death attribution,
+// which would hand out exactly the hidden information this whole gamemode
+// is built around (who killed whom, at a glance) outside of any of the
+// mission's own investigation mechanics. Locked out entirely - only the
+// mission's own scoreboard (K, Waldo_fnc_scoreboard) is meant to exist.
+showScoretable false;
+
 private _logPhase = {
 	params ["_phase"];
 	diag_log ("[Waldo][client] phase: " + _phase);
@@ -216,12 +223,6 @@ player allowDamage false;
 					[] call Waldo_fnc_holster;
 					_handled = true;
 				};
-				case 37: {   // K - toggle the in-round scoreboard
-					// Same createDialog + waitUntil pattern as the buy/debug menus -
-					// spawned for the same reason, not called.
-					[] spawn Waldo_fnc_scoreboard;
-					_handled = true;
-				};
 				case 20: {   // T - hold to open the ping picker (traitors only); release fires it
 					if ((player getVariable ["role", ""]) == "Traitor") then {
 						// pingWheelOpen waitUntils on its overlay existing the first time it's
@@ -280,6 +281,33 @@ player allowDamage false;
 		_disp setVariable ["Waldo_keyEH", _eh];
 		_disp setVariable ["Waldo_keyEHUp", _ehUp];
 	};
+};
+
+// --- K - toggle the in-round scoreboard: a MISSION event handler, not
+// display-46's, on purpose. Every other key above only makes sense while
+// actually playing (buy menu, activation items, ping wheel), so binding
+// them to display 46 (the alive/in-round HUD) is correct - but the vanilla
+// "Spectator" respawn template opens its own separate display while dead,
+// which never has focus on display 46, so a display-46 handler simply never
+// sees a K press from a spectator at all. addMissionEventHandler fires
+// regardless of which display currently has focus, so this is the one key
+// spectators need to be able to use too.
+if (isNil { missionNamespace getVariable "Waldo_scoreboardKeyEH" }) then {
+	missionNamespace setVariable ["Waldo_scoreboardKeyHeld", false];
+	private _sbEh = addMissionEventHandler ["KeyDown", {
+		params ["_key"];
+		if (_key == 37 && {!(missionNamespace getVariable ["Waldo_scoreboardKeyHeld", false])}) then {
+			missionNamespace setVariable ["Waldo_scoreboardKeyHeld", true];
+			[] spawn Waldo_fnc_scoreboard;
+		};
+		false
+	}];
+	private _sbEhUp = addMissionEventHandler ["KeyUp", {
+		params ["_key"];
+		if (_key == 37) then { missionNamespace setVariable ["Waldo_scoreboardKeyHeld", false]; };
+		false
+	}];
+	missionNamespace setVariable ["Waldo_scoreboardKeyEH", [_sbEh, _sbEhUp]];
 };
 
 // --- Wait for the round to go live ---

@@ -8,7 +8,10 @@ overviewPicture = "ui\TroubleInArmaville.jpg";
 loadScreen = "ui\TroubleInArmaville.jpg";
 author = "WaldoTheWarfighter"; // Author
 onLoadName = "Trouble in ArmaVille"; // Mission name
-onLoadMission = "Version 3.0"; // Description
+// Stamped with the real release version by .github/workflows/release.yml at
+// package time (from the git tag) - this committed value only ever shows
+// when running straight from the repo, outside of a packaged release.
+onLoadMission = "Version dev"; // Description
 
 class Header
 {
@@ -162,6 +165,8 @@ class CfgFunctions
 			class dnaContaminate {};    // Waldo_fnc_dnaContaminate (server: witness/contamination tracking)
 			class spawnDecoyCorpse {};  // Waldo_fnc_spawnDecoyCorpse (server: Dead Ringer decoy)
 			class flowerSpawn {};       // Waldo_fnc_flowerSpawn (server: creates one networked flower)
+			class setupDeadChatFilter {}; // Waldo_fnc_setupDeadChatFilter (client: blocks alive<->dead text chat)
+			class deleteBody {};        // Waldo_fnc_deleteBody (server: Body Remover's actual deletion)
 		};
 
 		class ui
@@ -186,6 +191,7 @@ class CfgFunctions
 			class useActivationSlot {};    // Waldo_fnc_useActivationSlot (fires the item bound to Y/U/J)
 			class assignActivationSlot {}; // Waldo_fnc_assignActivationSlot (buy menu: rebind an item to a key)
 			class registerActivationSlot {}; // Waldo_fnc_registerActivationSlot (shared: slot/backlog assignment)
+			class setupBriefing {};        // Waldo_fnc_setupBriefing (client: "How To Play" map-screen diary)
 		};
 
 		// Vendored from AdamWaldie/WaldosMissionPack (MissionScripts/MissionFlowAndUi,
@@ -230,6 +236,7 @@ class CfgFunctions
 			file = "functions\roles";
 			class traitorRadar {};      // Waldo_fnc_traitorRadar
 			class detectiveRadar {};    // Waldo_fnc_detectiveRadar
+			class radarCountdown {};    // Waldo_fnc_radarCountdown (client: "next pulse in Xs" corner label)
 			class warpSmoke {};         // Waldo_fnc_warpSmoke
 			class suicideBomb {};       // Waldo_fnc_suicideBomb
 			class flowerPower {};       // Waldo_fnc_flowerPower
@@ -331,7 +338,7 @@ class Params {
 		title = "Enable Jester Role";
 		values[] = {0, 1};
 		texts[]  = {"Disabled", "Enabled"};
-		default  = 0;
+		default  = 1;   // one of the four documented roles - on by default, not opt-in
 	};
 	class JesterAlways {                    // 12
 		title = "Jester: Always Appears";
@@ -427,7 +434,7 @@ class Params {
 		title = "Time of Day";
 		values[] = {0, 1, 2, 3, 4};
 		texts[]  = {"Random", "Dawn", "Day", "Dusk", "Night"};
-		default  = 0;
+		default  = 2;   // Day - out of the box, every round is fought in daylight
 	};
 
 	// === ARENA ===
@@ -452,6 +459,12 @@ class Params {
 		values[] = {0, 1, 2, 3};
 		texts[]  = {"0 (off)", "1", "2", "3"};
 		default  = 1;
+	};
+	class civKillBonusEvery {               // 31 (30 is a retired gap - see the note below)
+		title = "Traitor Bonus: 1 Credit per N Civilians Killed";
+		values[] = {0, 3, 5, 8};
+		texts[]  = {"Off", "Every 3", "Every 5", "Every 8"};
+		default  = 5;
 	};
 
 	// No HUD/role-crest-style param on purpose: that's entirely a per-player

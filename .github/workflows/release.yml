@@ -80,8 +80,10 @@ jobs:
         run: |
           TAG="${{ inputs.tag || github.ref_name }}"
           VERSION="${TAG#v}"
+          VERSION="${VERSION#V}"
           VERSION_SAFE="${VERSION//./-}"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "version_safe=$VERSION_SAFE" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v4
@@ -103,6 +105,24 @@ jobs:
         run: |
           mkdir -p dist
           ./tools/ci/stage_mission.sh stage/_mission
+
+      - name: Stamp onLoadMission with the release version
+        # description.ext's onLoadMission (the in-game load-screen version
+        # string) used to be a hand-edited value, meaning it could drift from
+        # the actual tag a release was cut from - exactly the kind of thing a
+        # human forgets to bump. The tag driving this whole workflow is
+        # already the single source of truth for "what version is this," so
+        # the staged copy is stamped from it here instead, on every release,
+        # with no separate manual step to remember. The committed
+        # description.ext is left as a dev/unreleased placeholder - see its
+        # own value for what that reads as outside of a packaged release.
+        run: |
+          VERSION="${{ steps.tag.outputs.version }}"
+          sed -i "s/^onLoadMission = \"[^\"]*\";/onLoadMission = \"Version ${VERSION}\";/" stage/_mission/description.ext
+          grep -qF "onLoadMission = \"Version ${VERSION}\";" stage/_mission/description.ext || {
+            echo "::error::onLoadMission was not updated to match the release tag - check description.ext's format"
+            exit 1
+          }
 
       - name: Build one folder, zip, and pbo per terrain
         run: |

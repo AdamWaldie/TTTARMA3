@@ -32,7 +32,7 @@ missionNamespace setVariable ["Waldo_minTraitors",       param [7, 1], true];
 missionNamespace setVariable ["Waldo_maxTraitors",       param [8, 0], true];   // 0 = unlimited
 missionNamespace setVariable ["DetectiveEnabled",       (param [9, 1]) != 0, true];
 missionNamespace setVariable ["DetectiveMinPlayers",     param [10, 5], true];
-missionNamespace setVariable ["JesterEnabled",          (param [11, 0]) != 0, true];
+missionNamespace setVariable ["JesterEnabled",          (param [11, 1]) != 0, true];
 missionNamespace setVariable ["JesterAlways",           (param [12, 0]) != 0, true];
 missionNamespace setVariable ["JesterPercentagechance", (param [13, 30]) / 100, true];
 
@@ -40,6 +40,7 @@ missionNamespace setVariable ["JesterPercentagechance", (param [13, 30]) / 100, 
 missionNamespace setVariable ["KarmaEnabled",           (param [14, 1]) != 0, true];
 missionNamespace setVariable ["Waldo_startCreditsBase",  param [15, 1], true];
 missionNamespace setVariable ["Waldo_killReward",        param [29, 1], true];   // appended param
+missionNamespace setVariable ["Waldo_civKillBonusEvery",  param [31, 5], true];  // appended param (30 retired)
 
 // --- Airdrop / loot ---
 missionNamespace setVariable ["airdrop",               (param [16, 1]) != 0, true];
@@ -54,7 +55,7 @@ missionNamespace setVariable ["allowRain",  (param [22, 1]) != 0,   true];
 missionNamespace setVariable ["chanceRain", (param [23, 40]) / 100, true];
 missionNamespace setVariable ["allowFog",   (param [24, 1]) != 0,   true];
 missionNamespace setVariable ["chanceFog",  (param [25, 20]) / 100, true];
-missionNamespace setVariable ["timeOfDay",   param [26, 0],         true];
+missionNamespace setVariable ["timeOfDay",   param [26, 2],         true];
 
 // --- Arena ---
 missionNamespace setVariable ["Waldo_arenaScale", param [27, 100], true];

@@ -5,7 +5,8 @@
 // and their role — but role is shown only where the viewer is allowed to know
 // it: own role; any player once a Detective has identified their body
 // (Waldo_roleRevealed - publicly "confirmed"); the public Detective; Traitors
-// see fellow Traitors + the Jester; the Jester sees Traitors; and a dead viewer
+// see fellow Traitors + the Jester (never the reverse - the Jester does not
+// see Traitors here, matching Waldo_fnc_drawRoleIcons); and a dead viewer
 // (out of the round) sees everything. Nothing is tracked between rounds.
 //
 // Being dead alone no longer reveals a role - identification does (see
@@ -45,8 +46,7 @@ private _rowFor = {
 		|| _viewerOut
 		|| _revealed
 		|| (_role == "Detective")
-		|| {_myRole == "Traitor" && {(_p in _traitors) || {_role == "Jester"}}}
-		|| {_myRole == "Jester"  && {_p in _traitors}};
+		|| {_myRole == "Traitor" && {(_p in _traitors) || {_role == "Jester"}}};
 
 	private _roleTxt = if (_reveal) then { toUpper (_role + (["", " (confirmed)"] select _revealed)) } else { "UNKNOWN" };
 	private _hex     = if (_reveal) then { [_role] call _hexOf } else { "#9EA290" };
@@ -76,7 +76,13 @@ private _display = uiNamespace getVariable "WaldoScore";
 // Let K close it too (the main handler can't fire while a dialog is focused).
 _display displayAddEventHandler ["KeyDown", { if ((_this select 1) == 37) then { closeDialog 1; true } else { false } }];
 
-private _confirmedDead = { !alive _x && {_x getVariable ["Waldo_roleRevealed", false]} } count allPlayers;
+// "Confirmed" here means called-in (Waldo_identified), matching the wiki's own
+// wording - identifying a body "always confirms the death to the whole
+// server" regardless of who calls it in. Waldo_roleRevealed is a stricter,
+// Detective-only flag; keying the header count on that instead meant a
+// regular player's call-in updated the per-row FOUND status but never moved
+// this count, reading as "the scoreboard does nothing for it."
+private _confirmedDead = { !alive _x && {_x getVariable ["Waldo_identified", false]} } count allPlayers;
 (_display displayCtrl 3301) ctrlSetText format [
 	"ROUND SCOREBOARD    -    %1 ALIVE / %2 TOTAL    -    %3 CONFIRMED DEAD",
 	count _live, count allPlayers, _confirmedDead

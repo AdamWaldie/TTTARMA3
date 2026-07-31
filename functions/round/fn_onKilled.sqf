@@ -13,12 +13,50 @@
 params ["_unit", "_killer", "_instigator", "_useEffects"];
 if (!isServer) exitWith {};
 
+// MPKilled is broadcast (fires on every machine, this guard is why only the
+// server's own execution matters at all) - but nothing stopped it from
+// firing MORE THAN ONCE for the same death (a stray damage tick on an
+// already-dead body, an ACE unconscious->death race, etc.), and every
+// single thing below - round timer extension, credit rewards, DNA state,
+// the addAction - has no guard of its own against running twice. Confirmed
+// in testing as duplicate "Identify Body" actions stacking on one corpse.
+// A revived unit is a brand-new object (Waldo_fnc_reviveRelink), so this
+// flag never carries over into a life that legitimately needs to be
+// processed again.
+if (_unit getVariable ["Waldo_deathProcessed", false]) exitWith {};
+_unit setVariable ["Waldo_deathProcessed", true, true];
+
 private _traitors = missionNamespace getVariable ["TraitorList", []];
 private _detectives = missionNamespace getVariable ["DetectiveList", []];
 
-// Extend the round for every death.
+// Extend the round for every death - diminishing returns rather than a hard
+// wall. This used to add roundDeadLength on every single death with no
+// ceiling at all (a chaotic high-kill round, with revives creating more
+// deaths to extend it further, could run "overtime" - the stretch between
+// the civilian clock hitting zero and the real deadline, timelimit - longer
+// than the round itself), then a flat `min roundBaseLength` cap that just
+// stopped extending outright past that point - the Nth death mattered
+// exactly as much as the 1st right up until it suddenly mattered not at
+// all. Hyperbolic saturation instead: Waldo_deathBonusRaw accumulates
+// uncapped (the "if every death counted in full" total), and the bonus
+// actually applied is cap * raw / (raw + cap) - strictly increasing with
+// every death (so nothing ever hard-stops extending the round), but each
+// additional death's marginal contribution shrinks as the total climbs,
+// approaching (never quite reaching) the cap.
+//
+// The cap itself is HALF of roundBaseLength, not the full base length - a
+// stale, dragged-out round is worse than a slightly early one, so worst
+// case (asymptotically, i.e. never quite hit) a round can grow by half its
+// planned length from deaths plus the flat traitor bonus on top, not
+// double it.
 private _dead = missionNamespace getVariable ["roundDeadLength", 30];
-missionNamespace setVariable ["timelimit", (missionNamespace getVariable ["timelimit", 0]) + _dead, true];
+private _cap = (missionNamespace getVariable ["roundBaseLength", 180]) * 0.5;
+private _raw = (missionNamespace getVariable ["Waldo_deathBonusRaw", 0]) + _dead;
+missionNamespace setVariable ["Waldo_deathBonusRaw", _raw, true];
+private _deathBonus = _cap * (_raw / (_raw + _cap));
+missionNamespace setVariable ["Waldo_deathBonusTotal", _deathBonus, true];
+private _traitorBonus = missionNamespace getVariable ["roundTraitorLength", 45];
+missionNamespace setVariable ["timelimit", (missionNamespace getVariable ["Waldo_startTime", 0]) + _traitorBonus + _deathBonus, true];
 
 private _victimRole = _unit getVariable ["role", "Innocent"];
 
@@ -124,8 +162,37 @@ if (_victimRole == "Traitor") then {
 	_guilty = false;
 	if (_reward > 0) then { { _x setVariable ["points", (_x getVariable ["points", 0]) + _reward, true]; } forEach _detectives; };
 };
-if (_victimRole == "Detective") then {
+// Once per round, not once per death: a Traitor's own Defibrillator revives
+// ANY corpse onto the Traitor team, so if a Traitor revives the dead
+// Detective's body it comes back as a Traitor, not a Detective, and can't
+// pay this out again - but a fellow Detective (a second one, or a lobby
+// where Detective survives being downed some other way) reviving them back
+// to Detective could otherwise let this fire every time they're re-killed,
+// paying every Traitor in full each time.
+if (_victimRole == "Detective" && {!(missionNamespace getVariable ["Waldo_detectiveRewardPaid", false])}) then {
+	missionNamespace setVariable ["Waldo_detectiveRewardPaid", true, true];
 	if (_reward > 0) then { { _x setVariable ["points", (_x getVariable ["points", 0]) + _reward, true]; } forEach _traitors; };
+};
+
+// Civilian bonus: every Nth Innocent a Traitor kills (round-wide tally across
+// the whole team, not per-killer - matches the team-wide payout style of the
+// two rewards above) pays every Traitor _reward credits. Innocent only -
+// Detective/Jester kills are already paid/penalised by the blocks above and
+// below, and double-dipping the same kill into both would make hunting the
+// Detective or the Jester the bonus-farming target instead of civilians.
+if (_victimRole == "Innocent" && {_culpritRole == "Traitor"}) then {
+	private _every = missionNamespace getVariable ["Waldo_civKillBonusEvery", 5];
+	if (_every > 0) then {
+		private _tally = (missionNamespace getVariable ["Waldo_civKillTally", 0]) + 1;
+		missionNamespace setVariable ["Waldo_civKillTally", _tally, true];
+		if ((_tally % _every) == 0 && {_reward > 0}) then {
+			{ _x setVariable ["points", (_x getVariable ["points", 0]) + _reward, true]; } forEach _traitors;
+			[
+				"CIVILIAN BONUS", format ["The Traitors have killed %1 civilians - every Traitor gains %2 credits.", _tally, _reward],
+				"SUCCESS", 8, "TOP_RIGHT", "CIVBONUS", "TRAITOR"
+			] remoteExec ["Waldo_fnc_ShowUiNotification", _traitors];
+		};
+	};
 };
 
 // Jester clean kill: a non-Traitor player (and not self / environment) killed the Jester.
@@ -135,6 +202,23 @@ if (_victimRole == "Detective") then {
 // non-player-attributed Jester death (e.g. an unattributed explosion).
 if (_victimRole == "Jester" && {!isNull _culprit} && {_culprit != _unit} && {isPlayer _culprit} && {_culpritRole != "Traitor"}) then {
 	missionNamespace setVariable ["JESTERCLEANKILL", true, true];
+};
+
+// A Traitor killing the Jester is otherwise a completely free kill (line 141
+// exempts every Traitor kill from the RDM/karma penalty below, since killing
+// non-Traitors is literally their win condition) - but the Jester is a
+// special case: killing them doesn't advance the Traitors' own win condition
+// at all, it just denies the Jester the "a non-Traitor killed me" win they're
+// otherwise going for. Docking the same amount a correct kill would have
+// earned keeps it a real cost instead of a shrug.
+if (_victimRole == "Jester" && {_culpritRole == "Traitor"} && {!isNull _culprit} && {_culprit != _unit}) then {
+	if (_reward > 0) then {
+		_culprit setVariable ["points", ((_culprit getVariable ["points", 0]) - _reward) max 0, true];
+	};
+	[
+		"JESTER KILLED", format ["Killing the Jester cost you %1 credits - no win condition advanced.", _reward],
+		"WARNING", 8, "TOP_RIGHT", "JESTERPENALTY", "TRAITOR"
+	] remoteExec ["Waldo_fnc_ShowUiNotification", _culprit];
 };
 
 // Killing as a Traitor is never "guilty".

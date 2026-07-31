@@ -197,7 +197,7 @@ Waldo_roleColor = {
 
 // --- Traitor shop ---
 Waldo_traitorShop = [
-	["Suicide Bomb", 1, "activation",
+	["Suicide Bomb", 2, "activation",
 		{},
 		{ [] call Waldo_fnc_suicideBomb; true },
 		"Detonate yourself (press your assigned key)"],
@@ -205,31 +205,44 @@ Waldo_traitorShop = [
 	["Radar", 1, "passive",
 		{ [] call Waldo_fnc_traitorRadar; },
 		{},
-		"Pulses everyone's position for 30s, then refreshes"],
+		"Pulses everyone's position (and role) for 30s, then refreshes"],
 
-	["Rocket Launcher", 1, "weapon",
+	["Rocket Launcher", 2, "weapon",
 		{
 			player addWeaponGlobal (missionNamespace getVariable ["TraitorLauncher", "launch_NLAW_F"]);
-			player addSecondaryWeaponItem (missionNamespace getVariable ["TraitorLauncherMag", "NLAW_F"]);
+			// addSecondaryWeaponItem is for ATTACHMENTS on the secondary weapon
+			// slot (optics, bipods) - it never actually chambers a round, so the
+			// launcher spawned empty. addMagazine (singular) is the same fix as
+			// the Long Rifle/Silenced Pistol: it auto-loads into the empty
+			// compatible weapon the unit already holds.
+			player addMagazine (missionNamespace getVariable ["TraitorLauncherMag", "NLAW_F"]);
 		},
 		{},
 		"A single-use rocket launcher"],
 
-	["Stamina", 1, "passive",
+	["Stamina", 2, "passive",
 		{ player enableStamina false; },
 		{},
 		"Never run out of stamina"],
 
-	["Teleport Grenades", 1, "weapon",
+	["Teleport Grenades", 2, "weapon",
 		{ player addMagazines ["SmokeShellRed", 2]; [] call Waldo_fnc_warpSmoke; },
 		{},
 		"Throw red smoke to teleport to it (vanilla throw only)"],
 
-	["Long Rifle", 1, "weapon",
+	["Long Rifle", 2, "weapon",
 		{
 			player addWeaponGlobal (missionNamespace getVariable ["TraitorRifle", "srifle_LRR_F"]);
 			player addPrimaryWeaponItem (missionNamespace getVariable ["TraitorRifleOptics", "optic_LRPS"]);
-			player addMagazines [(missionNamespace getVariable ["TraitorRifleMag", "7Rnd_408_Mag"]), 3];
+			// addMagazines (plural) only ever drops loose mags into inventory - it
+			// never chambers one, so the rifle used to spawn empty and needed a
+			// manual reload before it could fire. The singular addMagazine DOES
+			// auto-load into a compatible empty weapon the unit already holds, so
+			// one singular call (the loaded round) + addMagazines for the rest
+			// (spares) gets the same total count with the weapon ready to fire.
+			private _rifleMag = missionNamespace getVariable ["TraitorRifleMag", "7Rnd_408_Mag"];
+			player addMagazine _rifleMag;
+			player addMagazines [_rifleMag, 2];
 		},
 		{},
 		"A powerful long-range rifle"],
@@ -239,17 +252,21 @@ Waldo_traitorShop = [
 		{ [] call Waldo_fnc_revive },
 		"Aim at a body and press your assigned key to revive them as a Traitor"],
 
-	["Silenced Pistol", 1, "weapon",
+	["Silenced Pistol", 2, "weapon",
 		{
 			player addWeaponGlobal (missionNamespace getVariable ["ShopPistol", "hgun_P07_F"]);
 			private _s = missionNamespace getVariable ["ShopPistolSuppressor", ""];
 			if (_s != "") then { player addHandgunItem _s; };
-			player addMagazines [(missionNamespace getVariable ["ShopPistolMag", "16Rnd_9x21_Mag"]), 3];
+			// See the Long Rifle entry above - addMagazine (singular) auto-loads
+			// into the empty pistol; addMagazines never does.
+			private _pistolMag = missionNamespace getVariable ["ShopPistolMag", "16Rnd_9x21_Mag"];
+			player addMagazine _pistolMag;
+			player addMagazines [_pistolMag, 2];
 		},
 		{},
 		"A suppressed sidearm - quiet kills leave no gunshot to give you away"],
 
-	["Frag Grenades", 1, "weapon",
+	["Frag Grenades", 2, "weapon",
 		{ player addMagazines [(missionNamespace getVariable ["ShopFrag", "HandGrenade"]), 2]; },
 		{},
 		"Two fragmentation grenades"],
@@ -259,7 +276,7 @@ Waldo_traitorShop = [
 		{},
 		"A heavy plate carrier - soak an extra hit or two"],
 
-	["Medical Kit", 1, "weapon",
+	["Medical Kit", 2, "weapon",
 		{ player addItem "Medikit"; player addItem "FirstAidKit"; },
 		{},
 		"A medikit + first aid kit to patch yourself up"],
@@ -269,7 +286,7 @@ Waldo_traitorShop = [
 		{},
 		"Deploy a decoy - identical to a real Health Station until someone uses it, then it detonates. You're safe from your own trap."],
 
-	["Body Remover", 1, "activation",
+	["Body Remover", 2, "activation",
 		{},
 		{ [] call Waldo_fnc_removeBody },
 		"Aim at a corpse and press your assigned key to destroy it, denying the Detective a body to test"],
@@ -279,7 +296,7 @@ Waldo_traitorShop = [
 		{ [] call Waldo_fnc_placeC4 },
 		"Drop a timed explosive at your feet - it blows in 15s unless someone defuses it"],
 
-	["Night Vision", 1, "weapon",
+	["Night Vision", 2, "weapon",
 		{ player addWeapon (missionNamespace getVariable ["ShopNVG", "NVGoggles"]); },
 		{},
 		"Night-vision goggles - own the dark rounds"],
@@ -289,7 +306,7 @@ Waldo_traitorShop = [
 		{ [] call Waldo_fnc_deadRinger },
 		"Arms a 25s window: your next lethal hit is faked - you ragdoll like a kill and a decoy body appears, but you're not really dead"],
 
-	["False Flag", 2, "passive",
+	["False Flag", 3, "passive",
 		{ player setVariable ["Waldo_falseFlag", true, true]; hint "False Flag armed - your next kill will frame someone else."; },
 		{},
 		"Your next kill leaves an innocent bystander's DNA at the scene instead of yours"]
@@ -297,7 +314,7 @@ Waldo_traitorShop = [
 
 // --- Detective shop ---
 Waldo_detectiveShop = [
-	["Portable Tester", 1, "activation",
+	["Portable Tester", 2, "activation",
 		{},
 		{ [] call Waldo_fnc_tester },
 		"Aim at a player or body within 3m and press your assigned key to reveal their role"],

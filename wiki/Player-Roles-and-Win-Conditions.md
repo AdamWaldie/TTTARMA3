@@ -14,7 +14,7 @@
 
 ![Detective HUD](Images/RoleDetective.jpg)
 
-**Jester.** Deals no damage (a `Fired` event handler deletes their own projectiles) and cannot win the normal way. Traitors are told who the Jester is. If a non-Traitor kills them, the Jester wins instead and nobody else does; being killed by a Traitor accomplishes nothing for the Jester.
+**Jester.** Deals no damage (a `Fired` event handler deletes their own projectiles) and cannot win the normal way. Traitors are told who the Jester is. If a non-Traitor kills them, the Jester wins instead and nobody else does; being killed by a Traitor accomplishes nothing for the Jester - and costs the Traitor who did it a kill-reward's worth of credits, since it doesn't advance the Traitors' own win condition either.
 
 ![Jester HUD](Images/RoleJester.jpg)
 
@@ -38,4 +38,4 @@ The civilian clock and the hard deadline are two different numbers:
 - `Waldo_startTime` = base round length + (player count x bonus-per-player). This is what players see counting down.
 - `timelimit` = `Waldo_startTime` + the Traitor bonus. This is the actual hard cutoff (`checkWin`'s END3 check).
 
-Every death extends `timelimit` by the "time added per dead player" setting, so a round with a lot of killing runs longer than a quiet one, on the theory that more bodies means more to investigate.
+Every death extends `timelimit` by the "time added per dead player" setting, so a round with a lot of killing runs longer than a quiet one, on the theory that more bodies means more to investigate. That extension is capped at the Base Round Length setting in total, so a chaotic round can't run "overtime" - past the civilian clock hitting zero - longer than the round's own base length.

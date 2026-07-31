@@ -33,7 +33,7 @@ if ((player distance _target) > 4) exitWith {
 		["REMOVEBODY"] call Waldo_fnc_DismissUiNotification;   // someone else got there first
 	};
 
-	_target remoteExec ["deleteVehicle", 2];
+	[_target] remoteExec ["Waldo_fnc_deleteBody", 2];
 	["REMOVE BODY", "Body removed.", "SUCCESS", 3, "BOTTOM_LEFT", "REMOVEBODY", "REMOVE BODY"] call Waldo_fnc_ShowUiNotification;
 };
 

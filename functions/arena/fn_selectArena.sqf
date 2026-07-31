@@ -27,13 +27,22 @@ private _target = _playerCount max 6;
 
 private _bestPos = [];
 private _bestScore = -1;
+// Every candidate that clears the target, not just the single best - picking
+// the outright best-scoring spot every time is deterministic (the same
+// terrain + player count always scores the same town highest), which is why
+// every round landed in the same place. Randomising among everything that's
+// "good enough" keeps the guarantee (a real arena with real loot) without
+// losing variety.
+private _qualifying = [];
 
-// Consider a candidate position, keeping the best-scoring one seen so far.
+// Consider a candidate position, keeping the best-scoring one seen so far
+// (the guaranteed fallback) and collecting anything that clears the target.
 private _consider = {
 	params ["_cand"];
 	if (surfaceIsWater _cand) exitWith {};
 	private _score = [_cand] call _lootableCount;
 	if (_score > _bestScore) then { _bestScore = _score; _bestPos = _cand; };
+	if (_score >= _target) then { _qualifying pushBack _cand; };
 };
 
 // --- Preferred: every named settlement, large or small ---
@@ -63,10 +72,14 @@ if (_bestScore <= 0 || {_bestPos isEqualTo []}) then {
 	diag_log "[Waldo][server] selectArena: last-resort position (no lootable buildings found)";
 };
 
-private _empty = _bestPos findEmptyPosition [0, 15];
-if !(_empty isEqualTo []) then { _bestPos = _empty; };
+// Pick randomly among everything that cleared the target; only fall back to
+// the single best-scoring spot if nothing did.
+private _finalPos = if (count _qualifying > 0) then { selectRandom _qualifying } else { _bestPos };
 
-missionNamespace setVariable ["mapPos", _bestPos, true];
-diag_log format ["[Waldo][server] selectArena: pos=%1 radius=%2 lootableBuildings=%3 (target %4)",
-	_bestPos, _radius, _bestScore, _target];
+private _empty = _finalPos findEmptyPosition [0, 15];
+if !(_empty isEqualTo []) then { _finalPos = _empty; };
+
+missionNamespace setVariable ["mapPos", _finalPos, true];
+diag_log format ["[Waldo][server] selectArena: pos=%1 radius=%2 lootableBuildings=%3 (target %4, %5 qualifying candidates)",
+	_finalPos, _radius, _bestScore, _target, count _qualifying];
 _bestScore >= _target

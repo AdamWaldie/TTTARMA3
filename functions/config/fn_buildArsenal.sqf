@@ -234,6 +234,12 @@ missionNamespace setVariable ["TraitorRifleMag", _sniperMag, true];
 missionNamespace setVariable ["TraitorRifleOptics", _sniperOptic, true];
 
 // ---- publish: traitor shop launcher ----
+// Full candidate list logged every time (not just the count) - the launcher
+// filter has needed hardening more than once already on live-test reports
+// alone with no way to see what actually passed it, so the next report
+// comes with the RPT already showing exactly what was in the pool and what
+// got picked, instead of another round of guessing at the filter logic.
+diag_log format ["[Waldo][server] buildArsenal: launcher candidates (%1) = %2", count _launchers, _launchers];
 private _launcher = "launch_NLAW_F";
 private _launcherMag = "NLAW_F";
 if !(_launchers isEqualTo []) then {
@@ -241,6 +247,7 @@ if !(_launchers isEqualTo []) then {
 	private _m = [_w] call _magOf;
 	if (_m != "") then { _launcher = _w; _launcherMag = _m; };
 };
+diag_log format ["[Waldo][server] buildArsenal: launcher picked = %1 (mag %2)", _launcher, _launcherMag];
 missionNamespace setVariable ["TraitorLauncher", _launcher, true];
 missionNamespace setVariable ["TraitorLauncherMag", _launcherMag, true];
 

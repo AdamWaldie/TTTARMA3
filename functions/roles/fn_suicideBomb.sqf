@@ -14,12 +14,13 @@ playSound3D [getMissionPath "audio\suicide.ogg", player];
 	sleep 2;
 
 	if (alive player) then {
-		// DemoCharge_Remote_Ammo_Scripted, not Bo_Mk82 (a full 500lb aerial bomb) -
-		// see fn_c4Charge.sqf, which shares this same blast. Must be the
-		// "_Scripted" variant, and needs an explicit setDamage 1 below to go off -
-		// plain DemoCharge_Remote_Ammo just sits armed waiting for a detonation
-		// signal instead of exploding on creation like a bomb would.
-		private _ied = createVehicle ["DemoCharge_Remote_Ammo_Scripted", getPos player, [], 0, "NONE"];
+		// Sh_82_HE (an 82mm mortar HE shell) - see fn_c4Charge.sqf, which
+		// shares this same blast and has the full reasoning for why it's
+		// neither Bo_Mk82 (way too big) nor the satchel-tier
+		// DemoCharge_Remote_Ammo_Scripted (confirmed too small even after
+		// already switching away from the bomb once). setDamage 1 below
+		// detonates it directly, same as any standard shell/bomb ammo.
+		private _ied = createVehicle ["Sh_82_HE", getPos player, [], 0, "NONE"];
 		_ied setPos (getPos player);
 		// setShotParents is server/HC-only in MP and would silently be ignored if
 		// called here on the bomber's own client - remoteExec it to the server so

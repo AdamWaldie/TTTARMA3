@@ -29,15 +29,30 @@ if (_useCBA) then {
 player setVariable ["radar", 1];
 player setVariable ["Waldo_radarNextPing", time + 30];
 
+// A real ring icon instead of a drawn "O" character - looked up from the
+// engine's own standard "hand-drawn dot" map marker rather than a
+// hardcoded texture path (avoids guessing at exact case/folder names,
+// which differ between Windows and case-sensitive Linux dedicated
+// servers): if it's ever missing for any reason, getText just returns ""
+// and drawIcon3D silently draws nothing, rather than throwing.
+missionNamespace setVariable ["Waldo_radarPingIcon", getText (configFile >> "CfgMarkers" >> "hd_dot" >> "icon")];
+
 private _eh = addMissionEventHandler ["Draw3D", {
 	private _radar = player getVariable ["radar", 0];
+	private _icon = missionNamespace getVariable ["Waldo_radarPingIcon", ""];
 	{
 		private _role = _x getVariable ["role", "Innocent"];
 		private _base = [_role] call Waldo_roleColor;
 		private _color = [_base select 0, _base select 1, _base select 2, _radar];
 		private _distance = player distance _x;
-		drawIcon3D ["", _color, getPosATL _x, 1, 0, 0, "O", 2,
-			0.10 - (_distance / 2500), "PuristaMedium", "center"];
+		// Same footprint the old text glyph used ("O" at up to size 0.10,
+		// shrinking with distance) - just a real ring icon instead of a
+		// character, and it grows slightly as it fades (radar 1 -> 0) for an
+		// actual expanding-ping feel instead of a static marker, still capped
+		// well short of anything that could obscure the player model.
+		private _base_size = (0.10 - (_distance / 2500)) max 0;
+		private _size = _base_size * (1 + ((1 - _radar) * 0.5));
+		drawIcon3D [_icon, _color, getPosATL _x, _size, _size, 0, "", 0, 1, "PuristaMedium", "center"];
 	} forEach allUnits;
 	// diag_deltaTime (real seconds since the last frame), not a flat
 	// per-frame decrement - the old -0.002/frame decay was frame-RATE

@@ -30,28 +30,27 @@ if (_old >= 0) then { removeMissionEventHandler ["Draw3D", _old]; };
 
 private _eh = addMissionEventHandler ["Draw3D", {
 
-	// Draw a role tag above _pos; short label past 25m, size scaled to
-	// roughly counter perspective shrink so it stays legible out to ~150m
-	// instead of shrinking to a speck (capped so it doesn't balloon at
-	// extreme range). Legibility redesign: drawIcon3D's own built-in
-	// "shadow" (2 = outline) was already maxed out and still washed out
-	// against a bright sky/pale terrain/snow - the same washed-out-glyph
-	// problem already diagnosed and fixed for the radar countdown text. A
-	// second, larger, near-black copy of the same glyph drawn first (same
-	// world position - drawIcon3D always billboards to face the camera, so
-	// both layers land pixel-centred on the same screen point with no manual
-	// offset needed) gives a real outline no engine shadow setting can, and
-	// PuristaBold (this HUD's own "must-read-fast" font, same as the role
-	// letter badge) reads faster at a glance than the Medium weight did.
-	// Base size raised too (0.045 -> 0.06) - the old floor was already too
-	// small even at close range, not just far away.
+	// Draw a role tag above _pos: a manual black outline layer behind the
+	// role-coloured glyph (the bold two-layer look was liked live) at a much
+	// smaller, tightly-capped size (confirmed live: the previous pass
+	// ballooned to cover the player model at range).
+	//
+	// The offset/misaligned-double-exposure look from the previous attempt
+	// (confirmed live via screenshot) traced to drawIcon3D's OWN shadow=2 on
+	// top of the manual black layer underneath - shadow=2 draws its own
+	// built-in offset shadow copy, so that was three overlapping renders
+	// (manual black layer + engine's own shadow copy + the coloured glyph),
+	// not two, and the engine's shadow offset doesn't scale the same way the
+	// manual layer's size delta does. Both layers now use shadow=0 - the
+	// manual black layer IS the outline, nothing else drawing a second one
+	// on top of it.
 	private _drawTag = {
 		params ["_pos", "_color", "_word", "_dist"];
 		private _far = _dist > 25;
 		private _label = [_word, _word select [0, 1]] select _far;   // full word / first letter
-		private _size = (0.06 + (_dist * 0.0022)) min 0.18;
-		drawIcon3D ["", [0.03, 0.03, 0.03, (_color select 3)], _pos, 1, 0, 0, _label, 0, _size * 1.18, "PuristaBold", "center"];
-		drawIcon3D ["", _color, _pos, 1, 0, 0, _label, 2, _size, "PuristaBold", "center"];
+		private _size = (0.035 + (_dist * 0.0008)) min 0.07;
+		drawIcon3D ["", [0.03, 0.03, 0.03, 1], _pos, 1, 0, 0, _label, 0, _size * 1.12, "PuristaBold", "center"];
+		drawIcon3D ["", _color, _pos, 1, 0, 0, _label, 0, _size, "PuristaBold", "center"];
 	};
 
 	private _myRole = player getVariable ["role", "Innocent"];

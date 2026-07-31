@@ -5,14 +5,17 @@
 // cargo, same "Health Station" addAction (identical label, colour, size,
 // priority, and radius) - right up until someone uses it: instead of
 // healing them, it detonates (Waldo_fnc_fakeHealthStationBoom). No healing
-// of any kind; this is a decoy, not a real aid station. The owner
-// themselves is exempt from setting it off, so they can safely walk past
-// their own trap - that check is invisible to everyone else, so it isn't a
-// tell. Expires and deletes itself after 120s if never used, same as the
-// real station.
+// of any kind; this is a decoy, not a real aid station. Anyone who uses it
+// sets it off, INCLUDING the planter themselves - it's a trap for anyone
+// careless enough to click it, not just a tell-free ambush for other
+// players. _owner is still tracked (Waldo_fakeOwner) purely for kill
+// attribution (karma/DNA/round-kill credit via setShotParents in
+// Waldo_fnc_fakeHealthStationBoom), not to exempt them from it.
+// Permanent once placed until someone sets it off - it does not expire/
+// despawn on its own, same as the real station.
 //
-// Client call: no args -> forwards the buyer's position (and identity, so
-// the trap can exempt them) to the server.
+// Client call: no args -> forwards the buyer's position (and identity, for
+// kill attribution) to the server.
 // Server call: [_pos, _owner] -> spawns and arms the trap.
 //////////////////////////////////////////////////////////////////
 
@@ -51,28 +54,21 @@ clearBackpackCargoGlobal _station;
 // fine, this one never did. A condition that throws is treated as false -
 // no error dialog, the action just silently never appears - and a client
 // whose local copy of a just-created object isn't fully resolved yet can
-// throw evaluating _target there, which _this never risks. The owner
-// exemption still applies, just decided in the STATEMENT instead (which
-// only ever runs after someone has already seen and clicked the action, by
-// which point _target is obviously resolved on their machine).
+// throw evaluating _target there, which _this never risks.
+//
+// No owner exemption - anyone who clicks it (including whoever placed it)
+// sets it off. _target is only read here for the boom's kill-attribution
+// hand-off, not to gate whether it fires.
 [_station, [
 	"<t color='#3FE07A' size='1.4'>HEALTH STATION</t>",
 	{
-		params ["_target", "_caller"];
-		if (_caller != (_target getVariable ["Waldo_fakeOwner", objNull])) then {
-			[_target] remoteExec ["Waldo_fnc_fakeHealthStationBoom", 2];
-		};
+		params ["_target"];
+		[_target] remoteExec ["Waldo_fnc_fakeHealthStationBoom", 2];
 	},
 	nil, 1.5, false, false, "",
 	"alive _this",
 	4
 ]] remoteExec ["addAction", 0, _station];
-
-[_station] spawn {
-	params ["_station"];
-	sleep 120;
-	if (!isNull _station) then { deleteVehicle _station; };
-};
 
 // Same diagnostic as Waldo_fnc_healthStation - "no interactions" reported
 // with no bug found on static review; logging so the next .rpt confirms

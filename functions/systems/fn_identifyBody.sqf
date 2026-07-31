@@ -35,13 +35,13 @@ if (_finderIsDetective) then {
 	[
 		"BODY IDENTIFIED", format ["%1 identified %2's body - they were a %3.", _who, name _body, _role],
 		"SUCCESS", 10, "TOP_RIGHT", "IDENTIFY", "INVESTIGATION"
-	] remoteExec ["Waldo_fnc_ShowUiNotification", 0];
+	] remoteExec ["Waldo_fnc_ShowUiNotification", -2];
 } else {
 	if (!_alreadyFound) then {
 		[
 			"BODY FOUND", format ["%1 found %2's body.", _who, name _body],
 			"INFO", 8, "TOP_RIGHT", "IDENTIFY", "INVESTIGATION"
-		] remoteExec ["Waldo_fnc_ShowUiNotification", 0];
+		] remoteExec ["Waldo_fnc_ShowUiNotification", -2];
 	};
 };
 

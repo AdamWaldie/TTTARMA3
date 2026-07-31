@@ -23,7 +23,12 @@ player allowDamage false;
 // is built around (who killed whom, at a glance) outside of any of the
 // mission's own investigation mechanics. Locked out entirely - only the
 // mission's own scoreboard (K, Waldo_fnc_scoreboard) is meant to exist.
-showScoretable false;
+// showScoretable takes a NUMBER (1 force-visible, 0 force-invisible, -1
+// default), not a Bool - passing false here threw "Type Bool, expected
+// Number" and aborted the rest of this script outright (confirmed via RPT:
+// nothing after this line ran - no teleport, no HUD, no key bindings,
+// nothing), which is exactly the regression this caused in production.
+showScoretable 0;
 
 private _logPhase = {
 	params ["_phase"];

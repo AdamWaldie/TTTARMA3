@@ -162,6 +162,7 @@ class CfgFunctions
 			class dnaContaminate {};    // Waldo_fnc_dnaContaminate (server: witness/contamination tracking)
 			class spawnDecoyCorpse {};  // Waldo_fnc_spawnDecoyCorpse (server: Dead Ringer decoy)
 			class flowerSpawn {};       // Waldo_fnc_flowerSpawn (server: creates one networked flower)
+			class setupDeadChatFilter {}; // Waldo_fnc_setupDeadChatFilter (client: blocks alive<->dead text chat)
 		};
 
 		class ui

@@ -135,6 +135,11 @@ ACE_NO_RECOGNIZE = true; publicVariable "ACE_NO_RECOGNIZE";
 // Role-reveal 3D icons
 [] call Waldo_fnc_drawRoleIcons;
 
+// Keep alive/dead text chat from crossing over (Global/Side/Command/Group
+// are shared channels regardless of role, so without this a dead player can
+// feed information to whoever's still playing).
+[] call Waldo_fnc_setupDeadChatFilter;
+
 // --- Teleport into the arena ---
 private _center = missionNamespace getVariable ["mapPos", [0,0,0]];
 private _radius = missionNamespace getVariable ["mapRadius", 50];

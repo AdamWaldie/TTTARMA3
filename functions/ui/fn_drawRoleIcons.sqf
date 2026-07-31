@@ -7,8 +7,16 @@
 //   - the Jester sees the Traitors,
 //   - Detectives additionally see the role of nearby corpses and of anyone
 //     they have "tested".
-// Labels shrink to a single letter past 25m. The handler id is stored so a
-// second call replaces rather than stacks it.
+//   - a dead/spectating viewer is out of the round and sees every living
+//     player's role, matching what the on-demand scoreboard (K) already
+//     grants them (fn_scoreboard.sqf's _viewerOut) - this is the always-on
+//     equivalent for the free spectator camera.
+// Labels shrink to a single letter past 25m. Size scales up with distance
+// (see _drawTag) - drawIcon3D's size is a world-space fraction, so a fixed
+// value shrinks into unreadability with range just like any other object
+// would; a near-flat near/far size pair used to make far tags read as
+// smaller even though they need to be bigger to stay legible at all. The
+// handler id is stored so a second call replaces rather than stacks it.
 //////////////////////////////////////////////////////////////////
 
 // Replace any previous handler (guards against stacking).
@@ -17,40 +25,56 @@ if (_old >= 0) then { removeMissionEventHandler ["Draw3D", _old]; };
 
 private _eh = addMissionEventHandler ["Draw3D", {
 
-	// Draw a role tag above _pos; short label + smaller when far.
+	// Draw a role tag above _pos; short label past 25m, size scaled to
+	// roughly counter perspective shrink so it stays legible out to ~150m
+	// instead of shrinking to a speck (capped so it doesn't balloon at
+	// extreme range).
 	private _drawTag = {
-		params ["_pos", "_color", "_word", "_far"];
+		params ["_pos", "_color", "_word", "_dist"];
+		private _far = _dist > 25;
 		drawIcon3D [
 			"", _color, _pos, 1, 0, 0,
 			[_word, _word select [0, 1]] select _far,   // full word / first letter
 			2,
-			[0.05, 0.04] select _far,                   // size near / far
+			(0.045 + (_dist * 0.0022)) min 0.16,
 			"PuristaMedium", "center"
 		];
 	};
 
 	private _myRole = player getVariable ["role", "Innocent"];
+	// Dead/spectating: out of the round, sees everyone - same rule the
+	// scoreboard already uses. checkVisibility is skipped for this viewer too,
+	// since it's keyed off eyePos player, which for a dead/spectating player
+	// is the corpse's eye position, not the free-roam spectator camera - it
+	// would otherwise randomly hide tags behind the corpse's own LOS.
+	private _viewerOut = !alive player;
 
 	{
 		private _eyePos = getPosATL _x;
 		_eyePos set [2, (_eyePos select 2) + 2];
-		private _visible = [objNull, "VIEW"] checkVisibility [eyePos player, eyePos _x];
+		private _visible = if (_viewerOut) then { 1 } else { [objNull, "VIEW"] checkVisibility [eyePos player, eyePos _x] };
 
 		if (_visible != 0 && {_x != player}) then {
 			private _xRole = _x getVariable ["role", "Innocent"];
-			private _far = (player distance _x) > 25;
+			private _dist = player distance _x;
 
-			// Everyone sees the Detective.
-			if (_xRole == "Detective") then {
-				[_eyePos, [0.01, 0.45, 1, 1], "Detective", _far] call _drawTag;
-			};
-			// Traitors see other Traitors; the Jester also sees Traitors.
-			if (_xRole == "Traitor" && {_myRole == "Traitor" || _myRole == "Jester"}) then {
-				[_eyePos, [0.75, 0.21, 0.21, 1], "Traitor", _far] call _drawTag;
-			};
-			// Traitors see the Jester.
-			if (_xRole == "Jester" && {_myRole == "Traitor"}) then {
-				[_eyePos, [0.4, 0, 0.5, 1], "Jester", _far] call _drawTag;
+			if (_viewerOut) then {
+				if (alive _x) then {
+					[_eyePos, ([_xRole] call Waldo_roleColor), _xRole, _dist] call _drawTag;
+				};
+			} else {
+				// Everyone sees the Detective.
+				if (_xRole == "Detective") then {
+					[_eyePos, [0.01, 0.45, 1, 1], "Detective", _dist] call _drawTag;
+				};
+				// Traitors see other Traitors; the Jester also sees Traitors.
+				if (_xRole == "Traitor" && {_myRole == "Traitor" || _myRole == "Jester"}) then {
+					[_eyePos, [0.75, 0.21, 0.21, 1], "Traitor", _dist] call _drawTag;
+				};
+				// Traitors see the Jester.
+				if (_xRole == "Jester" && {_myRole == "Traitor"}) then {
+					[_eyePos, [0.4, 0, 0.5, 1], "Jester", _dist] call _drawTag;
+				};
 			};
 		};
 	} forEach allUnits;
@@ -61,10 +85,10 @@ private _eh = addMissionEventHandler ["Draw3D", {
 		{
 			private _eyePos = getPosATL _x;
 			_eyePos set [2, (_eyePos select 2) + 2];
-			if ((player distance _x) < 6) then {
+			private _dist = player distance _x;
+			if (_dist < 6) then {
 				private _role = _x getVariable ["role", "Innocent"];
-				drawIcon3D ["", ([_role] call Waldo_roleColor), _eyePos, 1, 0, 0,
-					_role, 2, 0.05, "PuristaMedium", "center"];
+				[_eyePos, ([_role] call Waldo_roleColor), _role, _dist] call _drawTag;
 			};
 		} forEach allDeadMen;
 
@@ -74,8 +98,8 @@ private _eh = addMissionEventHandler ["Draw3D", {
 				private _eyePos = getPosATL _x;
 				_eyePos set [2, (_eyePos select 2) + 2];
 				private _role = _x getVariable ["role", "Innocent"];
-				private _far = (player distance _x) > 25;
-				[_eyePos, ([_role] call Waldo_roleColor), _role, _far] call _drawTag;
+				private _dist = player distance _x;
+				[_eyePos, ([_role] call Waldo_roleColor), _role, _dist] call _drawTag;
 			};
 		} forEach (allUnits + allDeadMen);
 	};

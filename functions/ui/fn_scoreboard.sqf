@@ -76,7 +76,13 @@ private _display = uiNamespace getVariable "WaldoScore";
 // Let K close it too (the main handler can't fire while a dialog is focused).
 _display displayAddEventHandler ["KeyDown", { if ((_this select 1) == 37) then { closeDialog 1; true } else { false } }];
 
-private _confirmedDead = { !alive _x && {_x getVariable ["Waldo_roleRevealed", false]} } count allPlayers;
+// "Confirmed" here means called-in (Waldo_identified), matching the wiki's own
+// wording - identifying a body "always confirms the death to the whole
+// server" regardless of who calls it in. Waldo_roleRevealed is a stricter,
+// Detective-only flag; keying the header count on that instead meant a
+// regular player's call-in updated the per-row FOUND status but never moved
+// this count, reading as "the scoreboard does nothing for it."
+private _confirmedDead = { !alive _x && {_x getVariable ["Waldo_identified", false]} } count allPlayers;
 (_display displayCtrl 3301) ctrlSetText format [
 	"ROUND SCOREBOARD    -    %1 ALIVE / %2 TOTAL    -    %3 CONFIRMED DEAD",
 	count _live, count allPlayers, _confirmedDead

@@ -129,18 +129,21 @@ if ((missionNamespace getVariable ["JesterEnabled", true]) && {_count >= 5}) the
 };
 missionNamespace setVariable ["JesterList", _jesters, true];
 
-// --- Tell each Traitor who their teammates are ---
-// TraitorList was only ever broadcast as data - nothing ever actually told
-// a Traitor player any of this, despite it being the whole documented point
-// of being on a team. One private card per Traitor, teammates excluded from
-// their own list. Traitors are ONLY told other Traitors - not the Jester's
-// identity, which stays as hidden from them as from anyone else.
+// --- Tell each Traitor who their teammates (and the Jester) are ---
+// TraitorList/JesterList were only ever broadcast as data - nothing ever
+// actually told a Traitor player any of this, despite it being the whole
+// documented point of being on a team (and of "Traitors are told who the
+// Jester is"). One private card per Traitor, teammates excluded from their
+// own list.
 {
 	private _teammates = (_traitors - [_x]) apply { name _x };
 	private _msg = if (count _teammates > 0) then {
 		format ["Fellow Traitors: %1", _teammates joinString ", "]
 	} else {
 		"You are the only Traitor this round."
+	};
+	if (count _jesters > 0) then {
+		_msg = _msg + format ["<br/>The Jester is %1.", name (_jesters select 0)];
 	};
 	[
 		"TRAITOR TEAM", _msg, "INFO", 15, "TOP_RIGHT", "TRAITORTEAM", "TRAITOR"

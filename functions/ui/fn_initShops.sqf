@@ -210,7 +210,12 @@ Waldo_traitorShop = [
 	["Rocket Launcher", 2, "weapon",
 		{
 			player addWeaponGlobal (missionNamespace getVariable ["TraitorLauncher", "launch_NLAW_F"]);
-			player addSecondaryWeaponItem (missionNamespace getVariable ["TraitorLauncherMag", "NLAW_F"]);
+			// addSecondaryWeaponItem is for ATTACHMENTS on the secondary weapon
+			// slot (optics, bipods) - it never actually chambers a round, so the
+			// launcher spawned empty. addMagazine (singular) is the same fix as
+			// the Long Rifle/Silenced Pistol: it auto-loads into the empty
+			// compatible weapon the unit already holds.
+			player addMagazine (missionNamespace getVariable ["TraitorLauncherMag", "NLAW_F"]);
 		},
 		{},
 		"A single-use rocket launcher"],

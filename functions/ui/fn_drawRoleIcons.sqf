@@ -3,12 +3,10 @@
 // CLIENT: installs ONE managed Draw3D handler that reveals roles per the
 // viewer's own role:
 //   - everyone sees the Detective,
-//   - Traitors see other Traitors and the Jester in-world (so they have a
-//     way to avoid the credit penalty for killing them - see
-//     Waldo_fnc_onKilled) - but are never handed the Jester's NAME up
-//     front the way they are their own teammates' (see the round-start
-//     card in Waldo_fnc_assignRoles); this is a see-it-yourself reveal,
-//     not a metagame info dump,
+//   - Traitors see other Traitors and the Jester in-world (also named
+//     outright in the round-start card - Waldo_fnc_assignRoles - so they
+//     have a way to avoid the credit penalty for killing them, see
+//     Waldo_fnc_onKilled),
 //   - Detectives additionally see the role of nearby corpses and of anyone
 //     they have "tested".
 //   - a dead/spectating viewer is out of the round and sees every living

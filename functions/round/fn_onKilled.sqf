@@ -13,6 +13,19 @@
 params ["_unit", "_killer", "_instigator", "_useEffects"];
 if (!isServer) exitWith {};
 
+// MPKilled is broadcast (fires on every machine, this guard is why only the
+// server's own execution matters at all) - but nothing stopped it from
+// firing MORE THAN ONCE for the same death (a stray damage tick on an
+// already-dead body, an ACE unconscious->death race, etc.), and every
+// single thing below - round timer extension, credit rewards, DNA state,
+// the addAction - has no guard of its own against running twice. Confirmed
+// in testing as duplicate "Identify Body" actions stacking on one corpse.
+// A revived unit is a brand-new object (Waldo_fnc_reviveRelink), so this
+// flag never carries over into a life that legitimately needs to be
+// processed again.
+if (_unit getVariable ["Waldo_deathProcessed", false]) exitWith {};
+_unit setVariable ["Waldo_deathProcessed", true, true];
+
 private _traitors = missionNamespace getVariable ["TraitorList", []];
 private _detectives = missionNamespace getVariable ["DetectiveList", []];
 

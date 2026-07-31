@@ -60,3 +60,8 @@ clearBackpackCargoGlobal _station;
 	sleep 120;
 	if (!isNull _station) then { deleteVehicle _station; };
 };
+
+// Same diagnostic as Waldo_fnc_healthStation - "no interactions" reported
+// with no bug found on static review; logging so the next .rpt confirms
+// whether the crate is actually created/registered where expected.
+diag_log format ["[Waldo][server] fakeHealthStation deployed at %1 for owner %2 (netId=%3, typeOf=%4, isNull=%5)", _pos, _owner, netId _station, typeOf _station, isNull _station];

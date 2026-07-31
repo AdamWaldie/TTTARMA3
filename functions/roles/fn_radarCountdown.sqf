@@ -25,8 +25,10 @@ private _token = player getVariable ["Waldo_radarCountdownToken", 0];
 
 	// Tucked just under the round-timer bar (fn_topBarTimer.sqf), same
 	// horizontal centring, small and out of the way of everything else.
-	private _w = 0.12 * safezoneW;
-	private _h = 0.03 * safezoneH;
+	// Sized to fit the bumped-up text below (was 0.12x0.03, too tight once
+	// the font size went from 0.6 to 1.0 to actually be legible).
+	private _w = 0.16 * safezoneW;
+	private _h = 0.045 * safezoneH;
 	private _x = safezoneX + (0.5 * safezoneW) - (_w / 2);
 	private _y = safezoneY + (0.015 * safezoneH) + (0.062 * safezoneH) + (0.008 * safezoneH);
 
@@ -36,8 +38,18 @@ private _token = player getVariable ["Waldo_radarCountdownToken", 0];
 
 	while { alive player && {(player getVariable ["Waldo_radarCountdownToken", 0]) == _token} } do {
 		private _remaining = ceil (((player getVariable ["Waldo_radarNextPing", time]) - time) max 0);
+		// RscStructuredText's own base "size" (ui/common.hpp) is the same
+		// formula the round-timer text right above this uses for ITS sizeEx,
+		// just without that control's extra *1.35 - so a <t size='X'> here is
+		// already on the same scale as the timer, not some separate/smaller
+		// unit. 0.6 rendered at roughly half the timer's on-screen size right
+        // next to it, which read as "the countdown is tiny" - 1.0 lines it up
+		// far closer while still reading as the secondary element. Also adding
+		// the shadow every other label in this HUD has - this was the only
+		// text control in the file without one, and a gold (#D9AE34) glyph
+		// with no shadow washes out against bright terrain/sky behind it.
 		_ctrl ctrlSetStructuredText parseText format [
-			"<t align='center' font='PuristaMedium' size='0.6' color='#D9AE34'>Radar in %1s</t>", _remaining
+			"<t align='center' font='PuristaMedium' size='1.0' shadow='1' color='#D9AE34'>Radar in %1s</t>", _remaining
 		];
 		sleep 1;
 	};

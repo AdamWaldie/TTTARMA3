@@ -394,6 +394,33 @@ player addEventHandler ["HandleDamage", {
 		// through. This is the universal backstop: whatever the mechanism, if
 		// the instigator is the Jester, the damage is zeroed here.
 		if (!isNull _instigator && {_instigator != _unit} && {(_instigator getVariable ["role", ""]) == "Jester"}) then {
+			// Belt-and-suspenders on top of the return-0 above: per BI's own
+			// docs, if another mod also adds a HandleDamage EH to this unit
+			// (ACE Medical does), only the LAST one added actually wins - and
+			// even a "won" return of 0 doesn't stop ACE's own separate
+			// wound/bleed-DoT tracking from re-applying damage on later ticks
+			// from the same hit. This must never fail open: starts (or
+			// refreshes, on a repeat hit) a short watchdog that force-corrects
+			// the unit's damage back to its pre-hit baseline for the next
+			// 1.5s, independent of whatever return value actually won or what
+			// re-applies damage afterward. setDamage does not itself trigger
+			// HandleDamage, so this can't recurse into itself.
+			private _preHit = damage _unit;
+			_unit setVariable ["Waldo_jesterGuardUntil", time + 1.5];
+			_unit setVariable ["Waldo_jesterGuardBaseline", _preHit min (_unit getVariable ["Waldo_jesterGuardBaseline", _preHit])];
+			if (isNil { _unit getVariable "Waldo_jesterGuardRunning" }) then {
+				_unit setVariable ["Waldo_jesterGuardRunning", true];
+				[_unit] spawn {
+					params ["_u"];
+					while { alive _u && {time < (_u getVariable ["Waldo_jesterGuardUntil", 0])} } do {
+						if ((damage _u) > (_u getVariable ["Waldo_jesterGuardBaseline", 0])) then {
+							_u setDamage (_u getVariable ["Waldo_jesterGuardBaseline", 0]);
+						};
+						sleep 0.05;
+					};
+					_u setVariable ["Waldo_jesterGuardRunning", nil];
+				};
+			};
 			0
 		} else {
 			_damage

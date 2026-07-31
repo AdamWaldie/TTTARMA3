@@ -37,20 +37,30 @@ _decoy setVariable ["Waldo_deathTime", time, true];
 _decoy setVariable ["Waldo_identified", false, true];
 _decoy setDamage 1;   // instantly a corpse
 
-// Same two-tier reveal as a real body (see Waldo_fnc_identifyBody): hideOnUse
-// false + gated on Waldo_roleRevealed, so a non-Detective finding it first can't
-// consume the action before a Detective gets to it.
+// Same two-tier reveal as a real body (see Waldo_fnc_identifyBody) - a
+// non-Detective finding it first can't consume the action before a
+// Detective gets to it.
+//
+// Condition is "alive _this" ONLY, not gated on Waldo_roleRevealed like a
+// real corpse's own Identify Body action can afford to be - Waldo_fnc_onKilled's
+// _unit is a long-lived player object, but _decoy here was createVehicle'd
+// moments earlier in this very script, and a condition reading _target
+// getVariable [...] against a freshly created object can throw on a client
+// whose local copy isn't fully resolved yet (confirmed live on the near-
+// identical Waldo_fnc_fakeHealthStation/Waldo_fnc_c4Charge mistake - a
+// throwing condition is silently treated as false, so the action just
+// never appeared at all). Waldo_fnc_identifyBody itself already no-ops once
+// Waldo_roleRevealed is set, so the only cost of dropping that gate here is
+// the prompt staying clickable (harmlessly) after the reveal, instead of
+// risking it never showing up in the first place.
 [_decoy, [
 	"<t color='#ffd23f'>Identify Body</t>",
-	// _target/_caller are only auto-bound inside the CONDITION string, not
-	// the statement - see the identical fix (and the real reason) in
-	// Waldo_fnc_onKilled.
 	{
 		params ["_target", "_caller"];
 		[_target, _caller] remoteExec ["Waldo_fnc_identifyBody", 2];
 	},
 	nil, 4, true, false, "",
-	"!(_target getVariable ['Waldo_roleRevealed', false])",
+	"alive _this",
 	2.5
 ]] remoteExec ["addAction", 0, _decoy];
 

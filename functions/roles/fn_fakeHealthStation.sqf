@@ -40,18 +40,31 @@ clearMagazineCargoGlobal _station;
 clearItemCargoGlobal _station;
 clearBackpackCargoGlobal _station;
 
-// Every parameter here matches Waldo_fnc_healthStation's own addAction
-// exactly except the code (detonate instead of heal) and the condition
-// (also exempts the owner) - neither of those differences is visible to a
-// player looking at the action before using it.
+// Every visible parameter here matches Waldo_fnc_healthStation's own
+// addAction exactly (label/colour/size/priority/radius) - the whole point
+// is that the two are indistinguishable before use. The CONDITION now
+// matches too, for a real reason, not just cosmetics: Waldo_fnc_healthStation's
+// condition only ever reads _this (the potential caller, always a
+// long-lived player unit); this one used to also read _target getVariable
+// [...] (the crate itself - freshly createVehicle'd moments earlier in
+// this same script). Confirmed live: the real station's action showed up
+// fine, this one never did. A condition that throws is treated as false -
+// no error dialog, the action just silently never appears - and a client
+// whose local copy of a just-created object isn't fully resolved yet can
+// throw evaluating _target there, which _this never risks. The owner
+// exemption still applies, just decided in the STATEMENT instead (which
+// only ever runs after someone has already seen and clicked the action, by
+// which point _target is obviously resolved on their machine).
 [_station, [
 	"<t color='#3FE07A' size='1.4'>HEALTH STATION</t>",
 	{
-		params ["_target"];
-		[_target] remoteExec ["Waldo_fnc_fakeHealthStationBoom", 2];
+		params ["_target", "_caller"];
+		if (_caller != (_target getVariable ["Waldo_fakeOwner", objNull])) then {
+			[_target] remoteExec ["Waldo_fnc_fakeHealthStationBoom", 2];
+		};
 	},
 	nil, 1.5, false, false, "",
-	"alive _this && {_this != (_target getVariable ['Waldo_fakeOwner', objNull])}",
+	"alive _this",
 	4
 ]] remoteExec ["addAction", 0, _station];
 

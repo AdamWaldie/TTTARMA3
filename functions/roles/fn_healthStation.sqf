@@ -5,7 +5,7 @@
 // using it fully heals whoever used it. Use-based, not proximity/automatic,
 // so it behaves identically (from any other player's perspective) to its
 // Traitor decoy counterpart (Waldo_fnc_fakeHealthStation) right up until
-// used. Expires and deletes itself after 120s if never used.
+// used. Permanent once placed - it does not expire/despawn on its own.
 //
 // Client call: no args -> forwards player's position to the server.
 // Server call: [_pos] -> spawns and arms the station.
@@ -54,12 +54,6 @@ clearBackpackCargoGlobal _station;
 	"alive _this",
 	4
 ]] remoteExec ["addAction", 0, _station];
-
-[_station] spawn {
-	params ["_station"];
-	sleep 120;
-	if (!isNull _station) then { deleteVehicle _station; };
-};
 
 // Reported "no interactions" with no bug found on static review of the
 // addAction call itself (it matches Defuse Charge's own working

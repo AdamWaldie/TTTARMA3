@@ -31,6 +31,13 @@ missionNamespace setVariable ["JESTERCLEANKILL", false, true];
 	_x setVariable ["tested", false, true];
 	_x setVariable ["Waldo_roundKills", 0, true];   // in-round scoreboard tally
 	_x setVariable ["Waldo_purchases", [], true];   // shop "Purchased" panel log
+	// Every player is placed in their own solo group in mission.sqm, so this
+	// only ever renames that one player's group - the vanilla spectator
+	// screen's unit list is grouped by group name, and the default engine
+	// naming ("Alpha 1-1", "Alpha 1-2", ...) tells a spectator nothing about
+	// who's who. Named after the player instead, so the list itself reads
+	// as names.
+	(group _x) setGroupIdGlobal [name _x];
 } forEach _players;
 
 if (_realCount == 0) exitWith {

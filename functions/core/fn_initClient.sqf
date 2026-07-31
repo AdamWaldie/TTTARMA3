@@ -403,6 +403,19 @@ Waldo_fnc_installDamageEH = {
 		// back to this when MPKilled's own attribution comes up empty.
 		if (!isNull _instigator && {_instigator != _unit}) then {
 			_unit setVariable ["Waldo_lastDamager", _instigator, true];
+			// Someone OTHER than the Jester is now responsible for whatever happens
+			// to this unit next - if a Jester-triggered ace_medical_deathBlocked
+			// (below) were still up, clear it immediately so a legitimate killer's
+			// hit is never silently no-op'd by residual Jester-graze protection.
+			// Checked here, synchronously, on EVERY hit (not just Jester ones) -
+			// per BI's own docs every added HandleDamage EH still runs even when
+			// its return value doesn't win, so this side effect fires reliably
+			// regardless of which handler's return was actually used, and a
+			// genuine attacker's damage must never be at the mercy of a polling
+			// loop's next tick instead.
+			if ((_instigator getVariable ["role", ""]) != "Jester" && {_unit getVariable ["ace_medical_deathBlocked", false]}) then {
+				_unit setVariable ["ace_medical_deathBlocked", false];
+			};
 		};
 		// Any damage while armed triggers it now, not just a near-lethal hit - and
 		// the return is 0, not a 0.9 cap: Waldo_fnc_deadRingerTrigger now
@@ -498,11 +511,19 @@ Waldo_fnc_installDamageEH = {
 // without touching the wound/bleeding/pain it already registered - the
 // injury looks and plays out like a real, survived hit, while ACE's own
 // gradual bleed-out/critical-condition check simply can't end this life
-// while it's set. Cleared again after a short window rather than left set,
-// so a later, legitimate lethal hit from someone else still kills
-// normally - deliberately short, accepting the (minor) tradeoff that this
-// flag is coarse enough to briefly stop ANY death, not just a Jester-
-// caused one, for a player standing near the Jester.
+// while it's set.
+//
+// ace_medical_deathBlocked is coarse - it blocks ANY death, not just a
+// Jester-caused one - so leaving it set for a flat few seconds regardless
+// of what happens next would let a Traitor's genuinely lethal hit on the
+// same, recently-grazed victim get silently no-op'd too. Instead of a flat
+// timer, this polls (Waldo_lastDamager, tracked on every hit above,
+// regardless of which HandleDamage EH's return value actually won) and
+// drops the block the INSTANT someone other than the Jester becomes the
+// most recent damager - the synchronous check in the HandleDamage EH above
+// already covers the common case immediately; this loop is the backstop
+// for anything that lands between polls, capped at a hard 6s so it can
+// never get stuck up regardless.
 //
 // This runs ADDITIONALLY to the HandleDamage EH above, not instead of it:
 // if ACE Medical isn't actually intercepting damage (disabled, or the addon
@@ -520,10 +541,24 @@ if (!isNil "CBA_fnc_addEventHandler") then {
 			&& {(_shooter getVariable ["role", ""]) == "Jester"}
 		) then {
 			_woundedUnit setVariable ["ace_medical_deathBlocked", true];
-			[_woundedUnit] spawn {
-				params ["_u"];
-				sleep 4;
-				if (!isNull _u) then { _u setVariable ["ace_medical_deathBlocked", false]; };
+			if (isNil { _woundedUnit getVariable "Waldo_jesterAceGuardRunning" }) then {
+				_woundedUnit setVariable ["Waldo_jesterAceGuardRunning", true];
+				[_woundedUnit] spawn {
+					params ["_u"];
+					private _deadline = time + 6;
+					while {
+						time < _deadline
+						&& {alive _u}
+						&& {
+							private _last = _u getVariable ["Waldo_lastDamager", objNull];
+							!isNull _last && {(_last getVariable ["role", ""]) == "Jester"}
+						}
+					} do {
+						sleep 0.2;
+					};
+					_u setVariable ["ace_medical_deathBlocked", false];
+					_u setVariable ["Waldo_jesterAceGuardRunning", nil];
+				};
 			};
 		};
 	}] call CBA_fnc_addEventHandler;

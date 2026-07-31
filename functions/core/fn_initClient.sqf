@@ -364,69 +364,106 @@ player addMPEventHandler ["MPKilled", {
 
 // Dead Ringer guard: while armed (Waldo_fnc_deadRinger sets Waldo_deadRingerArmed),
 // a hit that would be fatal is capped instead of killing, and
-// Waldo_fnc_deadRingerTrigger sells the fake death. Installed once per client.
-player addEventHandler ["HandleDamage", {
-	params ["_unit", "_selection", "_damage", "_source", "_projectile", "_hitIndex", "_instigator"];
-	// Track the last real (non-null, non-self) damager independent of the Dead Ringer
-	// check below - ACE bleed-out/DoT damage ticks can hit this handler with a null
-	// _instigator, and by the time the terminal MPKilled event fires its own
-	// killer/instigator can likewise resolve to null or to the victim themselves, even
-	// though a real player caused the damage that led to death. Waldo_fnc_onKilled falls
-	// back to this when MPKilled's own attribution comes up empty.
-	if (!isNull _instigator && {_instigator != _unit}) then {
-		_unit setVariable ["Waldo_lastDamager", _instigator, true];
-	};
-	// Any damage while armed triggers it now, not just a near-lethal hit - and
-	// the return is 0, not a 0.9 cap: Waldo_fnc_deadRingerTrigger now
-	// teleports the real unit away entirely rather than leaving them ragdolled
-	// in place, so "you weren't actually there" means no damage at all, not a
-	// reduced amount (a 0.9 cap on a graze that would've only done 0.05 in the
-	// first place used to make a minor hit WORSE).
-	if ((_unit getVariable ["Waldo_deadRingerArmed", false]) && {_damage > 0}) then {
-		[_unit] call Waldo_fnc_deadRingerTrigger;
-		0
-	} else {
-		// Jester deals no damage full stop. The Fired EH in Waldo_fnc_makeJester
-		// deletes their bullets/thrown munitions before they connect, but that
-		// only covers stuff that actually fires a projectile - melee (bare
-		// fists, and modded melee like SOG Prairie Fire's knives) hits here
-		// directly with no Fired event ever raised, so it was going straight
-		// through. This is the universal backstop: whatever the mechanism, if
-		// the instigator is the Jester, the damage is zeroed here.
-		if (!isNull _instigator && {_instigator != _unit} && {(_instigator getVariable ["role", ""]) == "Jester"}) then {
-			// Belt-and-suspenders on top of the return-0 above: per BI's own
-			// docs, if another mod also adds a HandleDamage EH to this unit
-			// (ACE Medical does), only the LAST one added actually wins - and
-			// even a "won" return of 0 doesn't stop ACE's own separate
-			// wound/bleed-DoT tracking from re-applying damage on later ticks
-			// from the same hit. This must never fail open: starts (or
-			// refreshes, on a repeat hit) a short watchdog that force-corrects
-			// the unit's damage back to its pre-hit baseline for the next
-			// 1.5s, independent of whatever return value actually won or what
-			// re-applies damage afterward. setDamage does not itself trigger
-			// HandleDamage, so this can't recurse into itself.
-			private _preHit = damage _unit;
-			_unit setVariable ["Waldo_jesterGuardUntil", time + 1.5];
-			_unit setVariable ["Waldo_jesterGuardBaseline", _preHit min (_unit getVariable ["Waldo_jesterGuardBaseline", _preHit])];
-			if (isNil { _unit getVariable "Waldo_jesterGuardRunning" }) then {
-				_unit setVariable ["Waldo_jesterGuardRunning", true];
-				[_unit] spawn {
-					params ["_u"];
-					while { alive _u && {time < (_u getVariable ["Waldo_jesterGuardUntil", 0])} } do {
-						if ((damage _u) > (_u getVariable ["Waldo_jesterGuardBaseline", 0])) then {
-							_u setDamage (_u getVariable ["Waldo_jesterGuardBaseline", 0]);
-						};
-						sleep 0.05;
-					};
-					_u setVariable ["Waldo_jesterGuardRunning", nil];
-				};
-			};
+// Waldo_fnc_deadRingerTrigger sells the fake death.
+//
+// A dead unit cannot be undone - setDamage cannot resurrect someone once
+// Killed/MPKilled has fired, so "correct it afterward" (the watchdog inside
+// the Jester branch below) only helps against damage that DOESN'T kill in
+// one shot, e.g. a DoT tick reapplying more on the next frame. It does
+// NOTHING against a single lethal hit that this handler's own return value
+// never got to arbitrate in the first place - and per BI's own docs on
+// HandleDamage, "only the return value of the LAST added HandleDamage EH is
+// considered." If another mod adds its own HandleDamage EH to this unit
+// AFTER this one (ACE Medical does, as part of its own init), that one
+// becomes authoritative instead, silently, with no way for us to know it
+// happened - our 0 would just never be the value the engine actually used,
+// and a Jester's "harmless" hit could be genuinely lethal.
+//
+// So this doesn't just install the handler once: Waldo_fnc_installDamageEH
+// removes and re-adds it, which is how you become the LAST added EH again.
+// Called once immediately, then re-called every 3s for as long as this life
+// is alive (removeEventHandler + addEventHandler is a cheap list operation,
+// not a per-frame cost, so there's no real reason to leave a wider window
+// open than that) - closing the window to at most ~3s after whatever mod
+// last raced us for the position, rather than leaving it open for an
+// entire life. ACE (and anything else) sets its own handler up once during
+// its own addon init and never refights for last position afterward, so in
+// practice this wins the race back within one cycle of losing it, not
+// eventually.
+Waldo_fnc_installDamageEH = {
+	private _old = player getVariable ["Waldo_damageEHId", -1];
+	if (_old >= 0) then { player removeEventHandler ["HandleDamage", _old]; };
+	private _new = player addEventHandler ["HandleDamage", {
+		params ["_unit", "_selection", "_damage", "_source", "_projectile", "_hitIndex", "_instigator"];
+		// Track the last real (non-null, non-self) damager independent of the Dead Ringer
+		// check below - ACE bleed-out/DoT damage ticks can hit this handler with a null
+		// _instigator, and by the time the terminal MPKilled event fires its own
+		// killer/instigator can likewise resolve to null or to the victim themselves, even
+		// though a real player caused the damage that led to death. Waldo_fnc_onKilled falls
+		// back to this when MPKilled's own attribution comes up empty.
+		if (!isNull _instigator && {_instigator != _unit}) then {
+			_unit setVariable ["Waldo_lastDamager", _instigator, true];
+		};
+		// Any damage while armed triggers it now, not just a near-lethal hit - and
+		// the return is 0, not a 0.9 cap: Waldo_fnc_deadRingerTrigger now
+		// teleports the real unit away entirely rather than leaving them ragdolled
+		// in place, so "you weren't actually there" means no damage at all, not a
+		// reduced amount (a 0.9 cap on a graze that would've only done 0.05 in the
+		// first place used to make a minor hit WORSE).
+		if ((_unit getVariable ["Waldo_deadRingerArmed", false]) && {_damage > 0}) then {
+			[_unit] call Waldo_fnc_deadRingerTrigger;
 			0
 		} else {
-			_damage
+			// Jester deals no damage full stop. The Fired EH in Waldo_fnc_makeJester
+			// deletes their bullets/thrown munitions before they connect, but that
+			// only covers stuff that actually fires a projectile - melee (bare
+			// fists, and modded melee like SOG Prairie Fire's knives) hits here
+			// directly with no Fired event ever raised, so it was going straight
+			// through. This is the universal backstop: whatever the mechanism, if
+			// the instigator is the Jester, the damage is zeroed here.
+			if (!isNull _instigator && {_instigator != _unit} && {(_instigator getVariable ["role", ""]) == "Jester"}) then {
+				// Second-layer backstop for anything that still gets past the
+				// return-0 above WITHOUT being an outright single lethal hit -
+				// a DoT tick from the same attack reapplying damage a moment
+				// later, for instance. Starts (or refreshes, on a repeat hit) a
+				// short watchdog that force-corrects the unit's damage back to
+				// its pre-hit baseline for the next 1.5s. setDamage does not
+				// itself trigger HandleDamage, so this can't recurse into
+				// itself - but it cannot save a unit that died in the same
+				// synchronous hit this return value lost arbitration on, which
+				// is exactly why staying the LAST-added EH (above) is the real
+				// defence, not this.
+				private _preHit = damage _unit;
+				_unit setVariable ["Waldo_jesterGuardUntil", time + 1.5];
+				_unit setVariable ["Waldo_jesterGuardBaseline", _preHit min (_unit getVariable ["Waldo_jesterGuardBaseline", _preHit])];
+				if (isNil { _unit getVariable "Waldo_jesterGuardRunning" }) then {
+					_unit setVariable ["Waldo_jesterGuardRunning", true];
+					[_unit] spawn {
+						params ["_u"];
+						while { alive _u && {time < (_u getVariable ["Waldo_jesterGuardUntil", 0])} } do {
+							if ((damage _u) > (_u getVariable ["Waldo_jesterGuardBaseline", 0])) then {
+								_u setDamage (_u getVariable ["Waldo_jesterGuardBaseline", 0]);
+							};
+							sleep 0.05;
+						};
+						_u setVariable ["Waldo_jesterGuardRunning", nil];
+					};
+				};
+				0
+			} else {
+				_damage
+			}
 		}
-	}
-}];
+	}];
+	player setVariable ["Waldo_damageEHId", _new];
+};
+[] call Waldo_fnc_installDamageEH;
+[] spawn {
+	while { alive player } do {
+		sleep 3;
+		if (alive player) then { [] call Waldo_fnc_installDamageEH; };
+	};
+};
 
 // ACE unconscious -> death (this TTT ruleset has no downed/incapacitated state
 // - going unconscious always means dead), EXCEPT for the Jester (source-less

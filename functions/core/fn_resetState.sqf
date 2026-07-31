@@ -16,6 +16,7 @@ missionNamespace setVariable ["timelimit",       0,       true];
 missionNamespace setVariable ["Waldo_startTime", 0,       true];
 missionNamespace setVariable ["Waldo_roundLiveAt", 0,     true];
 missionNamespace setVariable ["Waldo_deathBonusTotal", 0, true];
+missionNamespace setVariable ["Waldo_detectiveRewardPaid", false, true];
 missionNamespace setVariable ["JESTERCLEANKILL", false,   true];
 missionNamespace setVariable ["TraitorList",     [],      true];
 missionNamespace setVariable ["DetectiveList",   [],      true];

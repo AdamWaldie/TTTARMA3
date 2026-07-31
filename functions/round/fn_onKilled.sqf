@@ -134,7 +134,15 @@ if (_victimRole == "Traitor") then {
 	_guilty = false;
 	if (_reward > 0) then { { _x setVariable ["points", (_x getVariable ["points", 0]) + _reward, true]; } forEach _detectives; };
 };
-if (_victimRole == "Detective") then {
+// Once per round, not once per death: a Traitor's own Defibrillator revives
+// ANY corpse onto the Traitor team, so if a Traitor revives the dead
+// Detective's body it comes back as a Traitor, not a Detective, and can't
+// pay this out again - but a fellow Detective (a second one, or a lobby
+// where Detective survives being downed some other way) reviving them back
+// to Detective could otherwise let this fire every time they're re-killed,
+// paying every Traitor in full each time.
+if (_victimRole == "Detective" && {!(missionNamespace getVariable ["Waldo_detectiveRewardPaid", false])}) then {
+	missionNamespace setVariable ["Waldo_detectiveRewardPaid", true, true];
 	if (_reward > 0) then { { _x setVariable ["points", (_x getVariable ["points", 0]) + _reward, true]; } forEach _traitors; };
 };
 

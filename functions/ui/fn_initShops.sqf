@@ -202,10 +202,10 @@ Waldo_traitorShop = [
 		{ [] call Waldo_fnc_suicideBomb; true },
 		"Detonate yourself (press your assigned key)"],
 
-	["Radar", 1, "passive",
+	["Radar", 2, "passive",
 		{ [] call Waldo_fnc_traitorRadar; },
 		{},
-		"Pulses everyone's position for 30s, then refreshes"],
+		"Pulses everyone's position (and role) for 30s, then refreshes"],
 
 	["Rocket Launcher", 1, "weapon",
 		{
@@ -225,7 +225,7 @@ Waldo_traitorShop = [
 		{},
 		"Throw red smoke to teleport to it (vanilla throw only)"],
 
-	["Long Rifle", 1, "weapon",
+	["Long Rifle", 2, "weapon",
 		{
 			player addWeaponGlobal (missionNamespace getVariable ["TraitorRifle", "srifle_LRR_F"]);
 			player addPrimaryWeaponItem (missionNamespace getVariable ["TraitorRifleOptics", "optic_LRPS"]);
@@ -269,7 +269,7 @@ Waldo_traitorShop = [
 		{},
 		"Deploy a decoy - identical to a real Health Station until someone uses it, then it detonates. You're safe from your own trap."],
 
-	["Body Remover", 1, "activation",
+	["Body Remover", 2, "activation",
 		{},
 		{ [] call Waldo_fnc_removeBody },
 		"Aim at a corpse and press your assigned key to destroy it, denying the Detective a body to test"],
@@ -289,7 +289,7 @@ Waldo_traitorShop = [
 		{ [] call Waldo_fnc_deadRinger },
 		"Arms a 25s window: your next lethal hit is faked - you ragdoll like a kill and a decoy body appears, but you're not really dead"],
 
-	["False Flag", 2, "passive",
+	["False Flag", 3, "passive",
 		{ player setVariable ["Waldo_falseFlag", true, true]; hint "False Flag armed - your next kill will frame someone else."; },
 		{},
 		"Your next kill leaves an innocent bystander's DNA at the scene instead of yours"]

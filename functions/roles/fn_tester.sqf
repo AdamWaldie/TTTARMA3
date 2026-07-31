@@ -44,7 +44,21 @@ if (isPlayer _target && {alive _target}) then {
 	params ["_target"];
 	sleep 5;
 	_target setVariable ["tested", true, true];
-	["PORTABLE TESTER", format ["Test complete - %1.", (_target getVariable ["role", "Innocent"])],
+	private _role = _target getVariable ["role", "Innocent"];
+	// Same role palette every other role indicator in this HUD uses
+	// (Waldo_roleColor, fn_initShops.sqf) - already accessibility-aware via
+	// the colourblind-safe Okabe-Ito set when that mode is on. Structured
+	// text only takes a hex colour, not an RGBA array, so convert it the
+	// same way Waldo_fnc_pingWheelRender already does.
+	private _roleColor = [_role] call Waldo_roleColor;
+	private _hex = {
+		params ["_c"];
+		private _d = "0123456789abcdef";
+		private _byte = { params ["_v"]; private _n = (round (_v * 255)) max 0 min 255; (_d select [floor (_n / 16), 1]) + (_d select [_n mod 16, 1]) };
+		"#" + ([_c select 0] call _byte) + ([_c select 1] call _byte) + ([_c select 2] call _byte)
+	};
+	private _roleHex = [_roleColor] call _hex;
+	["PORTABLE TESTER", format ["Test complete - <t color='%1'>%2</t>.", _roleHex, _role],
 		"SUCCESS", 4, "BOTTOM_LEFT", "TESTER", "TESTER"] call Waldo_fnc_ShowUiNotification;
 };
 

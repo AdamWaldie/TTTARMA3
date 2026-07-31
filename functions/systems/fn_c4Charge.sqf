@@ -21,13 +21,29 @@ _charge setVariable ["Waldo_killerDNATime", time,   true];
 _charge allowDamage false;
 [_charge, _owner] call Waldo_fnc_dnaContaminate;
 
-// Defuse action, broadcast to everyone. Condition: the actor is not the planter
-// and the charge is still armed. hideOnUse removes it after a successful defuse.
+// Defuse action, broadcast to everyone. Condition matches Waldo_fnc_healthStation's
+// own working pattern - "alive _this" only, nothing reading _target. This
+// used to check "not the planter" and "not already defused" directly in
+// the condition via _target getVariable [...], and the action never showed
+// up at all (confirmed live, same failure as Waldo_fnc_fakeHealthStation's
+// identical mistake - see the long comment there for why: _target is the
+// crate itself, freshly createVehicle'd moments earlier in this very
+// script, and a condition that throws resolving it is silently treated as
+// false, not shown as an error). Both checks now live in the STATEMENT
+// instead, which only ever runs after someone has already seen and clicked
+// the action - hideOnUse still removes it after a successful defuse either
+// way; this just stops a second, later click (or a planter's own click)
+// from re-marking an already-defused charge.
 [_charge, [
 	"<t color='#ff3333'>Defuse Charge</t>",
-	{ (_this select 0) setVariable ["Waldo_c4Defused", true, true]; },
+	{
+		params ["_target", "_caller"];
+		if (_caller != (_target getVariable ["Waldo_c4Owner", objNull]) && {!(_target getVariable ["Waldo_c4Defused", false])}) then {
+			_target setVariable ["Waldo_c4Defused", true, true];
+		};
+	},
 	nil, 6, true, true, "",
-	"_this != (_target getVariable ['Waldo_c4Owner', objNull]) && {!(_target getVariable ['Waldo_c4Defused', false])}",
+	"alive _this",
 	3
 ]] remoteExec ["addAction", 0, _charge];
 

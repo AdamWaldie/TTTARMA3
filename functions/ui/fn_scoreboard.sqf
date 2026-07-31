@@ -20,7 +20,13 @@ disableSerialization;
 if !(isNull (uiNamespace getVariable ["WaldoScore", displayNull])) exitWith { closeDialog 1; };
 
 private _myRole    = player getVariable ["role", "Innocent"];
-private _viewerOut = !alive player;   // dead players are out of the round - they see all
+// Dead players only see everything when the lobby's "Spectators See All
+// Roles" param is on (off by default) - same gate as Waldo_fnc_drawRoleIcons,
+// so the on-demand scoreboard and the always-on 3D tags never disagree.
+// With it off, _reveal below still falls through on its own per-role terms
+// (own role, Detective, Traitor-sees-Traitor/Jester), which is what keeps a
+// dead Traitor seeing their team here too.
+private _viewerOut = !alive player && {missionNamespace getVariable ["Waldo_spectatorsSeeAllRoles", false]};
 private _traitors  = missionNamespace getVariable ["TraitorList", []];
 
 private _hexOf = {

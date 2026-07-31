@@ -92,7 +92,7 @@ while { missionNamespace getVariable ["gameOn", false] } do {
 	private _text = "Round  " + (if (_civRemaining <= 0) then { "OVERTIME" } else { [_civRemaining] call _fmt });
 	if ((player getVariable ["role", ""]) == "Traitor") then {
 		private _traitorRemaining = _timelimit - _elapsed;
-		_text = _text + format ["     Deadline  %1", [_traitorRemaining] call _fmt];
+		_text = _text + format ["     Overtime Deadline  %1", [_traitorRemaining] call _fmt];
 	};
 	_timerCtrl ctrlSetText _text;
 

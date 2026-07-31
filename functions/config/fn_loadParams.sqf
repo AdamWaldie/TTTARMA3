@@ -41,6 +41,7 @@ missionNamespace setVariable ["KarmaEnabled",           (param [14, 1]) != 0, tr
 missionNamespace setVariable ["Waldo_startCreditsBase",  param [15, 1], true];
 missionNamespace setVariable ["Waldo_killReward",        param [29, 1], true];   // appended param
 missionNamespace setVariable ["Waldo_civKillBonusEvery",  param [31, 5], true];  // appended param (30 retired)
+missionNamespace setVariable ["Waldo_spectatorsSeeAllRoles", (param [32, 0]) != 0, true];  // appended param
 
 // --- Airdrop / loot ---
 missionNamespace setVariable ["airdrop",               (param [16, 1]) != 0, true];

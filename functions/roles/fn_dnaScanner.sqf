@@ -73,11 +73,25 @@ player setVariable ["Waldo_dnaScannerCharges", _charges, true];
 	"INFO", 2, "BOTTOM_LEFT", "DNA_SAMPLE", "DNA SCANNER"
 ] call Waldo_fnc_ShowUiNotification;
 
+// Sampling a second (or third) piece of evidence before the first track
+// finished used to leave BOTH tracking loops alive at once, each writing to
+// the same shared "DNA_TRACK" channel on its own independent 1s tick -
+// every tick from either one replaced the other's card (Waldo_fnc_ShowUiNotification's
+// REPLACE policy for a persistent, duration-0 card), so the display kept
+// getting torn down and recreated by whichever loop happened to tick last,
+// reading as the two constantly fighting over the readout instead of the
+// newer scan cleanly taking over. A generation token (same idiom as
+// Waldo_radarToken elsewhere) makes only the MOST RECENT sample's loop
+// live - starting a new scan invalidates any older one still running,
+// which then exits on its own next tick instead of continuing to compete.
+player setVariable ["Waldo_dnaTrackToken", (player getVariable ["Waldo_dnaTrackToken", 0]) + 1];
+private _trackToken = player getVariable ["Waldo_dnaTrackToken", 0];
+
 // Y is handled unscheduled (called directly from the KeyDown handler), so
 // everything below (both early sleeps and the tracking loop) has to live in
 // one scheduled thread - sleep is illegal here otherwise.
-[_target, _source] spawn {
-	params ["_target", "_source"];
+[_target, _source, _trackToken] spawn {
+	params ["_target", "_source", "_trackToken"];
 	sleep 2;
 
 	private _enhanced = player getVariable ["Waldo_enhancedScanner", false];
@@ -149,6 +163,7 @@ player setVariable ["Waldo_dnaScannerCharges", _charges, true];
 		time < _endAt
 		&& {!isNull _tracked} && {alive _tracked} && {alive player}
 		&& {missionNamespace getVariable ["gameOn", true]}
+		&& {(player getVariable ["Waldo_dnaTrackToken", 0]) == _trackToken}
 	} do {
 		private _d = round (player distance _tracked);
 		private _c = _dirs select (floor ((((player getDir _tracked) + 22.5) % 360) / 45));
@@ -159,10 +174,15 @@ player setVariable ["Waldo_dnaScannerCharges", _charges, true];
 		] call Waldo_fnc_ShowUiNotification;
 		sleep 1;
 	};
-	if (!isNull _tracked && {!alive _tracked} && {missionNamespace getVariable ["gameOn", true]}) then {
-		["DNA SUSPECT", "Suspect is down.", "SUCCESS", 4, "BOTTOM_LEFT", "DNA_TRACK", "DNA SCANNER"] call Waldo_fnc_ShowUiNotification;
-	} else {
-		["DNA_TRACK"] call Waldo_fnc_DismissUiNotification;
+	// A newer scan already took over DNA_TRACK - this one lost the race (see
+	// the token guard above), so it must not touch the channel on the way
+	// out either, neither a "suspect is down" card nor a dismiss.
+	if ((player getVariable ["Waldo_dnaTrackToken", 0]) == _trackToken) then {
+		if (!isNull _tracked && {!alive _tracked} && {missionNamespace getVariable ["gameOn", true]}) then {
+			["DNA SUSPECT", "Suspect is down.", "SUCCESS", 4, "BOTTOM_LEFT", "DNA_TRACK", "DNA SCANNER"] call Waldo_fnc_ShowUiNotification;
+		} else {
+			["DNA_TRACK"] call Waldo_fnc_DismissUiNotification;
+		};
 	};
 };
 

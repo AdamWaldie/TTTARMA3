@@ -211,13 +211,36 @@ Waldo_traitorShop = [
 		{
 			// addWeapon auto-chambers a compatible magazine ALREADY IN
 			// INVENTORY at the moment the weapon is added - not the other
-			// way around. addMagazine after addWeapon (the previous fix)
+			// way around. addMagazine after addWeapon (an earlier fix)
 			// still spawned it unloaded, because at that point there was
 			// nothing yet for the weapon to pick up; addMagazine has to run
 			// FIRST so the round is sitting there waiting when the launcher
 			// is added.
-			player addMagazine (missionNamespace getVariable ["TraitorLauncherMag", "NLAW_F"]);
-			player addWeaponGlobal (missionNamespace getVariable ["TraitorLauncher", "launch_NLAW_F"]);
+			//
+			// Still reported unloaded after that reorder, though - and
+			// unlike a rifle/pistol mag, a launcher round is one of the
+			// bulkiest single items in the game. addMagazine on a person
+			// silently does nothing at all if there's no free cargo space
+			// anywhere (uniform/vest/backpack) at the moment it runs - no
+			// error, it just doesn't land - so a Traitor who'd already
+			// spent points filling their rig with other purchases first
+			// could easily have zero room left for the round specifically,
+			// while a small pistol/rifle mag still always found space.
+			// Verified, not guessed a third time: retry the magazine AFTER
+			// the (empty) launcher exists too - a person's own empty
+			// weapon can still take a compatible magazine directly even
+			// with cargo full, since a chambered round isn't stored in
+			// uniform/vest/backpack space at all. Logged either way so the
+			// next .rpt confirms which path actually delivered it (or that
+			// neither did, if this isn't a capacity issue after all).
+			private _launcherMag = missionNamespace getVariable ["TraitorLauncherMag", "NLAW_F"];
+			private _launcher = missionNamespace getVariable ["TraitorLauncher", "launch_NLAW_F"];
+			player addMagazine _launcherMag;
+			player addWeaponGlobal _launcher;
+			if !(_launcherMag in (magazines player)) then {
+				player addMagazine _launcherMag;
+			};
+			diag_log format ["[Waldo][client] Rocket Launcher purchase: launcher=%1 mag=%2 loaded=%3", _launcher, _launcherMag, _launcherMag in (magazines player)];
 		},
 		{},
 		"A single-use rocket launcher"],

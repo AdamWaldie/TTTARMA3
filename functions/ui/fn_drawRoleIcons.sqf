@@ -3,10 +3,12 @@
 // CLIENT: installs ONE managed Draw3D handler that reveals roles per the
 // viewer's own role:
 //   - everyone sees the Detective,
-//   - Traitors see other Traitors and the Jester (the Jester does NOT see
-//     the Traitors back - the Jester's win condition is being killed by a
-//     non-Traitor, so knowing who to avoid would be a one-sided advantage
-//     with no corresponding cost),
+//   - Traitors see other Traitors and the Jester in-world (so they have a
+//     way to avoid the credit penalty for killing them - see
+//     Waldo_fnc_onKilled) - but are never handed the Jester's NAME up
+//     front the way they are their own teammates' (see the round-start
+//     card in Waldo_fnc_assignRoles); this is a see-it-yourself reveal,
+//     not a metagame info dump,
 //   - Detectives additionally see the role of nearby corpses and of anyone
 //     they have "tested".
 //   - a dead/spectating viewer is out of the round and sees every living
@@ -72,15 +74,15 @@ private _eh = addMissionEventHandler ["Draw3D", {
 			} else {
 				// Everyone sees the Detective.
 				if (_xRole == "Detective") then {
-					[_eyePos, [0.01, 0.45, 1, 1], "Detective", _dist] call _drawTag;
+					[_eyePos, ([_xRole] call Waldo_roleColor), "Detective", _dist] call _drawTag;
 				};
 				// Traitors see other Traitors.
 				if (_xRole == "Traitor" && {_myRole == "Traitor"}) then {
-					[_eyePos, [0.75, 0.21, 0.21, 1], "Traitor", _dist] call _drawTag;
+					[_eyePos, ([_xRole] call Waldo_roleColor), "Traitor", _dist] call _drawTag;
 				};
-				// Traitors see the Jester.
+				// Traitors see the Jester too (in-world only, not by name).
 				if (_xRole == "Jester" && {_myRole == "Traitor"}) then {
-					[_eyePos, [0.4, 0, 0.5, 1], "Jester", _dist] call _drawTag;
+					[_eyePos, ([_xRole] call Waldo_roleColor), "Jester", _dist] call _drawTag;
 				};
 			};
 		};

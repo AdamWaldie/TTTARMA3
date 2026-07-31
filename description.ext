@@ -8,7 +8,10 @@ overviewPicture = "ui\TroubleInArmaville.jpg";
 loadScreen = "ui\TroubleInArmaville.jpg";
 author = "WaldoTheWarfighter"; // Author
 onLoadName = "Trouble in ArmaVille"; // Mission name
-onLoadMission = "Version 3.1"; // Description
+// Stamped with the real release version by .github/workflows/release.yml at
+// package time (from the git tag) - this committed value only ever shows
+// when running straight from the repo, outside of a packaged release.
+onLoadMission = "Version dev"; // Description
 
 class Header
 {

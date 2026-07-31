@@ -358,7 +358,18 @@ player addEventHandler ["HandleDamage", {
 		[_unit] call Waldo_fnc_deadRingerTrigger;
 		0
 	} else {
-		_damage
+		// Jester deals no damage full stop. The Fired EH in Waldo_fnc_makeJester
+		// deletes their bullets/thrown munitions before they connect, but that
+		// only covers stuff that actually fires a projectile - melee (bare
+		// fists, and modded melee like SOG Prairie Fire's knives) hits here
+		// directly with no Fired event ever raised, so it was going straight
+		// through. This is the universal backstop: whatever the mechanism, if
+		// the instigator is the Jester, the damage is zeroed here.
+		if (!isNull _instigator && {_instigator != _unit} && {(_instigator getVariable ["role", ""]) == "Jester"}) then {
+			0
+		} else {
+			_damage
+		}
 	}
 }];
 

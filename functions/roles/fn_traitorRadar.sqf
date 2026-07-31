@@ -29,6 +29,14 @@ if (_useCBA) then {
 player setVariable ["radar", 1];
 player setVariable ["Waldo_radarNextPing", time + 30];
 
+// "Doesn't ping with spawned dummies" reported - static review found no
+// obvious reason (debug dummies/sims are real createUnit AI with a real
+// role variable set, and allUnits doesn't filter by AI vs player or by
+// side). One-shot diagnostic instead of guessing: logs exactly who
+// allUnits sees at the moment the radar fires, so the next .rpt confirms
+// whether a dummy is even in that list at all.
+diag_log format ["[Waldo][client] traitorRadar fired: allUnits=%1", allUnits apply { [_x, name _x, _x getVariable ["role", "Innocent"], isPlayer _x] }];
+
 // A real ring icon instead of a drawn "O" character - looked up from the
 // engine's own standard "hand-drawn dot" map marker rather than a
 // hardcoded texture path (avoids guessing at exact case/folder names,

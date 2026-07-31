@@ -56,24 +56,28 @@ _charge allowDamage false;
 	if (isNull _charge) exitWith {};
 
 	if (_charge getVariable ["Waldo_c4Defused", false]) exitWith {
-		["A charge was defused."] remoteExec ["systemChat", 0];
+		// Was a plain systemChat line - easy to miss entirely mid-firefight,
+		// and reported as "no visible change" on a successful defuse. Every
+		// other event in this mission (kills, purchases, role reveals) uses
+		// the same rich notification card system now; this was the one
+		// straggler still on the old chat-log-only feedback.
+		[
+			"CHARGE DEFUSED", "A planted charge was defused.", "SUCCESS", 6, "TOP_RIGHT", "C4_DEFUSED", "INVESTIGATION"
+		] remoteExec ["Waldo_fnc_ShowUiNotification", 0];
 		// Leave the defused charge (with its DNA) around briefly for forensics.
 		[_charge] spawn { params ["_c"]; sleep 30; if (!isNull _c) then { deleteVehicle _c }; };
 	};
 
 	private _p = getPosATL _charge;
 	deleteVehicle _charge;
-	// Sh_82_HE (an 82mm mortar HE shell), not Bo_Mk82 (a full 500lb aerial
-	// bomb - levelled far more than the room this was placed in) and not
-	// plain DemoCharge_Remote_Ammo_Scripted either (confirmed live: still
-	// too small even at the room-clearing "satchel charge" tier this
-	// mission's own placed charge already uses). Sh_82_HE is a genuine step
-	// up in blast (~18m lethal radius vs. the satchel's ~5m) while staying
-	// nowhere near an aerial bomb's footprint. Standard shell/bomb-type
-	// ammo (unlike the DemoCharge_Remote family) detonates directly off
-	// setDamage 1 below, same as Bo_Mk82 did - no "_Scripted" variant
-	// needed or available for it.
-	private _bomb = createVehicle ["Sh_82_HE", _p, [], 0, "NONE"];   // same blast the suicide bomb uses
+	// Back to Bo_Mk82 (a full 500lb aerial bomb) by request - explicitly
+	// confirmed wanting the original full blast back, not a medium step
+	// between it and the satchel-family charge. This is the one ammo class
+	// in everything tried here that was ALREADY proven to detonate cleanly
+	// off setDamage 1 (that's the original behaviour this mission shipped
+	// with for a long time) - the "too big" complaint was about blast
+	// radius, never about it failing to go off, unlike Sh_82_HE.
+	private _bomb = createVehicle ["Bo_Mk82", _p, [], 0, "NONE"];   // same blast the suicide bomb uses
 	// A createVehicle'd bomb has no shooter by default, so anyone it kills would
 	// resolve to a null culprit in Waldo_fnc_onKilled - no karma penalty for
 	// blowing up a teammate, no DNA on the corpse, no round-kill credit. Tag the

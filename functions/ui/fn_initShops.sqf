@@ -297,7 +297,7 @@ Waldo_traitorShop = [
 
 // --- Detective shop ---
 Waldo_detectiveShop = [
-	["Portable Tester", 1, "activation",
+	["Portable Tester", 2, "activation",
 		{},
 		{ [] call Waldo_fnc_tester },
 		"Aim at a player or body within 3m and press your assigned key to reveal their role"],

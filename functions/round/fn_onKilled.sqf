@@ -16,9 +16,19 @@ if (!isServer) exitWith {};
 private _traitors = missionNamespace getVariable ["TraitorList", []];
 private _detectives = missionNamespace getVariable ["DetectiveList", []];
 
-// Extend the round for every death.
+// Extend the round for every death, capped so a chaotic high-kill round
+// can't run "overtime" (the stretch between the civilian clock hitting zero
+// and the real deadline, timelimit) longer than the round's own base
+// length. This used to add roundDeadLength on every single death with no
+// ceiling at all, so a round with a lot of killing (and revives creating
+// more deaths to extend it further) could end up with overtime longer than
+// the round itself.
 private _dead = missionNamespace getVariable ["roundDeadLength", 30];
-missionNamespace setVariable ["timelimit", (missionNamespace getVariable ["timelimit", 0]) + _dead, true];
+private _deathBonusCap = missionNamespace getVariable ["roundBaseLength", 180];
+private _deathBonus = ((missionNamespace getVariable ["Waldo_deathBonusTotal", 0]) + _dead) min _deathBonusCap;
+missionNamespace setVariable ["Waldo_deathBonusTotal", _deathBonus, true];
+private _traitorBonus = missionNamespace getVariable ["roundTraitorLength", 45];
+missionNamespace setVariable ["timelimit", (missionNamespace getVariable ["Waldo_startTime", 0]) + _traitorBonus + _deathBonus, true];
 
 private _victimRole = _unit getVariable ["role", "Innocent"];
 

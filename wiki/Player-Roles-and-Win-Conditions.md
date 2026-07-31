@@ -38,4 +38,4 @@ The civilian clock and the hard deadline are two different numbers:
 - `Waldo_startTime` = base round length + (player count x bonus-per-player). This is what players see counting down.
 - `timelimit` = `Waldo_startTime` + the Traitor bonus. This is the actual hard cutoff (`checkWin`'s END3 check).
 
-Every death extends `timelimit` by the "time added per dead player" setting, so a round with a lot of killing runs longer than a quiet one, on the theory that more bodies means more to investigate.
+Every death extends `timelimit` by the "time added per dead player" setting, so a round with a lot of killing runs longer than a quiet one, on the theory that more bodies means more to investigate. That extension is capped at the Base Round Length setting in total, so a chaotic round can't run "overtime" - past the civilian clock hitting zero - longer than the round's own base length.

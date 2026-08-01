@@ -53,12 +53,17 @@ private _eh = addMissionEventHandler ["Draw3D", {
 		private _base = [_role] call Waldo_roleColor;
 		private _color = [_base select 0, _base select 1, _base select 2, _radar];
 		private _distance = player distance _x;
-		// Same footprint the old text glyph used ("O" at up to size 0.10,
-		// shrinking with distance) - just a real ring icon instead of a
-		// character, and it grows slightly as it fades (radar 1 -> 0) for an
-		// actual expanding-ping feel instead of a static marker, still capped
-		// well short of anything that could obscure the player model.
-		private _base_size = (0.10 - (_distance / 2500)) max 0;
+		// drawIcon3D's ICON width/height is a completely different scale to
+		// its TEXT size parameter - BI's own docs give 1-24 as the typical
+		// range for icon width/height, not the 0.03-0.16 range every text
+		// label in this HUD uses. The old text-glyph size (~0.10) carried
+		// straight over here was roughly 10-100x too small for an ICON,
+		// which is almost certainly why the ping wasn't visibly rendering at
+		// all rather than just being small. Rescaled onto the icon-appropriate
+		// range: ~1.4 close up, shrinking with distance, floored so it never
+		// vanishes to nothing at range. Still grows slightly as it fades
+		// (radar 1 -> 0) for the expanding-ping feel.
+		private _base_size = (1.4 - (_distance / 60)) max 0.35;
 		private _size = _base_size * (1 + ((1 - _radar) * 0.5));
 		drawIcon3D [_icon, _color, getPosATL _x, _size, _size, 0, "", 0, 1, "PuristaMedium", "center"];
 	} forEach allUnits;

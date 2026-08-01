@@ -27,7 +27,7 @@ player setVariable ["Waldo_radarNextPing", time + 45];
 
 // Same ping-icon redesign as Waldo_fnc_traitorRadar - see there for why
 // it's looked up from CfgMarkers rather than a hardcoded texture path.
-missionNamespace setVariable ["Waldo_radarPingIcon", getText (configFile >> "CfgMarkers" >> "hd_dot" >> "icon")];
+missionNamespace setVariable ["Waldo_radarPingIcon", getText (configFile >> "CfgMarkers" >> "mil_dot" >> "icon")];
 
 private _eh = addMissionEventHandler ["Draw3D", {
 	private _radar = player getVariable ["radar", 0];
@@ -35,10 +35,12 @@ private _eh = addMissionEventHandler ["Draw3D", {
 	{
 		private _distance = player distance _x;
 		private _color = [0.12549, 0.72941, 0.09412, _radar];
-		// See Waldo_fnc_traitorRadar - same footprint the old text glyph
-		// used, real ring icon instead of a character, mild expand-as-it-fades
-		// ping feel.
-		private _base_size = (0.10 - (_distance / 2500)) max 0;
+		// See Waldo_fnc_traitorRadar - drawIcon3D's icon width/height needs
+		// the icon-appropriate 1-24 range, not the text-size range the old
+		// glyph's number was carried over at (almost certainly why the ping
+		// wasn't visibly rendering at all). Real ring icon instead of a
+		// character, mild expand-as-it-fades ping feel.
+		private _base_size = (1.4 - (_distance / 60)) max 0.35;
 		private _size = _base_size * (1 + ((1 - _radar) * 0.5));
 		drawIcon3D [_icon, _color, getPosATL _x, _size, _size, 0, "", 0, 1, "PuristaMedium", "center"];
 	} forEach (allUnits + allDeadMen);

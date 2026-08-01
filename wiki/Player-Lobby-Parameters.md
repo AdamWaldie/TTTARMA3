@@ -23,7 +23,8 @@ All lobby parameters are read by index in `Waldo_fnc_loadParams`, matching the o
 | Enable Detective Role | Off entirely disables the role. |
 | Detective: Minimum Players | Lobby size floor before a Detective is assigned at all. |
 | Enable Jester Role | Off entirely disables the role. |
-| Jester: Always Appears | Skips the chance roll and guarantees a Jester (subject to the 5-player floor). |
+| Jester: Minimum Players | Lobby size floor before a Jester is assigned at all (default 10). |
+| Jester: Always Appears | Skips the chance roll and guarantees a Jester, once the minimum-players floor is met. |
 | Chance of Jester Appearing | The roll used when "Always Appears" is off. |
 
 ## Gameplay
@@ -31,7 +32,8 @@ All lobby parameters are read by index in `Waldo_fnc_loadParams`, matching the o
 | Parameter | What it controls |
 |---|---|
 | Enable Karma System | Toggles the cross-round RDM penalty (see [Architecture](Dev-Architecture)). |
-| Starting Shop Credits (base) | Traitor/Detective starting credits, before the +1-per-8-players scaling. |
+| Starting Shop Credits (base) | Traitor/Detective starting credits, before the per-player scaling below. |
+| Additional Starting Credit per N Players | Traitor/Detective starting credits also get +1 for every N players in the lobby (default 8). |
 
 ## Airdrop / loot
 

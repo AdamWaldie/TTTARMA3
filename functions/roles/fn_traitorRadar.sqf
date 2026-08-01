@@ -29,13 +29,26 @@ if (_useCBA) then {
 player setVariable ["radar", 1];
 player setVariable ["Waldo_radarNextPing", time + 30];
 
+// "Doesn't ping with spawned dummies" reported - static review found no
+// obvious reason (debug dummies/sims are real createUnit AI with a real
+// role variable set, and allUnits doesn't filter by AI vs player or by
+// side). One-shot diagnostic instead of guessing: logs exactly who
+// allUnits sees at the moment the radar fires, so the next .rpt confirms
+// whether a dummy is even in that list at all.
+diag_log format ["[Waldo][client] traitorRadar fired: allUnits=%1", allUnits apply { [_x, name _x, _x getVariable ["role", "Innocent"], isPlayer _x] }];
+
 // A real ring icon instead of a drawn "O" character - looked up from the
-// engine's own standard "hand-drawn dot" map marker rather than a
-// hardcoded texture path (avoids guessing at exact case/folder names,
-// which differ between Windows and case-sensitive Linux dedicated
-// servers): if it's ever missing for any reason, getText just returns ""
-// and drawIcon3D silently draws nothing, rather than throwing.
-missionNamespace setVariable ["Waldo_radarPingIcon", getText (configFile >> "CfgMarkers" >> "hd_dot" >> "icon")];
+// engine's own standard NATO "mil_dot" map marker rather than a hardcoded
+// texture path (avoids guessing at exact case/folder names, which differ
+// between Windows and case-sensitive Linux dedicated servers): if it's
+// ever missing for any reason, getText just returns "" and drawIcon3D
+// silently draws nothing, rather than throwing. Was "hd_dot" (the
+// hand-drawn doodle marker) - confirmed via .rpt spam ("Obsolete, sizeH
+// and sizeW calculation missing", once per frame) that it's missing size
+// metadata drawIcon3D needs for a real icon render. The "mil_" family is
+// the actual scalable tactical marker set (built to be resized for
+// unit/group size indicators), which is exactly this use case.
+missionNamespace setVariable ["Waldo_radarPingIcon", getText (configFile >> "CfgMarkers" >> "mil_dot" >> "icon")];
 
 private _eh = addMissionEventHandler ["Draw3D", {
 	private _radar = player getVariable ["radar", 0];
@@ -45,12 +58,17 @@ private _eh = addMissionEventHandler ["Draw3D", {
 		private _base = [_role] call Waldo_roleColor;
 		private _color = [_base select 0, _base select 1, _base select 2, _radar];
 		private _distance = player distance _x;
-		// Same footprint the old text glyph used ("O" at up to size 0.10,
-		// shrinking with distance) - just a real ring icon instead of a
-		// character, and it grows slightly as it fades (radar 1 -> 0) for an
-		// actual expanding-ping feel instead of a static marker, still capped
-		// well short of anything that could obscure the player model.
-		private _base_size = (0.10 - (_distance / 2500)) max 0;
+		// drawIcon3D's ICON width/height is a completely different scale to
+		// its TEXT size parameter - BI's own docs give 1-24 as the typical
+		// range for icon width/height, not the 0.03-0.16 range every text
+		// label in this HUD uses. The old text-glyph size (~0.10) carried
+		// straight over here was roughly 10-100x too small for an ICON,
+		// which is almost certainly why the ping wasn't visibly rendering at
+		// all rather than just being small. Rescaled onto the icon-appropriate
+		// range: ~1.4 close up, shrinking with distance, floored so it never
+		// vanishes to nothing at range. Still grows slightly as it fades
+		// (radar 1 -> 0) for the expanding-ping feel.
+		private _base_size = (1.4 - (_distance / 60)) max 0.35;
 		private _size = _base_size * (1 + ((1 - _radar) * 0.5));
 		drawIcon3D [_icon, _color, getPosATL _x, _size, _size, 0, "", 0, 1, "PuristaMedium", "center"];
 	} forEach allUnits;

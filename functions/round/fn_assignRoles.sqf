@@ -45,8 +45,10 @@ if (_realCount == 0) exitWith {
 };
 
 // Traitors & Detectives start with credits that scale with lobby size
-// (configurable base, +1 per 8 players). Stored so other systems can reference it.
-private _startCredits = (missionNamespace getVariable ["Waldo_startCreditsBase", 1]) + floor (_count / 8);
+// (configurable base, +1 per N players - N is now its own lobby param
+// instead of a hardcoded 8). Stored so other systems can reference it.
+private _startCreditsPerN = (missionNamespace getVariable ["Waldo_startCreditsPerNPlayers", 8]) max 1;
+private _startCredits = (missionNamespace getVariable ["Waldo_startCreditsBase", 1]) + floor (_count / _startCreditsPerN);
 missionNamespace setVariable ["Waldo_startCredits", _startCredits, true];
 
 // --- Traitors ---
@@ -100,15 +102,15 @@ if ((missionNamespace getVariable ["DetectiveEnabled", true]) && {_count >= _det
 };
 missionNamespace setVariable ["DetectiveList", _detectives, true];
 
-// --- Jester (optional; >= 5 players; not Traitor/Detective) ---
-// The Jester's player-count floor is intentionally independent of the
-// Detective's (DetectiveMinPlayers) - they used to just be two separately
-// hardcoded 5s that happened to match, so changing one lobby setting must not
-// silently change the other's gating.
+// --- Jester (optional; >= JesterMinPlayers players; not Traitor/Detective) ---
+// The Jester's player-count floor is its own lobby param (JesterMinPlayers,
+// default 10) - independent of the Detective's (DetectiveMinPlayers), and no
+// longer a hardcoded 5 with no server-admin control at all.
 // The old chance check compared a 0..100 roll to a 0..1 fraction, so the
 // Jester almost never appeared. Compare against the fraction directly.
 private _jesters = [];
-if ((missionNamespace getVariable ["JesterEnabled", true]) && {_count >= 5}) then {
+private _jesterMin = missionNamespace getVariable ["JesterMinPlayers", 10];
+if ((missionNamespace getVariable ["JesterEnabled", true]) && {_count >= _jesterMin}) then {
 	// "Jester: Always Appears" skips the chance roll.
 	private _jchance = missionNamespace getVariable ["JesterPercentagechance", 0.3];
 	private _jRoll = (missionNamespace getVariable ["JesterAlways", false]) || {random 1 <= _jchance};

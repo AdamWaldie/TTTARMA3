@@ -34,7 +34,16 @@ private _eh = addMissionEventHandler ["Draw3D", {
 	private _icon = missionNamespace getVariable ["Waldo_radarPingIcon", ""];
 	{
 		private _distance = player distance _x;
-		private _color = [0.12549, 0.72941, 0.09412, _radar];
+		// Was a hardcoded RGB literal - correct colour, but it bypassed
+		// Waldo_roleColor entirely, so this pip never respected the
+		// colourblind-safe Okabe-Ito palette (Waldo_accessibilityMode) the way
+		// every OTHER role/position indicator in this HUD does. Routed through
+		// Waldo_roleColor now, always with "Innocent" - the Detective radar is
+		// position-only by design (see the file header), so every unit
+		// renders in the same neutral colour regardless of actual role; only
+		// the exact shade now follows the player's own accessibility setting.
+		private _base = ["Innocent"] call Waldo_roleColor;
+		private _color = [_base select 0, _base select 1, _base select 2, _radar];
 		// See Waldo_fnc_traitorRadar - drawIcon3D's icon width/height needs
 		// the icon-appropriate 1-24 range, not the text-size range the old
 		// glyph's number was carried over at (almost certainly why the ping

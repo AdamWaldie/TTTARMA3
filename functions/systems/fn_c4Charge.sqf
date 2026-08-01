@@ -70,21 +70,29 @@ _charge allowDamage false;
 
 	private _p = getPosATL _charge;
 	deleteVehicle _charge;
-	// Back to Bo_Mk82 (a full 500lb aerial bomb) by request - explicitly
-	// confirmed wanting the original full blast back, not a medium step
-	// between it and the satchel-family charge. This is the one ammo class
-	// in everything tried here that was ALREADY proven to detonate cleanly
-	// off setDamage 1 (that's the original behaviour this mission shipped
-	// with for a long time) - the "too big" complaint was about blast
-	// radius, never about it failing to go off, unlike Sh_82_HE.
-	private _bomb = createVehicle ["Bo_Mk82", _p, [], 0, "NONE"];   // same blast the suicide bomb uses
+	// SatchelCharge_Remote_Ammo_Scripted - Bo_Mk82 (tried per an earlier
+	// request) confirmed "fucking huge" live, and Sh_82_HE (tried in
+	// between) turned out to not even be createVehicle-able. Satchel is the
+	// one alternative already verified to actually detonate reliably (same
+	// "_Scripted" remote-charge family as DemoCharge_Remote_Ammo_Scripted,
+	// which this mission's own placed charge already used successfully).
+	// Wanted "a little more power than that satchel" without gambling on a
+	// fourth unverified ammo class - two of them, both created at the exact
+	// same point and detonated together, is guaranteed to still use the
+	// one mechanism already proven to work, while genuinely increasing the
+	// total blast/damage output rather than hoping a different class both
+	// exists and behaves the same way.
+	private _bomb1 = createVehicle ["SatchelCharge_Remote_Ammo_Scripted", _p, [], 0, "NONE"];   // same blast the suicide bomb uses
+	private _bomb2 = createVehicle ["SatchelCharge_Remote_Ammo_Scripted", _p, [], 0, "NONE"];
 	// A createVehicle'd bomb has no shooter by default, so anyone it kills would
 	// resolve to a null culprit in Waldo_fnc_onKilled - no karma penalty for
 	// blowing up a teammate, no DNA on the corpse, no round-kill credit. Tag the
 	// planter as both shooter and instigator so C4 kills attribute exactly like
 	// a gunshot would.
-	_bomb setShotParents [_owner, _owner];
+	_bomb1 setShotParents [_owner, _owner];
+	_bomb2 setShotParents [_owner, _owner];
 	// The scripted charge only detonates when damaged - this is what actually
 	// triggers the blast.
-	_bomb setDamage 1;
+	_bomb1 setDamage 1;
+	_bomb2 setDamage 1;
 };

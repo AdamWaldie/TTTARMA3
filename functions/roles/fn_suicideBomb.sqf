@@ -14,17 +14,22 @@ playSound3D [getMissionPath "audio\suicide.ogg", player];
 	sleep 2;
 
 	if (alive player) then {
-		// Back to Bo_Mk82 - see fn_c4Charge.sqf, which shares this same
-		// blast and has the full reasoning (explicitly confirmed wanting
-		// the original full 500lb blast back, not a medium option).
-		private _ied = createVehicle ["Bo_Mk82", getPos player, [], 0, "NONE"];
-		_ied setPos (getPos player);
+		// Two stacked SatchelCharge_Remote_Ammo_Scripted - see fn_c4Charge.sqf,
+		// which shares this same blast and has the full reasoning ("a
+		// little more power than the satchel" without gambling on a fourth
+		// unverified ammo class after Bo_Mk82/Sh_82_HE both failed).
+		private _ied1 = createVehicle ["SatchelCharge_Remote_Ammo_Scripted", getPos player, [], 0, "NONE"];
+		private _ied2 = createVehicle ["SatchelCharge_Remote_Ammo_Scripted", getPos player, [], 0, "NONE"];
+		_ied1 setPos (getPos player);
+		_ied2 setPos (getPos player);
 		// setShotParents is server/HC-only in MP and would silently be ignored if
 		// called here on the bomber's own client - remoteExec it to the server so
 		// anyone this blast kills correctly attributes to the bomber (karma, DNA,
 		// round-kill credit), same as fn_c4Charge.sqf's own charge.
-		[_ied, [player, player]] remoteExec ["setShotParents", 2];
-		_ied setDamage 1;
+		[_ied1, [player, player]] remoteExec ["setShotParents", 2];
+		[_ied2, [player, player]] remoteExec ["setShotParents", 2];
+		_ied1 setDamage 1;
+		_ied2 setDamage 1;
 		player setDamage 1;
 	};
 };

@@ -28,6 +28,19 @@
 private _old = missionNamespace getVariable ["Waldo_iconsEH", -1];
 if (_old >= 0) then { removeMissionEventHandler ["Draw3D", _old]; };
 
+// icon="" (text-only, no real icon) is very likely the source of the
+// "Obsolete, sizeH and sizeW calculation missing" spam confirmed live
+// (once per frame, per drawn tag - the timing lined up with role
+// assignment starting to actually draw tags, not with anything radar-
+// related, which fired much later): the engine tries to measure a
+// texture's own size to compute an icon's sizeH/sizeW and there's no
+// texture to measure when the path is empty. Passing a real (tiny, valid)
+// icon path with width/height explicitly 0 keeps the exact same "no
+// visible icon, text only" look while giving the engine something real to
+// size against.
+private _tagIcon = getText (configFile >> "CfgMarkers" >> "mil_dot" >> "icon");
+missionNamespace setVariable ["Waldo_roleTagIcon", _tagIcon];
+
 private _eh = addMissionEventHandler ["Draw3D", {
 
 	// Draw a role tag above _pos: a manual black outline layer behind the
@@ -44,13 +57,14 @@ private _eh = addMissionEventHandler ["Draw3D", {
 	// manual layer's size delta does. Both layers now use shadow=0 - the
 	// manual black layer IS the outline, nothing else drawing a second one
 	// on top of it.
+	private _icon = missionNamespace getVariable ["Waldo_roleTagIcon", ""];
 	private _drawTag = {
 		params ["_pos", "_color", "_word", "_dist"];
 		private _far = _dist > 25;
 		private _label = [_word, _word select [0, 1]] select _far;   // full word / first letter
 		private _size = (0.035 + (_dist * 0.0008)) min 0.07;
-		drawIcon3D ["", [0.03, 0.03, 0.03, 1], _pos, 1, 0, 0, _label, 0, _size * 1.12, "PuristaBold", "center"];
-		drawIcon3D ["", _color, _pos, 1, 0, 0, _label, 0, _size, "PuristaBold", "center"];
+		drawIcon3D [_icon, [0.03, 0.03, 0.03, 1], _pos, 0, 0, 0, _label, 0, _size * 1.12, "PuristaBold", "center"];
+		drawIcon3D [_icon, _color, _pos, 0, 0, 0, _label, 0, _size, "PuristaBold", "center"];
 	};
 
 	private _myRole = player getVariable ["role", "Innocent"];

@@ -14,9 +14,10 @@ if (!isServer) exitWith {};
 diag_log "[Waldo][server] loadParams: begin";
 
 // Read + publish the lobby parameters. Indices MUST match the class order in
-// description.ext's `class Params` (see the note there). Boolean toggles use a
-// {0,1} value read numerically ((param) != 0) - a bool default silently ignores
-// the lobby selection.
+// description.ext's `class Params` (see the note there - reorganised into
+// logical groups 2026-08-01, so these indices no longer match any older
+// saved lobby preset). Boolean toggles use a {0,1} value read numerically
+// ((param) != 0) - a bool default silently ignores the lobby selection.
 
 // --- Round ---
 missionNamespace setVariable ["roundBaseLength",    param [0, 180], true];
@@ -33,38 +34,38 @@ missionNamespace setVariable ["Waldo_maxTraitors",       param [8, 0], true];   
 missionNamespace setVariable ["DetectiveEnabled",       (param [9, 1]) != 0, true];
 missionNamespace setVariable ["DetectiveMinPlayers",     param [10, 5], true];
 missionNamespace setVariable ["JesterEnabled",          (param [11, 1]) != 0, true];
-missionNamespace setVariable ["JesterAlways",           (param [12, 0]) != 0, true];
-missionNamespace setVariable ["JesterPercentagechance", (param [13, 30]) / 100, true];
+missionNamespace setVariable ["JesterMinPlayers",        param [12, 10], true];
+missionNamespace setVariable ["JesterAlways",           (param [13, 0]) != 0, true];
+missionNamespace setVariable ["JesterPercentagechance", (param [14, 30]) / 100, true];
+missionNamespace setVariable ["Waldo_spectatorsSeeAllRoles", (param [15, 0]) != 0, true];
 
-// --- Gameplay ---
-missionNamespace setVariable ["KarmaEnabled",           (param [14, 1]) != 0, true];
-missionNamespace setVariable ["Waldo_startCreditsBase",  param [15, 1], true];
-missionNamespace setVariable ["Waldo_killReward",        param [29, 1], true];   // appended param
-missionNamespace setVariable ["Waldo_civKillBonusEvery",  param [31, 5], true];  // appended param (30 retired)
-missionNamespace setVariable ["Waldo_spectatorsSeeAllRoles", (param [32, 0]) != 0, true];  // appended param
-missionNamespace setVariable ["JesterMinPlayers", param [33, 10], true];  // appended param
-missionNamespace setVariable ["Waldo_startCreditsPerNPlayers", param [34, 8], true];  // appended param
+// --- Gameplay / economy ---
+missionNamespace setVariable ["KarmaEnabled",           (param [16, 1]) != 0, true];
+missionNamespace setVariable ["Waldo_startCreditsBase",  param [17, 1], true];
+missionNamespace setVariable ["Waldo_startCreditsPerNPlayers", param [18, 8], true];
+missionNamespace setVariable ["Waldo_killReward",        param [19, 1], true];
+missionNamespace setVariable ["Waldo_civKillBonusEvery",  param [20, 5], true];
 
 // --- Airdrop / loot ---
-missionNamespace setVariable ["airdrop",               (param [16, 1]) != 0, true];
-missionNamespace setVariable ["airdropBaseTimer",       param [17, 75], true];
-missionNamespace setVariable ["airdropRandomTimer",     param [18, 75], true];
-missionNamespace setVariable ["airdropLoadoutsAmount",  param [19, 1],  true];
-missionNamespace setVariable ["lootMaxBullets",         param [20, 50], true];
-missionNamespace setVariable ["Waldo_lootPower",        param [21, 1],  true];
+missionNamespace setVariable ["airdrop",               (param [21, 1]) != 0, true];
+missionNamespace setVariable ["airdropBaseTimer",       param [22, 75], true];
+missionNamespace setVariable ["airdropRandomTimer",     param [23, 75], true];
+missionNamespace setVariable ["airdropLoadoutsAmount",  param [24, 1],  true];
+missionNamespace setVariable ["lootMaxBullets",         param [25, 50], true];
+missionNamespace setVariable ["Waldo_lootPower",        param [26, 1],  true];
 
 // --- Environment ---
-missionNamespace setVariable ["allowRain",  (param [22, 1]) != 0,   true];
-missionNamespace setVariable ["chanceRain", (param [23, 40]) / 100, true];
-missionNamespace setVariable ["allowFog",   (param [24, 1]) != 0,   true];
-missionNamespace setVariable ["chanceFog",  (param [25, 20]) / 100, true];
-missionNamespace setVariable ["timeOfDay",   param [26, 2],         true];
+missionNamespace setVariable ["allowRain",  (param [27, 1]) != 0,   true];
+missionNamespace setVariable ["chanceRain", (param [28, 40]) / 100, true];
+missionNamespace setVariable ["allowFog",   (param [29, 1]) != 0,   true];
+missionNamespace setVariable ["chanceFog",  (param [30, 20]) / 100, true];
+missionNamespace setVariable ["timeOfDay",   param [31, 2],         true];
 
 // --- Arena ---
-missionNamespace setVariable ["Waldo_arenaScale", param [27, 100], true];
+missionNamespace setVariable ["Waldo_arenaScale", param [32, 100], true];
 
 // --- Testing ---
-missionNamespace setVariable ["TestingFlag", (param [28, 0]) != 0, true];
+missionNamespace setVariable ["TestingFlag", (param [33, 0]) != 0, true];
 
 // No HUD/role-crest-style param - that's a per-player preference now
 // (Waldo_roleCrestStylePref in each client's own profileNamespace, set via

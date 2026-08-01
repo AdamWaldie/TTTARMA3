@@ -76,10 +76,11 @@ private _eh = addMissionEventHandler ["Draw3D", {
 		// straight over here was roughly 10-100x too small for an ICON,
 		// which is almost certainly why the ping wasn't visibly rendering at
 		// all rather than just being small. Rescaled onto the icon-appropriate
-		// range: ~1.4 close up, shrinking with distance, floored so it never
-		// vanishes to nothing at range. Still grows slightly as it fades
+		// range: ~1.9 close up, shrinking with distance, floored at 0.55 so it
+		// stays readable at range (bumped up again live - still hard to see far
+		// out). Still grows slightly as it fades
 		// (radar 1 -> 0) for the expanding-ping feel.
-		private _base_size = (1.4 - (_distance / 60)) max 0.35;
+		private _base_size = (1.9 - (_distance / 80)) max 0.55;
 		private _size = _base_size * (1 + ((1 - _radar) * 0.5));
 		drawIcon3D [_icon, _color, getPosATL _x, _size, _size, 0, "", 0, 1, "PuristaMedium", "center"];
 	} forEach allUnits;

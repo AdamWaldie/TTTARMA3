@@ -15,6 +15,8 @@ Two things stop this from being a free read:
 
 Calling in a corpse (a scroll action added to every body) always confirms the death to the whole server. Revealing the victim's *role* is different: only a Detective's identification does that (`Waldo_roleRevealed`). A non-Detective finding the body first announces "found" once and does not consume the action, so a Detective who arrives later can still get the role reveal. Only a Detective's call retires the action for good. This also drives the in-round scoreboard's "confirmed dead" count.
 
+Every call gives the caller a private notification card, even a repeat one that has nothing new to report - clicking it again on an already-found body confirms that (and explains a Detective is still needed), rather than silently doing nothing.
+
 ![The in-round scoreboard (K)](Images/Scoreboard.jpg)
 
 ## Dead Ringer (Traitor)

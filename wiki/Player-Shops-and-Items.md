@@ -14,7 +14,7 @@ Activation items get 3 key slots (Y/U/J), not one - the first activation item yo
 
 ## Traitor shop
 
-Suicide Bomb, Radar (pulses everyone's position, recharges), Rocket Launcher, Stamina, Teleport Grenades (red smoke that warps you to where it lands), Long Rifle, Defibrillator (revives a body onto the Traitor team), Silenced Pistol, Frag Grenades, Body Armor, Body Remover (destroys a corpse outright, denying the Detective evidence), C4 Charge, Night Vision, Dead Ringer, False Flag.
+Suicide Bomb, Radar (pulses everyone's position, recharges), Rocket Launcher, Stamina, Teleport Grenades (red smoke that warps you to where it lands), Long Rifle, Defibrillator (revives a body onto the Traitor team), Silenced Pistol, Frag Grenades, Body Armor, Body Remover (destroys a corpse outright, denying the Detective evidence), C4 Charge, Night Vision, Dead Ringer, False Flag, Disguiser (copy a living player's exact loadout for 60 seconds - see [Investigation Mechanics](Player-Investigation-Mechanics) for how it also redirects your DNA).
 
 ![The Traitor shop](Images/BuyMenuTraitor.jpg)
 
@@ -28,7 +28,7 @@ Weapon and gear classnames in both catalogs are read from `missionNamespace` at 
 
 ## The Purchased panel
 
-A second panel in the shop dialog lists everything bought this round with its tooltip as a how-to-use reminder (`Waldo_purchases`, reset each round in `assignRoles`). The point is that you're never three purchases deep and unable to remember what an item you bought five minutes ago actually does.
+A second panel in the shop dialog lists everything bought this round with its tooltip as a how-to-use reminder (`Waldo_purchases`, reset each round in `assignRoles`), newest purchase at the top - buying something new pushes everything already there down beneath it. The point is that you're never three purchases deep and unable to remember what an item you bought five minutes ago actually does.
 
 For activation items specifically, each entry also shows which key (Y/U/J) it's currently bound to - or `[unassigned]` if it's sitting in the backlog because all 3 slots were already taken when you bought it, or `[used]` once it's been spent. Click any of the Y/U/J buttons on that row to (re)assign it to that key; whatever was already there gets bumped to the backlog rather than lost.
 

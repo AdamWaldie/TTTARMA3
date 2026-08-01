@@ -28,3 +28,7 @@ A passive that arms your next kill to leave a random living innocent's DNA at th
 ## Body Remover (Traitor)
 
 Destroys a corpse outright. No DNA, no Identify Body, no forensic trail at all, at the cost of a shop slot and the time it takes to walk up and use it.
+
+## Disguiser (Traitor)
+
+Press your assigned key to open a picker listing every living player (with whatever role you're actually allowed to know about them - the same visibility rules the scoreboard and radars follow, so this never leaks anything extra). Pick one and their exact current loadout is copied onto you (`setUnitLoadout`, the same atomic gear-copy technique the Rocket Launcher purchase uses) for 60 seconds, with a countdown shown top-right. For that whole window, any DNA `Waldo_fnc_onKilled` would normally leave at a kill attributes to the person you copied instead of you - checked ahead of False Flag, so an armed False Flag can still override it if both happen to be active at once. Buying a second disguise while one is already running replaces it outright rather than stacking; you always revert to your own original loadout, never a mid-disguise one, when it wears off or gets replaced.

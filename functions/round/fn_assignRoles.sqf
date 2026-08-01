@@ -31,6 +31,13 @@ missionNamespace setVariable ["JESTERCLEANKILL", false, true];
 	_x setVariable ["tested", false, true];
 	_x setVariable ["Waldo_roundKills", 0, true];   // in-round scoreboard tally
 	_x setVariable ["Waldo_purchases", [], true];   // shop "Purchased" panel log
+	// Force-cleared here (not just left to expire on its own 60s timer) so a
+	// disguise running when a round ends can't carry Waldo_disguiseAs into
+	// the new round's DNA attribution, or have its own client-side countdown
+	// loop revert a freshly-assigned new-round loadout with a stale
+	// snapshot - see Waldo_fnc_disguiserActivate's own guard against this.
+	_x setVariable ["Waldo_disguiseActive", false, true];
+	_x setVariable ["Waldo_disguiseAs", objNull, true];
 	// Every player is placed in their own solo group in mission.sqm, so this
 	// only ever renames that one player's group - the vanilla spectator
 	// screen's unit list is grouped by group name, and the default engine

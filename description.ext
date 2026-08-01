@@ -191,6 +191,7 @@ class CfgFunctions
 			class useActivationSlot {};    // Waldo_fnc_useActivationSlot (fires the item bound to Y/U/J)
 			class assignActivationSlot {}; // Waldo_fnc_assignActivationSlot (buy menu: rebind an item to a key)
 			class registerActivationSlot {}; // Waldo_fnc_registerActivationSlot (shared: slot/backlog assignment)
+			class consumeActivationItem {}; // Waldo_fnc_consumeActivationItem (shared: clear a slot + promote backlog, for items whose "used?" outcome resolves asynchronously - see Disguiser)
 			class setupBriefing {};        // Waldo_fnc_setupBriefing (client: "How To Play" map-screen diary)
 		};
 
@@ -255,6 +256,8 @@ class CfgFunctions
 			class pingShow {};          // Waldo_fnc_pingShow (client: render a traitor ping)
 			class deadRinger {};        // Waldo_fnc_deadRinger (traitor: arm a faked death)
 			class deadRingerTrigger {}; // Waldo_fnc_deadRingerTrigger (client: sell the fake death)
+			class disguiserOpen {};     // Waldo_fnc_disguiserOpen (traitor: opens the target-picker dialog)
+			class disguiserActivate {}; // Waldo_fnc_disguiserActivate (traitor: applies the loadout copy, runs the 60s countdown/revert)
 		};
 	};
 };
@@ -509,6 +512,32 @@ class Params {
 		values[] = {0, 1};
 		texts[]  = {"No", "Yes"};
 		default  = 0;
+	};
+
+	// === PENALTIES === (appended 2026-08-01, per the note at the top of this
+	// block - new params go at the end from here on, not inserted by group)
+	class jesterKillPenalty {               // 34
+		// This is the number of credits LEFT after the penalty, not an amount
+		// deducted - killing the Jester is a hard mistake (loses the round
+		// outright for the culprit's team, see Waldo_fnc_onKilled), so it
+		// strips a Traitor down to this floor no matter how many credits
+		// they'd banked up, rather than subtracting a fixed amount a
+		// well-stocked Traitor could shrug off. Default 1 matches Radar's
+		// cost exactly, so the culprit can always still afford it afterward.
+		title = "Jester Kill Penalty (credits left after)";
+		values[] = {0, 1, 2, 3};
+		texts[]  = {"0", "1 (Radar)", "2", "3"};
+		default  = 1;
+	};
+	class traitorTeamkillPenalty {          // 35
+		// Small compared to jesterKillPenalty on purpose - a Traitor killing a
+		// teammate is friendly fire between people who already know each
+		// other's role, not a mystery-breaking mistake. Still a real cost (see
+		// Waldo_fnc_onKilled) so it's never free, and a small karma hit too.
+		title = "Traitor Teamkill Penalty (credits)";
+		values[] = {0, 1, 2, 3};
+		texts[]  = {"0 (off)", "1", "2", "3"};
+		default  = 2;
 	};
 
 	// No HUD/role-crest-style param on purpose: that's entirely a per-player

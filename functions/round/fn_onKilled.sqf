@@ -5,7 +5,15 @@
 //   - extending the round timer per death
 //   - awarding shop credits (detectives for traitor kills, vice versa)
 //   - Jester clean-kill detection (non-Traitor killed the Jester)
-//   - karma: lowering the culprit's karma for killing a teammate (RDM)
+//   - Jester kill-by-Traitor penalty (Waldo_jesterKillFloor, severe - strips
+//     the culprit down to the floor rather than a fixed deduction)
+//   - Traitor-on-Traitor teamkill penalty (Waldo_traitorTeamkillPenalty,
+//     small credit + karma hit - previously entirely free)
+//   - karma: lowering the culprit's karma for killing a teammate (RDM), or
+//     a smaller amount for a Traitor teamkill
+//   - DNA/evidence attribution, including redirecting it onto whoever the
+//     culprit is currently disguised as (Waldo_fnc_disguiserActivate) or is
+//     framing (False Flag)
 //
 // params (from MPKilled): [_unit, _killer, _instigator, _useEffects]
 //////////////////////////////////////////////////////////////////
@@ -98,6 +106,15 @@ if (!isNull _culprit && {_culprit != _unit}) then {
 	// ("an innocent bystander") - it used to only exclude other Traitors, so
 	// it could occasionally frame a Detective.
 	private _dnaOn = _culprit;
+	// Disguised (Waldo_fnc_disguiserActivate) - their own DNA already reads
+	// as whoever they copied the loadout from, the whole point of the
+	// disguise. Checked before False Flag so an armed False Flag can still
+	// override it below (a deliberate one-shot frame beats the passive
+	// disguise state if a Traitor somehow has both active at once).
+	if (_culprit getVariable ["Waldo_disguiseActive", false]) then {
+		private _disguiseAs = _culprit getVariable ["Waldo_disguiseAs", objNull];
+		if (!isNull _disguiseAs) then { _dnaOn = _disguiseAs; };
+	};
 	if (_culprit getVariable ["Waldo_falseFlag", false]) then {
 		private _frames = allPlayers select { alive _x && {!(_x in _traitors)} && {!(_x in _detectives)} && {_x != _culprit} };
 		if (count _frames > 0) then {
@@ -163,6 +180,22 @@ if (!isNull _culprit && {_culprit != _unit}) then {
 
 private _guilty = true;   // did the culprit kill someone they shouldn't have?
 
+// Shared karma nudge - RDM and a Traitor teamkill both dock karma, just by
+// very different amounts (see each call site), so the UID lookup/clamp/save
+// isn't duplicated between them.
+private _adjustKarma = {
+	params ["_p", "_delta", "_reason"];
+	private _uid = getPlayerUID _p;
+	if (_uid != "") then {
+		private _key = "Waldo_karma_" + _uid;
+		private _k = profileNamespace getVariable [_key, 100];
+		private _new = ((_k + _delta) max 0) min 100;
+		profileNamespace setVariable [_key, _new];
+		saveProfileNamespace;
+		diag_log format ["[Waldo][server] karma: %1 %2 -> karma %3", name _p, _reason, _new];
+	};
+};
+
 // Credit awards (amount per kill is the lobby "Kill Reward Credits" setting;
 // detectives are paid for traitor kills and traitors for detective kills).
 private _reward = missionNamespace getVariable ["Waldo_killReward", 1];
@@ -220,13 +253,40 @@ if (_victimRole == "Jester" && {!isNull _culprit} && {_culprit != _unit} && {isP
 // otherwise going for. Docking the same amount a correct kill would have
 // earned keeps it a real cost instead of a shrug.
 if (_victimRole == "Jester" && {_culpritRole == "Traitor"} && {!isNull _culprit} && {_culprit != _unit}) then {
-	if (_reward > 0) then {
-		_culprit setVariable ["points", ((_culprit getVariable ["points", 0]) - _reward) max 0, true];
-	};
+	private _floor = missionNamespace getVariable ["Waldo_jesterKillFloor", 1];
+	private _before = _culprit getVariable ["points", 0];
+	// Strips the culprit down to the floor, not a fixed deduction - takes
+	// basically everything they'd banked regardless of how much that was,
+	// rather than a flat number a well-stocked Traitor could shrug off. min,
+	// not max: never GRANTS credits to a culprit already below the floor,
+	// only ever takes from someone above it - see the lobby param's own
+	// comment in description.ext for why the floor defaults to Radar's cost.
+	private _after = _before min _floor;
+	_culprit setVariable ["points", _after, true];
 	[
-		"JESTER KILLED", format ["Killing the Jester cost you %1 credits - no win condition advanced.", _reward],
+		"JESTER KILLED", format ["Killing the Jester cost you %1 credits - no win condition advanced.", _before - _after],
 		"WARNING", 8, "TOP_RIGHT", "JESTERPENALTY", "TRAITOR"
 	] remoteExec ["Waldo_fnc_ShowUiNotification", _culprit];
+};
+
+// Traitor-on-Traitor teamkill: friendly fire between two people who already
+// know each other's role, not a mystery-breaking mistake like real RDM - so
+// it's a real cost, just a much smaller one than the RDM block below on both
+// credits and karma. This used to be completely free: the blanket
+// "_culpritRole == Traitor -> not guilty" line right after this exempted it
+// from the RDM karma check entirely, with no credit penalty anywhere either.
+if (_victimRole == "Traitor" && {_culpritRole == "Traitor"} && {!isNull _culprit} && {_culprit != _unit}) then {
+	private _penalty = missionNamespace getVariable ["Waldo_traitorTeamkillPenalty", 2];
+	if (_penalty > 0) then {
+		_culprit setVariable ["points", ((_culprit getVariable ["points", 0]) - _penalty) max 0, true];
+	};
+	[
+		"TEAMKILL", format ["Killing a fellow Traitor cost you %1 credits.", _penalty],
+		"WARNING", 8, "TOP_RIGHT", "TRAITORTK", "TRAITOR"
+	] remoteExec ["Waldo_fnc_ShowUiNotification", _culprit];
+	if (missionNamespace getVariable ["KarmaEnabled", true]) then {
+		[_culprit, -10, "teamkilled a fellow Traitor"] call _adjustKarma;
+	};
 };
 
 // Killing as a Traitor is never "guilty".
@@ -234,12 +294,5 @@ if (_culpritRole == "Traitor") then { _guilty = false; };
 
 // Karma: a non-Traitor killed a teammate (innocent/detective/jester) -> RDM.
 if ((missionNamespace getVariable ["KarmaEnabled", true]) && {_guilty} && {!isNull _culprit} && {_culprit != _unit} && {isPlayer _culprit}) then {
-	private _uid = getPlayerUID _culprit;
-	if (_uid != "") then {
-		private _key = "Waldo_karma_" + _uid;
-		private _k = profileNamespace getVariable [_key, 100];
-		profileNamespace setVariable [_key, (_k - 30) max 0];
-		saveProfileNamespace;
-		diag_log format ["[Waldo][server] karma: %1 RDM'd -> karma %2", name _culprit, (_k - 30) max 0];
-	};
+	[_culprit, -30, "RDM'd"] call _adjustKarma;
 };

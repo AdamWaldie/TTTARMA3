@@ -263,8 +263,13 @@ if (_victimRole == "Jester" && {_culpritRole == "Traitor"} && {!isNull _culprit}
 	// comment in description.ext for why the floor defaults to Radar's cost.
 	private _after = _before min _floor;
 	_culprit setVariable ["points", _after, true];
+	private _lost = _before - _after;
 	[
-		"JESTER KILLED", format ["Killing the Jester cost you %1 credits - no win condition advanced.", _before - _after],
+		"YOU KILLED THE JESTER",
+		format [
+			"The Jester doesn't count - that kill did NOTHING for your team's win condition. It cost you %1 credit%2, leaving you with %3. Check who you're shooting.",
+			_lost, ["", "s"] select (_lost != 1), _after
+		],
 		"WARNING", 8, "TOP_RIGHT", "JESTERPENALTY", "TRAITOR"
 	] remoteExec ["Waldo_fnc_ShowUiNotification", _culprit];
 };
@@ -277,11 +282,19 @@ if (_victimRole == "Jester" && {_culpritRole == "Traitor"} && {!isNull _culprit}
 // from the RDM karma check entirely, with no credit penalty anywhere either.
 if (_victimRole == "Traitor" && {_culpritRole == "Traitor"} && {!isNull _culprit} && {_culprit != _unit}) then {
 	private _penalty = missionNamespace getVariable ["Waldo_traitorTeamkillPenalty", 2];
+	private _before = _culprit getVariable ["points", 0];
+	private _after = _before;
 	if (_penalty > 0) then {
-		_culprit setVariable ["points", ((_culprit getVariable ["points", 0]) - _penalty) max 0, true];
+		_after = (_before - _penalty) max 0;
+		_culprit setVariable ["points", _after, true];
 	};
+	private _lost = _before - _after;
 	[
-		"TEAMKILL", format ["Killing a fellow Traitor cost you %1 credits.", _penalty],
+		"YOU TEAMKILLED",
+		format [
+			"That was %1 - a fellow Traitor, not a target. I hope you knew what you were doing when you killed them... %2 credit%3 gone, down to %4.",
+			name _unit, _lost, ["", "s"] select (_lost != 1), _after
+		],
 		"WARNING", 8, "TOP_RIGHT", "TRAITORTK", "TRAITOR"
 	] remoteExec ["Waldo_fnc_ShowUiNotification", _culprit];
 	if (missionNamespace getVariable ["KarmaEnabled", true]) then {

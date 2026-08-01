@@ -39,17 +39,8 @@ private _viewerOut = !alive player && {missionNamespace getVariable ["Waldo_spec
 // there's no equivalent "own role" exception needed for a number.
 private _viewerIsSpectator = !alive player;
 private _traitors  = missionNamespace getVariable ["TraitorList", []];
-
-private _hexOf = {
-	params ["_r"];
-	switch (_r) do {
-		case "Traitor":   { "#bf3636" };
-		case "Detective": { "#02b3ff" };
-		case "Jester":    { "#9a2ecc" };
-		case "Innocent":  { "#26bf1e" };
-		default           { "#9EA290" };
-	};
-};
+private _detectives = missionNamespace getVariable ["DetectiveList", []];
+private _jesters    = missionNamespace getVariable ["JesterList", []];
 
 private _rowFor = {
 	params ["_p"];
@@ -66,7 +57,12 @@ private _rowFor = {
 		|| {_myRole == "Traitor" && {(_p in _traitors) || {_role == "Jester"}}};
 
 	private _roleTxt = if (_reveal) then { toUpper (_role + (["", " (confirmed)"] select _revealed)) } else { "UNKNOWN" };
-	private _hex     = if (_reveal) then { [_role] call _hexOf } else { "#9EA290" };
+	// Waldo_roleColorHex, not a locally hardcoded map - this used to be its
+	// own switch with fixed hex values, which meant the scoreboard's role
+	// colours silently ignored the colourblind-accessibility setting every
+	// other role-coloured surface in this HUD (radar, HUD crest, shop, ping
+	// wheel) already respects.
+	private _hex     = if (_reveal) then { [_role] call Waldo_roleColorHex } else { "#9EA290" };
 	private _status  = if (_alive) then {
 		"<t color='#6FCB74'>ALIVE</t>"
 	} else {
@@ -106,6 +102,23 @@ private _confirmedDead = { !alive _x && {_x getVariable ["Waldo_identified", fal
 	count _live, count allPlayers, _confirmedDead
 ];
 (_display displayCtrl 3300) ctrlSetStructuredText parseText _body;
+
+// "Your Briefing" panel (idc 3330) - the same content the round-start card
+// showed (Waldo_fnc_showRoleCard), re-viewable any time from here so
+// missing/forgetting the transient notification doesn't lose it for the
+// round. Redaction happens HERE, the same way the row-by-row _reveal rule
+// above does - Traitors get their teammates (+ the Jester if one exists),
+// everyone gets the public Detective's name, nobody outside the Traitor
+// team gets the Jester's name, only that one exists. Never derived from
+// anything the server didn't already broadcast to every client as public
+// data (TraitorList/DetectiveList/JesterList) - this is a display filter
+// over that, exactly like every other role-visibility check in this file.
+private _briefMates = if (_myRole == "Traitor") then { (_traitors - [player]) apply { name _x } } else { [] };
+private _briefDetName = if (count _detectives > 0) then { name (_detectives select 0) } else { "" };
+private _briefJesterExists = count _jesters > 0;
+private _briefJesterName = if (_myRole == "Traitor" && {_briefJesterExists}) then { name (_jesters select 0) } else { "" };
+private _briefText = [_myRole, _briefMates, _briefDetName, _briefJesterExists, _briefJesterName] call Waldo_fnc_roleBriefingText;
+(_display displayCtrl 3330) ctrlSetStructuredText parseText _briefText;
 
 // Keybind reference panel (attached to the right edge, idc 3320) - same
 // per-role list the top bar shows (Waldo_keyHintsFor), just stacked vertically

@@ -153,6 +153,7 @@ class CfgFunctions
 			class onKilled {};          // Waldo_fnc_onKilled
 			class reviveRelink {};      // Waldo_fnc_reviveRelink (server: relinks role/lists onto a revived unit's NEW object)
 			class roundMVP {};          // Waldo_fnc_roundMVP (server: finds + broadcasts the MVP)
+			class showRoleCard {};      // Waldo_fnc_showRoleCard (client: round-start "who you are / who you know" notification)
 		};
 
 		class systems
@@ -193,6 +194,7 @@ class CfgFunctions
 			class registerActivationSlot {}; // Waldo_fnc_registerActivationSlot (shared: slot/backlog assignment)
 			class consumeActivationItem {}; // Waldo_fnc_consumeActivationItem (shared: clear a slot + promote backlog, for items whose "used?" outcome resolves asynchronously - see Disguiser)
 			class setupBriefing {};        // Waldo_fnc_setupBriefing (client: "How To Play" map-screen diary)
+			class roleBriefingText {};     // Waldo_fnc_roleBriefingText (shared: builds the "who you are/who you know" text for the round-start card AND the scoreboard's Your Briefing panel)
 		};
 
 		// Vendored from AdamWaldie/WaldosMissionPack (MissionScripts/MissionFlowAndUi,

@@ -16,15 +16,9 @@ disableSerialization;
 
 private _catalog = if (_role == "Traitor") then { Waldo_traitorShop } else { Waldo_detectiveShop };
 private _color = [_role] call Waldo_roleColor;
-
-// Role colour as a #rrggbb string for the structured-text description footer.
-private _hex = {
-	params ["_c"];
-	private _d = "0123456789abcdef";
-	private _byte = { params ["_v"]; private _n = (round (_v * 255)) max 0 min 255; (_d select [floor (_n / 16), 1]) + (_d select [_n mod 16, 1]) };
-	"#" + ([_c select 0] call _byte) + ([_c select 1] call _byte) + ([_c select 2] call _byte)
-};
-private _colorHex = [_color] call _hex;
+// #rrggbb form for the structured-text description footer - see
+// Waldo_roleColorHex (fn_initShops.sqf) for why this isn't a local helper.
+private _colorHex = [_role] call Waldo_roleColorHex;
 
 private _typeLabel = {
 	params ["_t"];

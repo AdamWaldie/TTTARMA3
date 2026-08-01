@@ -5,9 +5,10 @@
 // - you weren't really there for it). Sells the fake death: spawns a decoy
 // corpse where you were just standing, tagged as an Innocent so anyone who
 // investigates "the body" is misled about your real role, then teleports
-// the real you somewhere else in the arena that's out of every other
-// player's line of sight - onlookers see a body drop and the shooter gone,
-// not a ragdoll they can walk up and finish off.
+// the real you somewhere else in the arena - safely inside the real arena
+// boundary (not water, not right against the confinement fence) and out of
+// every other player's line of sight - onlookers see a body drop and the
+// shooter gone, not a ragdoll they can walk up and finish off.
 //
 // params: [_unit]
 //////////////////////////////////////////////////////////////////
@@ -29,18 +30,28 @@ private _dropPos = getPosATL _unit;
 // spot, and this should never hang waiting for one.
 private _center = missionNamespace getVariable ["mapPos", _dropPos];
 private _radius = missionNamespace getVariable ["mapRadius", 100];
+// Candidates are only ever rolled within 85% of the real arena radius, not
+// right up against it - Waldo_fnc_confineToArena only snaps a wandering
+// player back past radius+5, so a raw random point AT the edge could land
+// in that same near-boundary strip (right where the fence bites), or in
+// terrain the circular radius doesn't actually account for (the arena's
+// real footprint is never a perfect circle). surfaceIsWater rules out the
+// other common edge-of-arena failure, landing in the sea/a lake.
+private _safeRadius = _radius * 0.85;
 private _others = (allPlayers - [_unit]) select { alive _x };
 private _safePos = _dropPos;
 private _tries = 0;
 private _found = false;
 while { !_found && {_tries < 40} } do {
 	_tries = _tries + 1;
-	private _cand = _center getPos [random _radius, random 360];
-	private _empty = _cand findEmptyPosition [0, 20];
-	if !(_empty isEqualTo []) then {
-		private _eyePos = _empty vectorAdd [0, 0, 1];
-		private _spotted = { ([objNull, "VIEW"] checkVisibility [eyePos _x, _eyePos]) > 0 } count _others;
-		if (_spotted == 0) then { _safePos = _empty; _found = true; };
+	private _cand = _center getPos [random _safeRadius, random 360];
+	if (!surfaceIsWater _cand) then {
+		private _empty = _cand findEmptyPosition [0, 20];
+		if !(_empty isEqualTo []) then {
+			private _eyePos = _empty vectorAdd [0, 0, 1];
+			private _spotted = { ([objNull, "VIEW"] checkVisibility [eyePos _x, _eyePos]) > 0 } count _others;
+			if (_spotted == 0) then { _safePos = _empty; _found = true; };
+		};
 	};
 };
 

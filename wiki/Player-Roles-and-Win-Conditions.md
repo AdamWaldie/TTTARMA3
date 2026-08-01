@@ -20,6 +20,8 @@
 
 Role assignment (`Waldo_fnc_assignRoles`) resets every player to Innocent, then picks Traitors from a shuffled pool sized by the lobby's Traitor chance range (clamped by Min/Max Traitors), then a Detective if the lobby size clears `DetectiveMinPlayers`, then a Jester if enabled and either "Always Appears" or a chance roll succeeds.
 
+Every player gets a personal round-start briefing card (`Waldo_fnc_showRoleCard`) stating their role, a one-line reminder of what it's actually trying to do, and - only where they're genuinely supposed to know - who's who: a Traitor gets every teammate's name plus the Jester's (if one exists) named and coloured in that role's colour; everyone gets the Detective's name (public knowledge to every role); nobody outside the Traitor team is ever told the Jester's identity, only that one exists. Colours respect each viewer's own colourblind-accessibility setting. The exact same content is re-viewable at any point mid-round from the "Your Briefing" panel on the scoreboard (**K**), in case the notification card was missed or has since faded.
+
 ## How a round ends
 
 `Waldo_fnc_checkWin` runs once a second and evaluates endings in a fixed priority order, because more than one condition can technically be true in the same tick:

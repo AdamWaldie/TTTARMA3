@@ -214,6 +214,7 @@ class CfgFunctions
 		{
 			file = "functions\uinotify";
 			class ShowUiNotification {};        // Waldo_fnc_ShowUiNotification
+			class ShowUiNotificationAll {};     // Waldo_fnc_ShowUiNotificationAll (mission-specific, not vendored - broadcasts per-player instead of remoteExec's "-2", which was confirmed to silently never deliver on this mission's hosting setup)
 			class DismissUiNotification {};     // Waldo_fnc_DismissUiNotification
 			class DrainUiNotificationQueue {};  // Waldo_fnc_DrainUiNotificationQueue
 			class ResolveUiPanelPlacement {};   // Waldo_fnc_ResolveUiPanelPlacement

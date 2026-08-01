@@ -18,6 +18,12 @@
 // it again), which read exactly like "this action does nothing" even though
 // the FIRST call had worked correctly.
 //
+// The everyone-facing "BODY FOUND"/"BODY IDENTIFIED" cards go through
+// Waldo_fnc_ShowUiNotificationAll (per-player targeted remoteExec), not a
+// plain remoteExec [..., -2] broadcast - confirmed live that the latter
+// simply never delivered this function to ANY client on this mission's
+// actual hosting setup, first call or not, no matter how long you waited.
+//
 // params: [_body, _finder]
 //////////////////////////////////////////////////////////////////
 
@@ -54,7 +60,7 @@ if (_alreadyRevealed) then {
 		[
 			"BODY IDENTIFIED", format ["%1 identified %2's body - they were a %3.", _who, name _body, _role],
 			"SUCCESS", 10, "TOP_RIGHT", "IDENTIFY", "INVESTIGATION"
-		] remoteExec ["Waldo_fnc_ShowUiNotification", -2];
+		] call Waldo_fnc_ShowUiNotificationAll;
 	} else {
 		if (_alreadyFound) then {
 			// Repeat non-Detective call - explains WHY the action is still
@@ -70,7 +76,7 @@ if (_alreadyRevealed) then {
 			[
 				"BODY FOUND", format ["%1 found %2's body.", _who, name _body],
 				"INFO", 8, "TOP_RIGHT", "IDENTIFY", "INVESTIGATION"
-			] remoteExec ["Waldo_fnc_ShowUiNotification", -2];
+			] call Waldo_fnc_ShowUiNotificationAll;
 		};
 	};
 };

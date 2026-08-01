@@ -1,6 +1,6 @@
 # Lobby Parameters
 
-All lobby parameters are read by index in `Waldo_fnc_loadParams`, matching the order they're declared in `description.ext`'s `class Params`. If you're editing that file, appending a new parameter after the existing ones keeps every other index stable; inserting one in the middle shifts everything after it and will silently break the read.
+All lobby parameters are read by index in `Waldo_fnc_loadParams`, matching the order they're declared in `description.ext`'s `class Params`. If you're editing that file, appending a new parameter after the existing ones keeps every other index stable; inserting one in the middle (or reordering) shifts every index after it, which silently breaks the read AND resets any already-saved lobby parameter preset (it now points at the wrong setting by position). This block was reorganised into logical groups on 2026-08-01 for exactly that reason - do it again deliberately, not casually.
 
 ![The lobby parameters screen](Images/parameters.jpg)
 
@@ -18,7 +18,7 @@ All lobby parameters are read by index in `Waldo_fnc_loadParams`, matching the o
 
 | Parameter | What it controls |
 |---|---|
-| Traitor Chance Lower/Upper Bound | The range `assignRoles` rolls a random Traitor percentage from. |
+| Traitor Ratio: Minimum/Maximum % | The range `assignRoles` rolls a random Traitor percentage from - the two work together as a pair, not independent settings. |
 | Minimum/Maximum Traitors | Hard clamps on the rolled count. Max 0 means unlimited. If Max is set below Min, Min wins. |
 | Enable Detective Role | Off entirely disables the role. |
 | Detective: Minimum Players | Lobby size floor before a Detective is assigned at all. |
@@ -26,14 +26,17 @@ All lobby parameters are read by index in `Waldo_fnc_loadParams`, matching the o
 | Jester: Minimum Players | Lobby size floor before a Jester is assigned at all (default 10). |
 | Jester: Always Appears | Skips the chance roll and guarantees a Jester, once the minimum-players floor is met. |
 | Chance of Jester Appearing | The roll used when "Always Appears" is off. |
+| Spectators See All Roles | Off by default - a dead/spectating player only sees the same role information their own role would grant them while alive (their own team, the always-public Detective), not everyone's. On reveals every living role to spectators, same as the old unconditional behaviour. |
 
-## Gameplay
+## Gameplay / Economy
 
 | Parameter | What it controls |
 |---|---|
 | Enable Karma System | Toggles the cross-round RDM penalty (see [Architecture](Dev-Architecture)). |
 | Starting Shop Credits (base) | Traitor/Detective starting credits, before the per-player scaling below. |
 | Additional Starting Credit per N Players | Traitor/Detective starting credits also get +1 for every N players in the lobby (default 8). |
+| Kill Reward Credits | Credits paid out for a qualifying kill (Detective killing a Traitor, or vice versa) - 0 turns the reward off entirely. |
+| Traitor Bonus: 1 Credit per N Civilians Killed | Traitors get +1 credit for every N civilian (non-Traitor, non-Jester) kills their team racks up this round - 0 turns it off. |
 
 ## Airdrop / loot
 
@@ -49,8 +52,8 @@ All lobby parameters are read by index in `Waldo_fnc_loadParams`, matching the o
 
 | Parameter | What it controls |
 |---|---|
-| Allow Rain? / Chance of Rain | Whether `setupWeather` can roll rain, and how likely. |
-| Allow Fog? / Chance of Fog | Same, for fog. |
+| Enable Rain / Chance of Rain | Whether `setupWeather` can roll rain, and how likely. |
+| Enable Fog / Chance of Fog | Same, for fog. |
 | Time of Day | Random, Dawn, Day, Dusk, or Night. Each non-random option rolls within that window rather than a fixed hour. |
 
 ## Arena

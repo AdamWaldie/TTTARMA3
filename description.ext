@@ -263,7 +263,19 @@ class Params {
 	// Params are read by INDEX in Waldo_fnc_loadParams; this block's ORDER is the
 	// index. If you reorder or insert, update the reads there to match. Booleans
 	// use {0,1} + a numeric read (a {False,True} value with a bool default is
-	// ignored by the engine). Current order = indices 0..28.
+	// ignored by the engine).
+	//
+	// Reorganised into logical groups (2026-08-01): every param added since this
+	// mission first shipped had been tacked on at the very end to avoid
+	// reindexing (Arma's lobby stores a param SELECTION by index, so renumbering
+	// changes what an already-saved server config/preset actually picks) - which
+	// meant, for example, "Jester: Minimum Players" showed up nowhere near the
+	// rest of the Jester settings in the actual lobby Parameters list, since
+	// that screen just renders this block in file order with no grouping of its
+	// own. This is a one-time clean renumber to fix that. Genuinely breaking:
+	// any already-saved lobby parameter preset now points at the WRONG setting
+	// by index and must be reselected once - accepted deliberately here, but
+	// don't reorder casually again afterward.
 
 	// === ROUND ===
 	class roundBaseLength {                 // 0
@@ -299,13 +311,17 @@ class Params {
 
 	// === ROLES ===
 	class TraitorPercentageChanceLowerBound {   // 5
-		title = "Traitor Chance Lower Bound";
+		// Renamed from "Traitor Chance Lower/Upper Bound" - the old titles
+		// didn't say these two work TOGETHER as a range assignRoles rolls a
+		// random percentage from, which read as two unrelated settings
+		// rather than a min/max pair.
+		title = "Traitor Ratio: Minimum %";
 		values[] = {20, 25, 30, 40};
 		texts[]  = {"20%", "25%", "30%", "40%"};
 		default  = 25;
 	};
 	class TraitorPercentageChanceHigherBound {  // 6
-		title = "Traitor Chance Upper Bound";
+		title = "Traitor Ratio: Maximum %";
 		values[] = {40, 45, 50, 60};
 		texts[]  = {"40%", "45%", "50%", "60%"};
 		default  = 45;
@@ -340,133 +356,29 @@ class Params {
 		texts[]  = {"Disabled", "Enabled"};
 		default  = 1;   // one of the four documented roles - on by default, not opt-in
 	};
-	class JesterAlways {                    // 12
+	class JesterMinPlayers {                // 12
+		// Moved up next to the rest of the Jester settings - was stranded at
+		// the very end of the list (appended after this param existed).
+		title = "Jester: Minimum Players";
+		values[] = {5, 6, 8, 10, 12};
+		texts[]  = {"5", "6", "8", "10", "12"};
+		default  = 10;
+	};
+	class JesterAlways {                    // 13
 		title = "Jester: Always Appears";
 		values[] = {0, 1};
 		texts[]  = {"No (use chance)", "Yes"};
 		default  = 0;
 	};
-	class JesterPercentagechance {          // 13
+	class JesterPercentagechance {          // 14
 		title = "Chance of Jester Appearing";
 		values[] = {20, 30, 40};
 		texts[]  = {"20%", "30%", "40%"};
 		default  = 30;
 	};
-
-	// === GAMEPLAY ===
-	class KarmaEnabled {                    // 14
-		title = "Enable Karma System";
-		values[] = {0, 1};
-		texts[]  = {"Disabled", "Enabled"};
-		default  = 1;
-	};
-	class startingCredits {                 // 15
-		title = "Starting Shop Credits (base)";
-		values[] = {0, 1, 2, 3, 5};
-		texts[]  = {"0", "1", "2", "3", "5"};
-		default  = 1;
-	};
-
-	// === AIRDROP / LOOT ===
-	class airdrop {                         // 16
-		title = "Enable Airdrops";
-		values[] = {0, 1};
-		texts[]  = {"Disabled", "Enabled"};
-		default  = 1;
-	};
-	class airdropBaseTimer {                // 17
-		title = "Airdrop Base Timer (seconds)";
-		values[] = {30, 60, 75, 90, 120};
-		texts[]  = {"30", "60", "75", "90", "120"};
-		default  = 75;
-	};
-	class airdropRandomTimer {              // 18
-		title = "Airdrop Random Add Time (seconds)";
-		values[] = {0, 30, 60, 75, 90};
-		texts[]  = {"0", "30", "60", "75", "90"};
-		default  = 75;
-	};
-	class airdropLoadoutsAmount {           // 19
-		title = "Loadouts Per Airdrop";
-		values[] = {1, 2, 3};
-		texts[]  = {"1", "2", "3"};
-		default  = 1;
-	};
-	class lootMaxBullets {                  // 20
-		title = "Max Ammo per Magazine";
-		values[] = {30, 40, 50, 60, 75, 100};
-		texts[]  = {"30", "40", "50", "60", "75", "100"};
-		default  = 50;
-	};
-	class lootPower {                       // 21
-		title = "Loot Power";
-		values[] = {0, 1, 2};
-		texts[]  = {"Low (SMGs / pistols)", "Balanced", "Anything (incl. rifles)"};
-		default  = 1;
-	};
-
-	// === ENVIRONMENT ===
-	class allowRain {                       // 22
-		title = "Allow Rain?";
-		values[] = {0, 1};
-		texts[]  = {"No", "Yes"};
-		default  = 1;
-	};
-	class chanceRain {                      // 23
-		title = "Chance of Rain (%)";
-		values[] = {0, 20, 40, 60, 80, 100};
-		texts[]  = {"0%", "20%", "40%", "60%", "80%", "100%"};
-		default  = 40;
-	};
-	class allowFog {                        // 24
-		title = "Allow Fog?";
-		values[] = {0, 1};
-		texts[]  = {"No", "Yes"};
-		default  = 1;
-	};
-	class chanceFog {                       // 25
-		title = "Chance of Fog (%)";
-		values[] = {0, 10, 20, 30, 40};
-		texts[]  = {"0%", "10%", "20%", "30%", "40%"};
-		default  = 20;
-	};
-	class timeOfDay {                       // 26
-		title = "Time of Day";
-		values[] = {0, 1, 2, 3, 4};
-		texts[]  = {"Random", "Dawn", "Day", "Dusk", "Night"};
-		default  = 2;   // Day - out of the box, every round is fought in daylight
-	};
-
-	// === ARENA ===
-	class arenaScale {                      // 27
-		title = "Arena Size";
-		values[] = {75, 100, 150};
-		texts[]  = {"Small", "Normal", "Large"};
-		default  = 100;
-	};
-
-	// === TESTING ===
-	class TestingFlag {                     // 28
-		title = "Enable Testing Mode";
-		values[] = {0, 1};
-		texts[]  = {"No", "Yes"};
-		default  = 0;
-	};
-
-	// New params go at the END (file order = param index; see loadParams).
-	class killRewardCredits {               // 29
-		title = "Kill Reward Credits";
-		values[] = {0, 1, 2, 3};
-		texts[]  = {"0 (off)", "1", "2", "3"};
-		default  = 1;
-	};
-	class civKillBonusEvery {               // 31 (30 is a retired gap - see the note below)
-		title = "Traitor Bonus: 1 Credit per N Civilians Killed";
-		values[] = {0, 3, 5, 8};
-		texts[]  = {"Off", "Every 3", "Every 5", "Every 8"};
-		default  = 5;
-	};
-	class spectatorsSeeAllRoles {            // 32
+	class spectatorsSeeAllRoles {           // 15
+		// Grouped with Roles, not Gameplay - this is entirely about role
+		// visibility, same family as everything else in this section.
 		title = "Spectators See All Roles";
 		values[] = {0, 1};
 		// Off by default: a dead player broadcasting every living role to
@@ -478,30 +390,128 @@ class Params {
 		texts[]  = {"No (own role's visibility only)", "Yes (see everyone)"};
 		default  = 0;
 	};
-	class JesterMinPlayers {                 // 33
-		title = "Jester: Minimum Players";
-		// Was a hardcoded ">= 5" in Waldo_fnc_assignRoles with no lobby
-		// control at all, unlike the Detective's own DetectiveMinPlayers
-		// (index 10) - same idea, made configurable, default raised to 10.
-		values[] = {5, 6, 8, 10, 12};
-		texts[]  = {"5", "6", "8", "10", "12"};
-		default  = 10;
+
+	// === GAMEPLAY / ECONOMY ===
+	class KarmaEnabled {                    // 16
+		title = "Enable Karma System";
+		values[] = {0, 1};
+		texts[]  = {"Disabled", "Enabled"};
+		default  = 1;
 	};
-	class startCreditsPerNPlayers {          // 34
+	class startingCredits {                 // 17
+		title = "Starting Shop Credits (base)";
+		values[] = {0, 1, 2, 3, 5};
+		texts[]  = {"0", "1", "2", "3", "5"};
+		default  = 1;
+	};
+	class startCreditsPerNPlayers {         // 18
+		// Moved up next to the base credits setting it scales - was
+		// stranded at the very end of the list.
 		title = "Additional Starting Credit per N Players";
-		// Waldo_fnc_assignRoles scales Traitor/Detective starting credits as
-		// startingCredits (index 15) + floor(playerCount / N) - N was a
-		// hardcoded 8 with no lobby control at all. Same idea as every other
-		// "N players per X" scaling in this block, made configurable.
 		values[] = {4, 5, 6, 8, 10, 12};
 		texts[]  = {"4", "5", "6", "8", "10", "12"};
 		default  = 8;
 	};
+	class killRewardCredits {               // 19
+		title = "Kill Reward Credits";
+		values[] = {0, 1, 2, 3};
+		texts[]  = {"0 (off)", "1", "2", "3"};
+		default  = 1;
+	};
+	class civKillBonusEvery {               // 20
+		title = "Traitor Bonus: 1 Credit per N Civilians Killed";
+		values[] = {0, 3, 5, 8};
+		texts[]  = {"Off", "Every 3", "Every 5", "Every 8"};
+		default  = 5;
+	};
+
+	// === AIRDROP / LOOT ===
+	class airdrop {                         // 21
+		title = "Enable Airdrops";
+		values[] = {0, 1};
+		texts[]  = {"Disabled", "Enabled"};
+		default  = 1;
+	};
+	class airdropBaseTimer {                // 22
+		title = "Airdrop Base Timer (seconds)";
+		values[] = {30, 60, 75, 90, 120};
+		texts[]  = {"30", "60", "75", "90", "120"};
+		default  = 75;
+	};
+	class airdropRandomTimer {              // 23
+		title = "Airdrop Random Add Time (seconds)";
+		values[] = {0, 30, 60, 75, 90};
+		texts[]  = {"0", "30", "60", "75", "90"};
+		default  = 75;
+	};
+	class airdropLoadoutsAmount {           // 24
+		title = "Loadouts Per Airdrop";
+		values[] = {1, 2, 3};
+		texts[]  = {"1", "2", "3"};
+		default  = 1;
+	};
+	class lootMaxBullets {                  // 25
+		title = "Max Ammo per Magazine";
+		values[] = {30, 40, 50, 60, 75, 100};
+		texts[]  = {"30", "40", "50", "60", "75", "100"};
+		default  = 50;
+	};
+	class lootPower {                       // 26
+		title = "Loot Power";
+		values[] = {0, 1, 2};
+		texts[]  = {"Low (SMGs / pistols)", "Balanced", "Anything (incl. rifles)"};
+		default  = 1;
+	};
+
+	// === ENVIRONMENT ===
+	class allowRain {                       // 27
+		title = "Enable Rain";
+		values[] = {0, 1};
+		texts[]  = {"No", "Yes"};
+		default  = 1;
+	};
+	class chanceRain {                      // 28
+		title = "Chance of Rain (%)";
+		values[] = {0, 20, 40, 60, 80, 100};
+		texts[]  = {"0%", "20%", "40%", "60%", "80%", "100%"};
+		default  = 40;
+	};
+	class allowFog {                        // 29
+		title = "Enable Fog";
+		values[] = {0, 1};
+		texts[]  = {"No", "Yes"};
+		default  = 1;
+	};
+	class chanceFog {                       // 30
+		title = "Chance of Fog (%)";
+		values[] = {0, 10, 20, 30, 40};
+		texts[]  = {"0%", "10%", "20%", "30%", "40%"};
+		default  = 20;
+	};
+	class timeOfDay {                       // 31
+		title = "Time of Day";
+		values[] = {0, 1, 2, 3, 4};
+		texts[]  = {"Random", "Dawn", "Day", "Dusk", "Night"};
+		default  = 2;   // Day - out of the box, every round is fought in daylight
+	};
+
+	// === ARENA ===
+	class arenaScale {                      // 32
+		title = "Arena Size";
+		values[] = {75, 100, 150};
+		texts[]  = {"Small", "Normal", "Large"};
+		default  = 100;
+	};
+
+	// === TESTING ===
+	class TestingFlag {                     // 33
+		title = "Enable Testing Mode";
+		values[] = {0, 1};
+		texts[]  = {"No", "Yes"};
+		default  = 0;
+	};
 
 	// No HUD/role-crest-style param on purpose: that's entirely a per-player
 	// preference now (H key, see Waldo_fnc_initHud/fn_initClient.sqf), not
-	// something a server admin sets for everyone. Index 30 stays retired
-	// rather than reused, so a stale saved server config (or a JIP still
-	// running an older cached lobby state) never resurrects it as a
-	// different param by accident.
+	// something a server admin sets for everyone.
 };

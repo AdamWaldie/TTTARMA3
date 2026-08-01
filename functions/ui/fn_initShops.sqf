@@ -209,27 +209,32 @@ Waldo_traitorShop = [
 
 	["Rocket Launcher", 2, "weapon",
 		{
-			// Confirmed via .rpt: magazine-before-weapon (correct order) AND
-			// a retry-after-weapon-exists (previous fix) BOTH still left it
-			// unloaded (launch_MRAWS_green_rail_F / MRAWS_HEAT_F, loaded=
-			// false) - the "empty weapon absorbs a magazine even with cargo
-			// full" theory behind that retry didn't hold up. addWeaponGlobal
-			// itself is the remaining suspect: BI's own docs note it
-			// REPLACES whatever's in that weapon slot, and it has a
-			// documented history of dedicated-server-specific bugs (weapon
-			// duplication if the old one isn't removed first, fixed only in
-			// a later engine version) - entirely plausible that a slot
-			// "replace" on a dedicated server clobbers the just-chambered
-			// magazine along with it. This code already runs locally on the
-			// buyer's own client (called directly from the shop, not
-			// remoteExec'd), so there was never a reason to need the
-			// "Global" broadcast variant in the first place - a player's own
-			// inventory changes already replicate normally. Switched to
-			// plain addWeapon.
+			// Confirmed via .rpt, three separate times: magazine-before-weapon,
+			// a retry-after-weapon-exists, and plain addWeapon instead of
+			// addWeaponGlobal ALL still left it unloaded (most recently
+			// launch_RPG32_green_F / RPG32_F, loaded=false). Every one of
+			// those was still fundamentally an incremental "add a magazine,
+			// hope the engine chambers it" operation, and none of them
+			// actually solves a genuine no-free-cargo-space case if that's
+			// what this is.
+			//
+			// setUnitLoadout is a different code path entirely: it sets a
+			// unit's COMPLETE loadout atomically from a loadout array
+			// instead of incrementally adding items into (possibly full)
+			// containers one at a time. The launcher slot is index 1 of that
+			// array (Arma's own "secondaryWeapon" - BI's docs literally
+			// call it that; primary is index 0, handgun is index 2), and
+			// each weapon slot's own format is
+			// [weapon, muzzle, flashlight, optics, [magazine, ammoCount], [], ""].
+			// Splicing the launcher + its magazine directly into the
+			// existing loadout (not overwriting anything else the player is
+			// already carrying) and setting it back in one call is the last
+			// resort short of manually auditing cargo capacity live.
 			private _launcherMag = missionNamespace getVariable ["TraitorLauncherMag", "NLAW_F"];
 			private _launcher = missionNamespace getVariable ["TraitorLauncher", "launch_NLAW_F"];
-			player addMagazine _launcherMag;
-			player addWeapon _launcher;
+			private _loadout = getUnitLoadout player;
+			_loadout set [1, [_launcher, "", "", "", [_launcherMag, 1], [], ""]];
+			player setUnitLoadout _loadout;
 			diag_log format ["[Waldo][client] Rocket Launcher purchase: launcher=%1 mag=%2 loaded=%3", _launcher, _launcherMag, _launcherMag in (magazines player)];
 		},
 		{},

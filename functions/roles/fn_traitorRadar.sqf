@@ -54,6 +54,17 @@ private _eh = addMissionEventHandler ["Draw3D", {
 	private _radar = player getVariable ["radar", 0];
 	private _icon = missionNamespace getVariable ["Waldo_radarPingIcon", ""];
 	{
+		// Traitor Radar is only ever bought by a Traitor, and this mission
+		// only has 4 roles - Traitor/Jester/Detective are all things a Traitor
+		// is ALREADY told outright (see Waldo_fnc_drawRoleIcons/
+		// Waldo_fnc_assignRoles: Traitors know their own team, the Jester, and
+		// the always-public Detective), and "Innocent" is the non-secret
+		// default for anyone with no special reveal, not a hidden role of its
+		// own. So colouring every unit by its true role here reveals nothing a
+		// Traitor doesn't already have a legitimate way to know - unlike
+		// Waldo_fnc_detectiveRadar, which is deliberately flat-coloured
+		// (position only, no role) because a Detective has no equivalent
+		// standing knowledge of anyone's role.
 		private _role = _x getVariable ["role", "Innocent"];
 		private _base = [_role] call Waldo_roleColor;
 		private _color = [_base select 0, _base select 1, _base select 2, _radar];

@@ -71,17 +71,18 @@ while { true } do {
 [] call Waldo_fnc_buildArena;
 ["arena-built"] call Waldo_logPhase;
 
-// If the arena turns out to be too fragmented to sensibly gate-cut (more
-// than 2 separate dividing wall/fence runs - see Waldo_fnc_clearArenaPaths),
-// re-roll the whole arena and try again rather than turning one location
-// into Swiss cheese. Bounded at 2 retries; if it's STILL fragmented after
-// that, force-clear on the last attempt anyway - a round with a few extra
-// gates cut is still better than one that's genuinely uncrossable.
+// If the arena has a wall/fence line dominating at least 55% of its width
+// in one direction (see Waldo_fnc_clearArenaPaths - deliberately a high bar
+// so ordinary town clutter never trips this), re-roll the whole arena and
+// try again rather than gate-cutting through something that severe.
+// Bounded at 2 retries; if it's STILL found after that, force-clear on the
+// last attempt anyway - a round with a gate cut through it is still better
+// than one that's genuinely uncrossable.
 private _pathsOk = [] call Waldo_fnc_clearArenaPaths;
 private _reselectTries = 0;
 while { !_pathsOk && {_reselectTries < 2} } do {
 	_reselectTries = _reselectTries + 1;
-	diag_log format ["[Waldo][server] arena too fragmented (attempt %1) - reselecting", _reselectTries];
+	diag_log format ["[Waldo][server] arena has a dominating obstruction (attempt %1) - reselecting", _reselectTries];
 	[] call Waldo_fnc_selectArena;
 	[] call Waldo_fnc_populateLoot;
 	[] call Waldo_fnc_buildArena;

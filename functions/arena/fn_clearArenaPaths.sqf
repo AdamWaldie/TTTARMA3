@@ -17,39 +17,50 @@
 // exact middle.
 //
 // URBAN FALSE POSITIVES: an arena worth playing on is, almost by
-// definition, in or near a town, and towns are full of small, perfectly
-// walkable-around yard/garden fences a single probe line will legitimately
-// cross without that fence being any kind of real problem. Treating any one
-// blocked chord as "the arena is split" would false-positive constantly and
-// start deleting ordinary property fencing all over the map. Instead, a
-// chord only counts as part of a real divider once it's in a RUN of at
-// least 3 CONSECUTIVE blocked chords in the same sweep - meaning the
-// obstruction spans a real stretch of the arena's width, not one localised
-// fence a player could just step around. Only the middle chord of each such
-// run gets a gate cut through it.
+// definition, in or near a town - the best arenas are the densest, most
+// interesting ones, and those are exactly the ones with the most ordinary
+// clutter (yard fences, garden walls, buildings built flush against each
+// other) for a probe line to legitimately cross without any of it being a
+// real problem. An early version of this required only 3 consecutive
+// blocked chords, which turned out to still trip constantly in exactly the
+// good, dense towns worth playing on - normal fence density there is
+// enough to blocked-chord several nearby, entirely UNRELATED small fences
+// in a row, which isn't the same thing as one continuous dividing wall at
+// all. Deliberately conservative now instead: a run only qualifies once it
+// spans at least 55% of that sweep's FULL width in consecutive blocked
+// chords - a bar ordinary town clutter essentially never clears, that only
+// an obstruction dominating almost the entire arena in one direction can
+// meet. Some genuine but smaller/off-axis splits may go uncaught as the
+// cost of that; see the header note on why that trade was made deliberately.
+//
+// Buildings are NEVER treated as a blocker (only CfgVehicles' "Wall" base
+// class counts - see below) for the same reason: a solid row of buildings
+// built against each other is completely normal, desirable town layout,
+// not a problem to flag.
 //
 // HILLY TERRAIN: each chord is walked in ~25m sub-segments, not one
 // straight line from edge to edge, with ground height resampled at every
 // step - a hill or dip partway along a long chord can't make the probe
 // silently pass over (or under) a fence sitting on it.
 //
-// BAILS TO A RESELECT rather than carving up a hopelessly fragmented
-// arena: if more than 2 separate dividing runs are found across every sweep
-// combined, this returns false without clearing anything, and
-// Waldo_fnc_initServer re-rolls the whole arena (bounded retries) instead
-// of turning one location into Swiss cheese. _force skips this bail (used
-// as the last-resort fallback once retries are exhausted - clearing
-// everything found is still better than leaving the round genuinely
-// uncrossable).
+// PREFERS A RESELECT over gate-cutting: finding even ONE run under this
+// much stricter bar is now a strong signal of a genuinely bad location, not
+// routine clutter - so by default this returns false and clears NOTHING as
+// soon as any run qualifies, letting Waldo_fnc_initServer re-roll the whole
+// arena (bounded retries) instead. _force skips this bail entirely and
+// clears every run found instead - used only as the last-resort fallback
+// once retries are exhausted, since a round with a gate cut through it is
+// still better than one that's genuinely uncrossable.
 //
 // Only objects inheriting from CfgVehicles' "Wall" base class count as a
 // blocker - covers the vast majority of real placeable fences/walls
 // without also sweeping up unrelated large objects nearby.
 //
 // params: [_force] (default false)
-// returns: BOOL - true if the arena is fine as-is (0-2 gates cut, or none
-// needed, or _force was set), false if it was too fragmented and nothing
-// was cleared - Waldo_fnc_initServer should reselect and try again.
+// returns: BOOL - true if the arena is fine as-is (no qualifying run found,
+// or _force was set and everything found got cleared), false if a
+// dominating obstruction was found and nothing was cleared -
+// Waldo_fnc_initServer should reselect and try again.
 //////////////////////////////////////////////////////////////////
 
 params [["_force", false]];
@@ -152,13 +163,16 @@ private _pendingGates = [];   // hitObj per confirmed dividing run - collected b
 		_offset = _offset + _step;
 	};
 
-	// Scan for runs of >= 3 consecutive blocked chords; only the middle
-	// chord of each qualifying run is queued for an actual gate cut.
+	// Scan for a run of consecutive blocked chords spanning at least 55% of
+	// this sweep's chord count (see the header note on why this bar is
+	// deliberately this high) - the middle chord of each qualifying run is
+	// what a forced clear (see below) would actually cut a gate through.
+	private _minRunLen = ceil (0.55 * (count _chords));
 	private _runStart = -1;
 	private _queueRun = {
-		params ["_chords", "_runStart", "_runEnd"];
+		params ["_chords", "_runStart", "_runEnd", "_minRunLen"];
 		private _runLen = _runEnd - _runStart;
-		if (_runLen >= 3) then {
+		if (_runLen >= _minRunLen) then {
 			private _midIdx = _runStart + floor (_runLen / 2);
 			[true, (_chords select _midIdx) select 1]
 		} else {
@@ -170,20 +184,20 @@ private _pendingGates = [];   // hitObj per confirmed dividing run - collected b
 			if (_runStart < 0) then { _runStart = _i; };
 		} else {
 			if (_runStart >= 0) then {
-				([_chords, _runStart, _i] call _queueRun) params ["_qualifies", "_hitObj"];
+				([_chords, _runStart, _i, _minRunLen] call _queueRun) params ["_qualifies", "_hitObj"];
 				if (_qualifies) then { _totalRuns = _totalRuns + 1; _pendingGates pushBack _hitObj; };
 				_runStart = -1;
 			};
 		};
 	};
 	if (_runStart >= 0) then {
-		([_chords, _runStart, count _chords] call _queueRun) params ["_qualifies", "_hitObj"];
+		([_chords, _runStart, count _chords, _minRunLen] call _queueRun) params ["_qualifies", "_hitObj"];
 		if (_qualifies) then { _totalRuns = _totalRuns + 1; _pendingGates pushBack _hitObj; };
 	};
 } forEach [0, 60, 120];
 
-if (_totalRuns > 2 && !_force) exitWith {
-	diag_log format ["[Waldo][server] clearArenaPaths: %1 dividing runs found - too fragmented, recommending reselect", _totalRuns];
+if (_totalRuns > 0 && !_force) exitWith {
+	diag_log format ["[Waldo][server] clearArenaPaths: %1 dominating run(s) found - recommending reselect", _totalRuns];
 	false
 };
 

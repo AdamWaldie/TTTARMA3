@@ -14,7 +14,7 @@ Activation items get 3 key slots (Y/U/J), not one - the first activation item yo
 
 ## Traitor shop
 
-Suicide Bomb, Radar (pulses everyone's position, recharges), Rocket Launcher, Stamina, Teleport Grenades (red smoke that warps you to where it lands), Long Rifle, Defibrillator (revives a body onto the Traitor team), Silenced Pistol, Frag Grenades, Body Armor, Body Remover (destroys a corpse outright, denying the Detective evidence), C4 Charge, Night Vision, Dead Ringer, False Flag.
+Suicide Bomb, Radar (pulses everyone's position, recharges), Rocket Launcher, Stamina, Teleport Grenades (red smoke that warps you to where it lands), Long Rifle, Defibrillator (revives a body onto the Traitor team), Silenced Pistol, Frag Grenades, Body Armor, Body Remover (destroys a corpse outright, denying the Detective evidence), C4 Charge, Night Vision, Dead Ringer, False Flag, Disguiser (copy a living player's exact loadout for 60 seconds - see [Investigation Mechanics](Player-Investigation-Mechanics) for how it also redirects your DNA).
 
 ![The Traitor shop](Images/BuyMenuTraitor.jpg)
 

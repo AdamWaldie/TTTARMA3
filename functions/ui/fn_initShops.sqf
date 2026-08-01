@@ -206,9 +206,13 @@ Waldo_roleColor = {
 // the investigation-erasing tier below it. Expensive (3-4): tools that
 // actively corrupt or erase the investigation itself (Fake Health Station
 // and Body Remover destroy/hide evidence, Teleport Grenades and Long Rifle
-// put real distance between a kill and its scene, False Flag - priciest of
-// all - frames an innocent outright), so those have to be earned through
-// play rather than being turn-one defaults.
+// put real distance between a kill and its scene, False Flag frames an
+// innocent outright), so those have to be earned through play rather than
+// being turn-one defaults. Disguiser (5) is priced above all of them -
+// unlike any single-axis item above it, it corrupts BOTH the visual trail
+// (walk right up to someone wearing their target's gear) and the forensic
+// one (DNA misattribution) at once, for a sustained 60s window rather than
+// a single kill.
 Waldo_traitorShop = [
 	["Suicide Bomb", 2, "activation",
 		{},
@@ -363,10 +367,23 @@ Waldo_traitorShop = [
 	["False Flag", 4, "passive",
 		{ player setVariable ["Waldo_falseFlag", true, true]; hint "False Flag armed - your next kill will frame someone else."; },
 		{},
-		// Raised from 3 to the top of the shop - directly frames an innocent
-		// bystander for the kill, the single most investigation-corrupting
-		// item available, priced to match.
-		"Your next kill leaves an innocent bystander's DNA at the scene instead of yours"]
+		// Raised from 3 - directly frames an innocent bystander for the
+		// kill, one of the most investigation-corrupting items available,
+		// priced to match (though Disguiser below now edges it out, since
+		// that one corrupts the visual trail too, not just the forensic one).
+		"Your next kill leaves an innocent bystander's DNA at the scene instead of yours"],
+
+	["Disguiser", 5, "activation",
+		{},
+		{
+			params ["_purchId", "_slotIdx"];
+			// Opening the picker never consumes the item on its own - only
+			// an actual pick does (Waldo_fnc_disguiserActivate), since
+			// pressing the key and then hitting ESC must leave it untouched.
+			[_purchId, _slotIdx] call Waldo_fnc_disguiserOpen;
+			false
+		},
+		"Press your assigned key to pick a living player - copy their exact current loadout for 60s. Any DNA you'd leave behind while disguised points to them instead of you."]
 ];
 
 // --- Detective shop ---

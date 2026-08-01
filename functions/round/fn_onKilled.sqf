@@ -11,6 +11,9 @@
 //     small credit + karma hit - previously entirely free)
 //   - karma: lowering the culprit's karma for killing a teammate (RDM), or
 //     a smaller amount for a Traitor teamkill
+//   - DNA/evidence attribution, including redirecting it onto whoever the
+//     culprit is currently disguised as (Waldo_fnc_disguiserActivate) or is
+//     framing (False Flag)
 //
 // params (from MPKilled): [_unit, _killer, _instigator, _useEffects]
 //////////////////////////////////////////////////////////////////
@@ -103,6 +106,15 @@ if (!isNull _culprit && {_culprit != _unit}) then {
 	// ("an innocent bystander") - it used to only exclude other Traitors, so
 	// it could occasionally frame a Detective.
 	private _dnaOn = _culprit;
+	// Disguised (Waldo_fnc_disguiserActivate) - their own DNA already reads
+	// as whoever they copied the loadout from, the whole point of the
+	// disguise. Checked before False Flag so an armed False Flag can still
+	// override it below (a deliberate one-shot frame beats the passive
+	// disguise state if a Traitor somehow has both active at once).
+	if (_culprit getVariable ["Waldo_disguiseActive", false]) then {
+		private _disguiseAs = _culprit getVariable ["Waldo_disguiseAs", objNull];
+		if (!isNull _disguiseAs) then { _dnaOn = _disguiseAs; };
+	};
 	if (_culprit getVariable ["Waldo_falseFlag", false]) then {
 		private _frames = allPlayers select { alive _x && {!(_x in _traitors)} && {!(_x in _detectives)} && {_x != _culprit} };
 		if (count _frames > 0) then {

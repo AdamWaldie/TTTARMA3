@@ -191,6 +191,7 @@ class CfgFunctions
 			class useActivationSlot {};    // Waldo_fnc_useActivationSlot (fires the item bound to Y/U/J)
 			class assignActivationSlot {}; // Waldo_fnc_assignActivationSlot (buy menu: rebind an item to a key)
 			class registerActivationSlot {}; // Waldo_fnc_registerActivationSlot (shared: slot/backlog assignment)
+			class consumeActivationItem {}; // Waldo_fnc_consumeActivationItem (shared: clear a slot + promote backlog, for items whose "used?" outcome resolves asynchronously - see Disguiser)
 			class setupBriefing {};        // Waldo_fnc_setupBriefing (client: "How To Play" map-screen diary)
 		};
 
@@ -255,6 +256,8 @@ class CfgFunctions
 			class pingShow {};          // Waldo_fnc_pingShow (client: render a traitor ping)
 			class deadRinger {};        // Waldo_fnc_deadRinger (traitor: arm a faked death)
 			class deadRingerTrigger {}; // Waldo_fnc_deadRingerTrigger (client: sell the fake death)
+			class disguiserOpen {};     // Waldo_fnc_disguiserOpen (traitor: opens the target-picker dialog)
+			class disguiserActivate {}; // Waldo_fnc_disguiserActivate (traitor: applies the loadout copy, runs the 60s countdown/revert)
 		};
 	};
 };

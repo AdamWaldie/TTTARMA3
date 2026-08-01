@@ -107,7 +107,14 @@ Edit the catalog in `ui/fn_initShops.sqf`. Each entry is:
 - `_onBuy`: runs immediately on purchase.
 - `_onActivate`: for activation items, runs when the player presses whichever
   of **Y** / **U** / **J** the item is bound to; return `true` to consume the
-  item, `false` to keep it assigned (e.g. no target).
+  item, `false` to keep it assigned (e.g. no target). Called as
+  `[_purchId, _slotIdx] call _onActivate` - almost every item ignores these
+  (SQF discards unused params), but an item whose real "was it used?" outcome
+  only resolves later, after some async UI interaction rather than at the
+  instant the key is pressed, needs them to self-consume once that later
+  outcome actually happens (see the Disguiser: it opens a picker dialog and
+  returns `false` immediately, then the dialog's own pick callback consumes
+  the item via `Waldo_fnc_consumeActivationItem`, not this return value).
 
 Activation items are assigned to the first free of 3 key slots (Y/U/J) on
 purchase, or held in a backlog if all 3 are already taken

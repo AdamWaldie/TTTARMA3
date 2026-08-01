@@ -1526,3 +1526,128 @@ class WaldoScore {
 		};
 	};
 };
+
+// ============================================================================
+// WaldoDisguise - the Traitor "Disguiser" item's target picker
+// (Waldo_fnc_disguiserOpen). Same shell recipe as WaldoScore/WaldoShop (dim,
+// shadow, casing, header, accent stripe, title, close button), scaled down
+// since it only needs one scrollable list of player buttons - generated at
+// runtime the same way WaldoShop's item grid is, so this shell never changes
+// when the player list does.
+//   3800 title, 3801 button group (buttons themselves are ctrlCreate'd at
+//   3820+i by Waldo_fnc_disguiserOpen), idc 2 close/cancel (shared
+//   convention with every other Waldo dialog's close button).
+// ============================================================================
+class WaldoDisguise {
+	idd = -1;
+	fadeout = 0.15;
+	fadein = 0.15;
+	movingEnable = false;
+	enableSimulation = true;
+	duration = 99999;
+	// Same modal guard as every other Waldo dialog - notification cards draw
+	// on display 46, over this dialog otherwise, so queue them while open and
+	// drain on close.
+	onLoad = "with uiNamespace do { WaldoDisguise = _this select 0 }; uiNamespace setVariable ['Waldo_uiModalOpen', true];";
+	onUnload = "uiNamespace setVariable ['Waldo_uiModalOpen', false]; [] spawn Waldo_fnc_DrainUiNotificationQueue;";
+
+	class controlsBackground {
+		class wdDim: RscText {
+			idc = -1;
+			x = safezoneX; y = safezoneY; w = safezoneW; h = safezoneH;
+			colorBackground[] = WALDO_DIM;
+			style = 0;
+		};
+		class wdShadow: RscText {
+			idc = -1;
+			x = (safezoneX + (0.35 * safezoneW)) - (0.006 * safezoneW);
+			y = (safezoneY + (0.22 * safezoneH)) - (0.006 * safezoneW);
+			w = (0.30 * safezoneW) + (0.012 * safezoneW);
+			h = (0.56 * safezoneH) + (0.012 * safezoneW);
+			colorBackground[] = WALDO_SHADOW;
+			style = 0;
+		};
+		class wdBG: RscText {
+			idc = -1;
+			x = safezoneX + (0.35 * safezoneW);
+			y = safezoneY + (0.22 * safezoneH);
+			w = 0.30 * safezoneW;
+			h = 0.56 * safezoneH;
+			colorBackground[] = WALDO_CASING;
+			style = 0;
+		};
+		class wdHeader: RscText {
+			idc = -1;
+			x = safezoneX + (0.35 * safezoneW);
+			y = safezoneY + (0.22 * safezoneH);
+			w = 0.30 * safezoneW;
+			h = 0.062 * safezoneH;
+			colorBackground[] = WALDO_HEADERBG;
+			style = 0;
+		};
+		class wdAccentBar: RscText {
+			idc = -1;
+			x = safezoneX + (0.35 * safezoneW);
+			y = (safezoneY + (0.22 * safezoneH)) + (0.062 * safezoneH);
+			w = 0.30 * safezoneW;
+			h = 0.006 * safezoneH;
+			colorBackground[] = WALDO_ACCENT;   // Traitor-only item, so effectively fixed red
+			style = 0;
+		};
+		class wdTitle: RscText {
+			idc = 3800;
+			text = "Disguise As...";
+			x = safezoneX + (0.35 * safezoneW);
+			y = safezoneY + (0.22 * safezoneH);
+			w = 0.30 * safezoneW;
+			h = 0.062 * safezoneH;
+			colorBackground[] = {0,0,0,0};
+			colorText[] = {0.95,0.93,0.86,1};
+			style = ST_CENTER + ST_VCENTER;
+			font = "PuristaBold";
+			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.4);
+			shadow = 1;
+		};
+	};
+
+	class Controls {
+		class wdGroup: RscControlsGroup {
+			idc = 3801;
+			x = safezoneX + (0.36 * safezoneW);
+			y = safezoneY + (0.30 * safezoneH);
+			w = 0.28 * safezoneW;
+			h = 0.40 * safezoneH;
+
+			class Controls {
+				// Same fixed-tall-spacer trick as WaldoShop's shopPurchSpacer -
+				// forces the group's scrollable extent for a runtime-created
+				// (ctrlCreate) child list, since that isn't computed from
+				// children added after dialog load the way a single declared
+				// oversized child (WaldoScore's scList) is. Pushed off past the
+				// button rows' own right edge (0 to 0.26*safezoneW locally) so
+				// it never sits on top of anything clickable.
+				class wdSpacer: RscStructuredText {
+					idc = -1;
+					text = "";
+					x = 0.271 * safezoneW;
+					y = 0;
+					w = 0.001 * safezoneW;
+					h = 2.0 * safezoneH;
+				};
+			};
+		};
+		class wdClose: RscButton {
+			idc = 2;
+			text = "CANCEL [ESC]";
+			x = safezoneX + (0.44 * safezoneW);
+			y = safezoneY + (0.72 * safezoneH);
+			w = 0.12 * safezoneW;
+			h = 0.04 * safezoneH;
+			colorBackground[] = WALDO_BTN;
+			colorBackgroundActive[] = WALDO_BTNACTIVE;
+			colorText[] = {0.95,0.93,0.86,1};
+			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1);
+			action = "closeDialog 1";
+		};
+	};
+};

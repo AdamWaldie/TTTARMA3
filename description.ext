@@ -511,6 +511,30 @@ class Params {
 		default  = 0;
 	};
 
+	// === PENALTIES === (appended 2026-08-01, per the note at the top of this
+	// block - new params go at the end from here on, not inserted by group)
+	class jesterKillPenalty {               // 34
+		// Deliberately severe: killing the Jester is a hard mistake (loses the
+		// round outright for the culprit's team, see Waldo_fnc_onKilled), not
+		// a judgement call like a wrong civilian kill. Floored at 1 credit in
+		// code (never 0) so the culprit can always still afford Radar (cost 1)
+		// afterward - punished hard, not locked out of the round entirely.
+		title = "Jester Kill Penalty (Traitor credits)";
+		values[] = {3, 5, 8, 10};
+		texts[]  = {"3", "5", "8", "10"};
+		default  = 8;
+	};
+	class traitorTeamkillPenalty {          // 35
+		// Small compared to jesterKillPenalty on purpose - a Traitor killing a
+		// teammate is friendly fire between people who already know each
+		// other's role, not a mystery-breaking mistake. Still a real cost (see
+		// Waldo_fnc_onKilled) so it's never free, and a small karma hit too.
+		title = "Traitor Teamkill Penalty (credits)";
+		values[] = {0, 1, 2, 3};
+		texts[]  = {"0 (off)", "1", "2", "3"};
+		default  = 2;
+	};
+
 	// No HUD/role-crest-style param on purpose: that's entirely a per-player
 	// preference now (H key, see Waldo_fnc_initHud/fn_initClient.sqf), not
 	// something a server admin sets for everyone.

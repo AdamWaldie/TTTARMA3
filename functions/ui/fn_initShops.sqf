@@ -196,6 +196,17 @@ Waldo_roleColor = {
 };
 
 // --- Traitor shop ---
+// Costs are ranked by power and, more importantly, by how much an item
+// undermines the OTHER team's ability to investigate - not by raw kill
+// output alone. Cheap (1): Radar and Medical Kit, so a Traitor can always
+// afford basic map awareness and self-sufficiency from credit 1, without
+// that costing them the round's real economy decision. Mid (2): standard
+// kill/utility tools. Expensive (3-4): tools that actively corrupt or erase
+// the investigation itself (Silenced Pistol removes the gunshot tell, Fake
+// Health Station and Body Remover destroy/hide evidence, Teleport Grenades
+// and Long Rifle put real distance between a kill and its scene, False Flag
+// - priciest of all - frames an innocent outright), so those have to be
+// earned through play rather than being turn-one defaults.
 Waldo_traitorShop = [
 	["Suicide Bomb", 2, "activation",
 		{},
@@ -207,7 +218,7 @@ Waldo_traitorShop = [
 		{},
 		"Pulses everyone's position (and role) for 30s, then refreshes"],
 
-	["Rocket Launcher", 2, "weapon",
+	["Rocket Launcher", 3, "weapon",
 		{
 			// Confirmed via .rpt, three separate times: magazine-before-weapon,
 			// a retry-after-weapon-exists, and plain addWeapon instead of
@@ -238,19 +249,24 @@ Waldo_traitorShop = [
 			diag_log format ["[Waldo][client] Rocket Launcher purchase: launcher=%1 mag=%2 loaded=%3", _launcher, _launcherMag, _launcherMag in (magazines player)];
 		},
 		{},
+		// Raised from 2 - highest raw AOE power in the shop, priced to match.
 		"A single-use rocket launcher"],
 
-	["Stamina", 2, "passive",
+	["Stamina", 1, "passive",
 		{ player enableStamina false; },
 		{},
+		// Lowered from 2 - minor movement convenience, not worth gating like
+		// the tools above; matches the Detective shop's own Stamina price.
 		"Never run out of stamina"],
 
-	["Teleport Grenades", 2, "weapon",
+	["Teleport Grenades", 3, "weapon",
 		{ player addMagazines ["SmokeShellRed", 2]; [] call Waldo_fnc_warpSmoke; },
 		{},
+		// Raised from 2 - puts real distance between a kill and its scene,
+		// which is an investigation-defeating tool as much as a combat one.
 		"Throw red smoke to teleport to it (vanilla throw only)"],
 
-	["Long Rifle", 2, "weapon",
+	["Long Rifle", 3, "weapon",
 		{
 			// addWeapon auto-chambers a compatible magazine ALREADY IN
 			// INVENTORY at the moment the weapon is added, not the other way
@@ -267,14 +283,19 @@ Waldo_traitorShop = [
 			player addPrimaryWeaponItem (missionNamespace getVariable ["TraitorRifleOptics", "optic_LRPS"]);
 		},
 		{},
+		// Raised from 2 - long effective range is its own kind of power here.
 		"A powerful long-range rifle"],
 
+	// Kept at 2 (not raised) despite being genuinely powerful (an extra
+	// Traitor teammate) - it's the one Traitor tool that's fundamentally
+	// about teamwork with a fellow Traitor rather than solo play, and this
+	// shop is meant to keep that affordable, not price it out.
 	["Defibrillator", 2, "activation",
 		{},
 		{ [] call Waldo_fnc_revive },
 		"Aim at a body and press your assigned key to revive them as a Traitor"],
 
-	["Silenced Pistol", 2, "weapon",
+	["Silenced Pistol", 3, "weapon",
 		{
 			// See the Rocket Launcher entry above - plain addWeapon, not
 			// addWeaponGlobal (this already runs locally on the buyer's own
@@ -287,6 +308,9 @@ Waldo_traitorShop = [
 			if (_s != "") then { player addHandgunItem _s; };
 		},
 		{},
+		// Raised from 2 - removes the gunshot-report tell entirely, the
+		// single most direct anti-investigation upgrade to a Traitor's own
+		// combat kit.
 		"A suppressed sidearm - quiet kills leave no gunshot to give you away"],
 
 	["Frag Grenades", 2, "weapon",
@@ -299,19 +323,25 @@ Waldo_traitorShop = [
 		{},
 		"A heavy plate carrier - soak an extra hit or two"],
 
-	["Medical Kit", 2, "weapon",
+	["Medical Kit", 1, "weapon",
 		{ player addItem "Medikit"; player addItem "FirstAidKit"; },
 		{},
+		// Lowered from 2, alongside Radar - both stay affordable turn one on
+		// purpose, matching the Detective shop's own Medical Kit price.
 		"A medikit + first aid kit to patch yourself up"],
 
-	["Fake Health Station", 2, "weapon",
+	["Fake Health Station", 3, "weapon",
 		{ [] call Waldo_fnc_fakeHealthStation; },
 		{},
+		// Raised from 2 - a lethal deception trap aimed squarely at whoever's
+		// trying to help, one of the more anti-investigative kill tools here.
 		"Deploy a decoy - identical to a real Health Station until someone uses it, then it detonates. You're safe from your own trap."],
 
-	["Body Remover", 2, "activation",
+	["Body Remover", 3, "activation",
 		{},
 		{ [] call Waldo_fnc_removeBody },
+		// Raised from 2 - erases the Detective's evidence outright, not just
+		// evades it.
 		"Aim at a corpse and press your assigned key to destroy it, denying the Detective a body to test"],
 
 	["C4 Charge", 2, "activation",
@@ -319,9 +349,11 @@ Waldo_traitorShop = [
 		{ [] call Waldo_fnc_placeC4 },
 		"Drop a timed explosive at your feet - it blows in 15s unless someone defuses it"],
 
-	["Night Vision", 2, "weapon",
+	["Night Vision", 1, "weapon",
 		{ player addWeapon (missionNamespace getVariable ["ShopNVG", "NVGoggles"]); },
 		{},
+		// Lowered from 2 - minor situational utility, matches the Detective
+		// shop's own Night Vision price.
 		"Night-vision goggles - own the dark rounds"],
 
 	["Dead Ringer", 3, "activation",
@@ -329,27 +361,49 @@ Waldo_traitorShop = [
 		{ [] call Waldo_fnc_deadRinger },
 		"Arms a 25s window: your next lethal hit is faked - you ragdoll like a kill and a decoy body appears, but you're not really dead"],
 
-	["False Flag", 3, "passive",
+	["False Flag", 4, "passive",
 		{ player setVariable ["Waldo_falseFlag", true, true]; hint "False Flag armed - your next kill will frame someone else."; },
 		{},
+		// Raised from 3 to the top of the shop - directly frames an innocent
+		// bystander for the kill, the single most investigation-corrupting
+		// item available, priced to match.
 		"Your next kill leaves an innocent bystander's DNA at the scene instead of yours"]
 ];
 
 // --- Detective shop ---
+// Costs are ranked to steer play toward actual investigation (DNA sampling,
+// contamination trade-offs, following a track) rather than a single
+// instant-reveal button. Portable Tester is a guaranteed, immediate role
+// reveal with none of that - trivial to use, trivially ends the mystery -
+// so it's now the single most expensive item in the shop. The DNA Scanner
+// path (Scanner + its Enhanced Scanner upgrade) is priced cheap by
+// comparison to make it the shop's clear "correct" investigative purchase.
+// Radar and Medical Kit stay at their floor price (1) so map awareness and
+// self-sufficiency are never the credit decision that's gating real
+// investigative spending.
 Waldo_detectiveShop = [
-	["Portable Tester", 2, "activation",
+	["Portable Tester", 4, "activation",
 		{},
 		{ [] call Waldo_fnc_tester },
+		// Raised from 2 to the top of the shop - an instant, guaranteed role
+		// reveal at melee range trivializes investigation outright; this is
+		// deliberately the most expensive item a Detective can buy.
 		"Aim at a player or body within 3m and press your assigned key to reveal their role"],
 
-	["DNA Scanner", 2, "activation",
+	["DNA Scanner", 1, "activation",
 		{ player setVariable ["Waldo_dnaScannerCharges", 3, true]; },
 		{ [] call Waldo_fnc_dnaScanner },
+		// Lowered from 2, alongside Radar/Medical Kit - this is meant to be
+		// the shop's default, affordable investigative purchase, now that
+		// Portable Tester (the instant-reveal shortcut) costs real credits.
 		"Aim at a body and press your assigned key to sample the killer's DNA, then track them down (3 uses)"],
 
-	["Enhanced Scanner", 3, "passive",
+	["Enhanced Scanner", 2, "passive",
 		{ player setVariable ["Waldo_enhancedScanner", true, true]; },
 		{},
+		// Lowered from 3 - rewards committing further to the DNA path
+		// (better odds, more detail) rather than gating it behind a second
+		// expensive purchase on top of the base Scanner.
 		"Upgrades the DNA Scanner: longer/steadier tracking, half the contamination risk, and reveals time-of-death + weapon",
 		"DNA Scanner"],   // _requires: does nothing without the base scanner - greyed out in the shop until owned
 

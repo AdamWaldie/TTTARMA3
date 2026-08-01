@@ -5,7 +5,12 @@
 //   - extending the round timer per death
 //   - awarding shop credits (detectives for traitor kills, vice versa)
 //   - Jester clean-kill detection (non-Traitor killed the Jester)
-//   - karma: lowering the culprit's karma for killing a teammate (RDM)
+//   - Jester kill-by-Traitor penalty (Waldo_jesterKillPenalty, severe,
+//     floored so Radar always stays affordable)
+//   - Traitor-on-Traitor teamkill penalty (Waldo_traitorTeamkillPenalty,
+//     small credit + karma hit - previously entirely free)
+//   - karma: lowering the culprit's karma for killing a teammate (RDM), or
+//     a smaller amount for a Traitor teamkill
 //
 // params (from MPKilled): [_unit, _killer, _instigator, _useEffects]
 //////////////////////////////////////////////////////////////////
@@ -163,6 +168,22 @@ if (!isNull _culprit && {_culprit != _unit}) then {
 
 private _guilty = true;   // did the culprit kill someone they shouldn't have?
 
+// Shared karma nudge - RDM and a Traitor teamkill both dock karma, just by
+// very different amounts (see each call site), so the UID lookup/clamp/save
+// isn't duplicated between them.
+private _adjustKarma = {
+	params ["_p", "_delta", "_reason"];
+	private _uid = getPlayerUID _p;
+	if (_uid != "") then {
+		private _key = "Waldo_karma_" + _uid;
+		private _k = profileNamespace getVariable [_key, 100];
+		private _new = ((_k + _delta) max 0) min 100;
+		profileNamespace setVariable [_key, _new];
+		saveProfileNamespace;
+		diag_log format ["[Waldo][server] karma: %1 %2 -> karma %3", name _p, _reason, _new];
+	};
+};
+
 // Credit awards (amount per kill is the lobby "Kill Reward Credits" setting;
 // detectives are paid for traitor kills and traitors for detective kills).
 private _reward = missionNamespace getVariable ["Waldo_killReward", 1];
@@ -220,13 +241,36 @@ if (_victimRole == "Jester" && {!isNull _culprit} && {_culprit != _unit} && {isP
 // otherwise going for. Docking the same amount a correct kill would have
 // earned keeps it a real cost instead of a shrug.
 if (_victimRole == "Jester" && {_culpritRole == "Traitor"} && {!isNull _culprit} && {_culprit != _unit}) then {
-	if (_reward > 0) then {
-		_culprit setVariable ["points", ((_culprit getVariable ["points", 0]) - _reward) max 0, true];
-	};
+	private _penalty = missionNamespace getVariable ["Waldo_jesterKillPenalty", 8];
+	// Floored at 1, not 0 - severe by design (see the lobby param's own
+	// comment in description.ext), but this guarantees the culprit can
+	// always still afford Radar (cost 1) afterward rather than being locked
+	// out of the shop entirely for the rest of the round.
+	_culprit setVariable ["points", ((_culprit getVariable ["points", 0]) - _penalty) max 1, true];
 	[
-		"JESTER KILLED", format ["Killing the Jester cost you %1 credits - no win condition advanced.", _reward],
+		"JESTER KILLED", format ["Killing the Jester cost you %1 credits - no win condition advanced.", _penalty],
 		"WARNING", 8, "TOP_RIGHT", "JESTERPENALTY", "TRAITOR"
 	] remoteExec ["Waldo_fnc_ShowUiNotification", _culprit];
+};
+
+// Traitor-on-Traitor teamkill: friendly fire between two people who already
+// know each other's role, not a mystery-breaking mistake like real RDM - so
+// it's a real cost, just a much smaller one than the RDM block below on both
+// credits and karma. This used to be completely free: the blanket
+// "_culpritRole == Traitor -> not guilty" line right after this exempted it
+// from the RDM karma check entirely, with no credit penalty anywhere either.
+if (_victimRole == "Traitor" && {_culpritRole == "Traitor"} && {!isNull _culprit} && {_culprit != _unit}) then {
+	private _penalty = missionNamespace getVariable ["Waldo_traitorTeamkillPenalty", 2];
+	if (_penalty > 0) then {
+		_culprit setVariable ["points", ((_culprit getVariable ["points", 0]) - _penalty) max 0, true];
+	};
+	[
+		"TEAMKILL", format ["Killing a fellow Traitor cost you %1 credits.", _penalty],
+		"WARNING", 8, "TOP_RIGHT", "TRAITORTK", "TRAITOR"
+	] remoteExec ["Waldo_fnc_ShowUiNotification", _culprit];
+	if (missionNamespace getVariable ["KarmaEnabled", true]) then {
+		[_culprit, -10, "teamkilled a fellow Traitor"] call _adjustKarma;
+	};
 };
 
 // Killing as a Traitor is never "guilty".
@@ -234,12 +278,5 @@ if (_culpritRole == "Traitor") then { _guilty = false; };
 
 // Karma: a non-Traitor killed a teammate (innocent/detective/jester) -> RDM.
 if ((missionNamespace getVariable ["KarmaEnabled", true]) && {_guilty} && {!isNull _culprit} && {_culprit != _unit} && {isPlayer _culprit}) then {
-	private _uid = getPlayerUID _culprit;
-	if (_uid != "") then {
-		private _key = "Waldo_karma_" + _uid;
-		private _k = profileNamespace getVariable [_key, 100];
-		profileNamespace setVariable [_key, (_k - 30) max 0];
-		saveProfileNamespace;
-		diag_log format ["[Waldo][server] karma: %1 RDM'd -> karma %2", name _culprit, (_k - 30) max 0];
-	};
+	[_culprit, -30, "RDM'd"] call _adjustKarma;
 };

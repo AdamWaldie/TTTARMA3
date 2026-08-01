@@ -2,7 +2,9 @@
 // Waldo_fnc_dnaScanner
 // CLIENT: detective activation item (Y/U/J, whichever it's bound to). Aim at
 // a source of DNA within 4m and press it to sample the trace, then track the
-// suspect with a "hot/cold" readout (distance + compass bearing).
+// suspect with a "hot/cold" readout (distance + compass bearing) AND a gold
+// world-space marker on their position (same drawIcon3D technique as the
+// radars, distinct colour so it's never mistaken for a role reveal).
 //
 // DNA is left by Waldo_fnc_onKilled on bodies AND dropped gear, and by placed
 // traitor equipment (e.g. C4 charges) - investigation is not limited to
@@ -152,6 +154,49 @@ private _trackToken = player getVariable ["Waldo_dnaTrackToken", 0];
 	};
 
 	private _endAt = time + _dur;
+
+	// World-space marker on the tracked suspect while this scan is live - same
+	// mil_dot icon + drawIcon3D technique as Waldo_fnc_traitorRadar/
+	// Waldo_fnc_detectiveRadar (see there for why mil_dot over the sizeless
+	// hd_dot), but in gold - a colour no role uses (see Waldo_roleColor: red/
+	// blue/purple/green in both the normal and colourblind-safe palettes), so
+	// it's never mistaken for a role reveal. Local-only draw, never
+	// remoteExec'd, so only the scanning Detective ever sees it.
+	//
+	// The handler itself is registered ONCE per player (guarded below) and
+	// reads its target/deadline fresh via getVariable every frame - same
+	// pattern as the radars - rather than closing over this scope's private
+	// variables, since a second sample re-enters this whole spawn block from
+	// scratch and must be able to redirect an already-running handler, not
+	// stack a second one on top of it.
+	player setVariable ["Waldo_dnaTrackedTarget", _tracked];
+	player setVariable ["Waldo_dnaTrackedUntil", _endAt];
+	player setVariable ["Waldo_dnaMarkerToken", _trackToken];
+	if ((player getVariable ["Waldo_dnaMarkerEH", -1]) < 0) then {
+		missionNamespace setVariable ["Waldo_radarPingIcon", getText (configFile >> "CfgMarkers" >> "mil_dot" >> "icon")];
+		missionNamespace setVariable ["Waldo_dnaMarkerColor", if (profileNamespace getVariable ["Waldo_accessibilityMode", false]) then {
+			[0.941, 0.894, 0.259, 1]   // Okabe-Ito yellow - distinct from every Waldo_roleColor entry
+		} else {
+			[1, 0.85, 0.1, 1]          // gold - distinct from Traitor red / Detective blue / Jester purple / Innocent green
+		}];
+		private _markerEH = addMissionEventHandler ["Draw3D", {
+			private _tok = player getVariable ["Waldo_dnaTrackToken", 0];
+			if ((player getVariable ["Waldo_dnaMarkerToken", -1]) == _tok) then {
+				private _mTracked = player getVariable ["Waldo_dnaTrackedTarget", objNull];
+				private _mUntil   = player getVariable ["Waldo_dnaTrackedUntil", 0];
+				if (
+					!isNull _mTracked && {alive _mTracked} && {alive player}
+					&& {missionNamespace getVariable ["gameOn", true]} && {time < _mUntil}
+				) then {
+					private _icon = missionNamespace getVariable ["Waldo_radarPingIcon", ""];
+					private _color = missionNamespace getVariable ["Waldo_dnaMarkerColor", [1, 0.85, 0.1, 1]];
+					drawIcon3D [_icon, _color, getPosATL _mTracked, 1.6, 1.6, 0, "", 0, 1, "PuristaMedium", "center"];
+				};
+			};
+		}];
+		player setVariable ["Waldo_dnaMarkerEH", _markerEH];
+	};
+
 	private _dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
 	// This is its own notification channel/display now, not hintSilent, so it
 	// no longer needs the gameOn race-guard the old hintSilent version did

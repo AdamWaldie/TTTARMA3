@@ -38,6 +38,13 @@ All lobby parameters are read by index in `Waldo_fnc_loadParams`, matching the o
 | Kill Reward Credits | Credits paid out for a qualifying kill (Detective killing a Traitor, or vice versa) - 0 turns the reward off entirely. |
 | Traitor Bonus: 1 Credit per N Civilians Killed | Traitors get +1 credit for every N civilian (non-Traitor, non-Jester) kills their team racks up this round - 0 turns it off. |
 
+## Penalties
+
+| Parameter | What it controls |
+|---|---|
+| Jester Kill Penalty (Traitor credits) | Credits docked from a Traitor who kills the Jester - severe by design, since it costs their team the round outright. Always floored at 1 credit remaining, so Radar (cost 1) stays affordable even after the hit. |
+| Traitor Teamkill Penalty (credits) | Small credit penalty (plus a smaller karma hit than real RDM) for a Traitor killing a teammate - friendly fire between people who already know each other's role, not a mystery-breaking mistake, so it's punished but not severely. |
+
 ## Airdrop / loot
 
 | Parameter | What it controls |

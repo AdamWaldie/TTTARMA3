@@ -133,6 +133,7 @@ class CfgFunctions
 			class buildArena {};        // Waldo_fnc_buildArena
 			class populateLoot {};      // Waldo_fnc_populateLoot
 			class confineToArena {};    // Waldo_fnc_confineToArena
+			class clearArenaPaths {};   // Waldo_fnc_clearArenaPaths (server: cuts a gate through any wall/fence line splitting the arena)
 		};
 
 		class env

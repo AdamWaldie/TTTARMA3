@@ -483,9 +483,10 @@ private _setCrestStyle = {
 ["Round Flow", "End: Jester Wins",   "Force ending END4", "server", { ["END4"] call Waldo_fnc_endRound }] call Waldo_debugRegister;
 
 // Arena & World
-["Arena & World", "Rebuild Arena",   "Re-run the arena builder at the current centre", "server", { [] call Waldo_fnc_buildArena }] call Waldo_debugRegister;
-["Arena & World", "Reselect Arena",  "Pick a new arena + loot (uses the sim count)",   "server", { [] call Waldo_fnc_selectArena; [] call Waldo_fnc_populateLoot; [] call Waldo_fnc_buildArena }] call Waldo_debugRegister;
+["Arena & World", "Rebuild Arena",   "Re-run the arena builder at the current centre", "server", { [] call Waldo_fnc_buildArena; [] call Waldo_fnc_clearArenaPaths }] call Waldo_debugRegister;
+["Arena & World", "Reselect Arena",  "Pick a new arena + loot (uses the sim count)",   "server", { [] call Waldo_fnc_selectArena; [] call Waldo_fnc_populateLoot; [] call Waldo_fnc_buildArena; [] call Waldo_fnc_clearArenaPaths }] call Waldo_debugRegister;
 ["Arena & World", "Repopulate Loot", "Re-scatter ground loot in the arena",            "server", { [] call Waldo_fnc_populateLoot }] call Waldo_debugRegister;
+["Arena & World", "Clear Arena Paths", "Cut gates through any wall/fence line splitting the current arena", "server", { [] call Waldo_fnc_clearArenaPaths }] call Waldo_debugRegister;
 ["Arena & World", "Weather: Clear",  "Sun, no rain/fog",  "server", { 0 setOvercast 0;   forceWeatherChange; 0 setRain 0; 0 setFog 0 }] call Waldo_debugRegister;
 ["Arena & World", "Weather: Rain",   "Overcast + rain",   "server", { 0 setOvercast 1;   forceWeatherChange; 0 setRain 1; 0 setFog 0 }] call Waldo_debugRegister;
 ["Arena & World", "Weather: Fog",    "Heavy fog",         "server", { 0 setOvercast 0.5; forceWeatherChange; 0 setRain 0; 0 setFog 0.85 }] call Waldo_debugRegister;

@@ -71,6 +71,9 @@ while { true } do {
 [] call Waldo_fnc_buildArena;
 ["arena-built"] call Waldo_logPhase;
 
+[] call Waldo_fnc_clearArenaPaths;
+["arena-paths-cleared"] call Waldo_logPhase;
+
 // --- Warmup: let clients teleport in while roles are picked ---
 missionNamespace setVariable ["mapDone", true, true];
 private _warmup = missionNamespace getVariable ["roundWarmupLength", 20];

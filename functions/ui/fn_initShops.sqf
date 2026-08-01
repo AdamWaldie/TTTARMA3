@@ -201,12 +201,14 @@ Waldo_roleColor = {
 // output alone. Cheap (1): Radar and Medical Kit, so a Traitor can always
 // afford basic map awareness and self-sufficiency from credit 1, without
 // that costing them the round's real economy decision. Mid (2): standard
-// kill/utility tools. Expensive (3-4): tools that actively corrupt or erase
-// the investigation itself (Silenced Pistol removes the gunshot tell, Fake
-// Health Station and Body Remover destroy/hide evidence, Teleport Grenades
-// and Long Rifle put real distance between a kill and its scene, False Flag
-// - priciest of all - frames an innocent outright), so those have to be
-// earned through play rather than being turn-one defaults.
+// kill/utility tools, including Silenced Pistol - reusable and removes the
+// gunshot tell, but priced alongside the rest of the mid tier rather than
+// the investigation-erasing tier below it. Expensive (3-4): tools that
+// actively corrupt or erase the investigation itself (Fake Health Station
+// and Body Remover destroy/hide evidence, Teleport Grenades and Long Rifle
+// put real distance between a kill and its scene, False Flag - priciest of
+// all - frames an innocent outright), so those have to be earned through
+// play rather than being turn-one defaults.
 Waldo_traitorShop = [
 	["Suicide Bomb", 2, "activation",
 		{},
@@ -295,7 +297,7 @@ Waldo_traitorShop = [
 		{ [] call Waldo_fnc_revive },
 		"Aim at a body and press your assigned key to revive them as a Traitor"],
 
-	["Silenced Pistol", 3, "weapon",
+	["Silenced Pistol", 2, "weapon",
 		{
 			// See the Rocket Launcher entry above - plain addWeapon, not
 			// addWeaponGlobal (this already runs locally on the buyer's own
@@ -308,9 +310,6 @@ Waldo_traitorShop = [
 			if (_s != "") then { player addHandgunItem _s; };
 		},
 		{},
-		// Raised from 2 - removes the gunshot-report tell entirely, the
-		// single most direct anti-investigation upgrade to a Traitor's own
-		// combat kit.
 		"A suppressed sidearm - quiet kills leave no gunshot to give you away"],
 
 	["Frag Grenades", 2, "weapon",

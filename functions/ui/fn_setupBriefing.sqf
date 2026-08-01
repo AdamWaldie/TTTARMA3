@@ -26,7 +26,7 @@ player createDiaryRecord ["WaldoHowToPlay", [
 	"Dying doesn't end your game - you drop into Spectator and can keep watching (and, per this " +
 	"server's chat rules, keep talking to other dead players) until the round ends.<br/><br/>" +
 	"Forgot who you're allowed to know about? Press <t color='#ffd23f'>K</t> any time mid-round - the " +
-	"scoreboard's \"Your Briefing\" panel repeats this same information live.</t>"
+	"scoreboard's 'Your Briefing' panel repeats this same information live.</t>"
 ]];
 
 player createDiaryRecord ["WaldoHowToPlay", [

@@ -514,15 +514,17 @@ class Params {
 	// === PENALTIES === (appended 2026-08-01, per the note at the top of this
 	// block - new params go at the end from here on, not inserted by group)
 	class jesterKillPenalty {               // 34
-		// Deliberately severe: killing the Jester is a hard mistake (loses the
-		// round outright for the culprit's team, see Waldo_fnc_onKilled), not
-		// a judgement call like a wrong civilian kill. Floored at 1 credit in
-		// code (never 0) so the culprit can always still afford Radar (cost 1)
-		// afterward - punished hard, not locked out of the round entirely.
-		title = "Jester Kill Penalty (Traitor credits)";
-		values[] = {3, 5, 8, 10};
-		texts[]  = {"3", "5", "8", "10"};
-		default  = 8;
+		// This is the number of credits LEFT after the penalty, not an amount
+		// deducted - killing the Jester is a hard mistake (loses the round
+		// outright for the culprit's team, see Waldo_fnc_onKilled), so it
+		// strips a Traitor down to this floor no matter how many credits
+		// they'd banked up, rather than subtracting a fixed amount a
+		// well-stocked Traitor could shrug off. Default 1 matches Radar's
+		// cost exactly, so the culprit can always still afford it afterward.
+		title = "Jester Kill Penalty (credits left after)";
+		values[] = {0, 1, 2, 3};
+		texts[]  = {"0", "1 (Radar)", "2", "3"};
+		default  = 1;
 	};
 	class traitorTeamkillPenalty {          // 35
 		// Small compared to jesterKillPenalty on purpose - a Traitor killing a

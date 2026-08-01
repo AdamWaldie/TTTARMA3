@@ -50,7 +50,12 @@ private _maxKarma = 100;
 
 		if (_mult < 1) then {
 			private _starting = _x getVariable ["points", 0];
-			private _reduced = round (_starting * _mult);
+			// ceil, not round - a partial-credit remainder always rounds UP in
+			// the player's favour (e.g. 1 starting credit at _mult 0.5 keeps
+			// that credit instead of rounding down to 0), so the graduated
+			// scale never overshoots into a harsher cut than the multiplier
+			// itself implies.
+			private _reduced = ceil (_starting * _mult);
 			_x setVariable ["points", _reduced, true];
 			[format ["%1 has low karma (%2/100) and starts with reduced credits (%3) - play fair!", name _x, round _k, _reduced]] remoteExec ["systemChat", 0];
 		};

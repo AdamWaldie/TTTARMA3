@@ -5,8 +5,8 @@
 //   - extending the round timer per death
 //   - awarding shop credits (detectives for traitor kills, vice versa)
 //   - Jester clean-kill detection (non-Traitor killed the Jester)
-//   - Jester kill-by-Traitor penalty (Waldo_jesterKillPenalty, severe,
-//     floored so Radar always stays affordable)
+//   - Jester kill-by-Traitor penalty (Waldo_jesterKillFloor, severe - strips
+//     the culprit down to the floor rather than a fixed deduction)
 //   - Traitor-on-Traitor teamkill penalty (Waldo_traitorTeamkillPenalty,
 //     small credit + karma hit - previously entirely free)
 //   - karma: lowering the culprit's karma for killing a teammate (RDM), or
@@ -241,14 +241,18 @@ if (_victimRole == "Jester" && {!isNull _culprit} && {_culprit != _unit} && {isP
 // otherwise going for. Docking the same amount a correct kill would have
 // earned keeps it a real cost instead of a shrug.
 if (_victimRole == "Jester" && {_culpritRole == "Traitor"} && {!isNull _culprit} && {_culprit != _unit}) then {
-	private _penalty = missionNamespace getVariable ["Waldo_jesterKillPenalty", 8];
-	// Floored at 1, not 0 - severe by design (see the lobby param's own
-	// comment in description.ext), but this guarantees the culprit can
-	// always still afford Radar (cost 1) afterward rather than being locked
-	// out of the shop entirely for the rest of the round.
-	_culprit setVariable ["points", ((_culprit getVariable ["points", 0]) - _penalty) max 1, true];
+	private _floor = missionNamespace getVariable ["Waldo_jesterKillFloor", 1];
+	private _before = _culprit getVariable ["points", 0];
+	// Strips the culprit down to the floor, not a fixed deduction - takes
+	// basically everything they'd banked regardless of how much that was,
+	// rather than a flat number a well-stocked Traitor could shrug off. min,
+	// not max: never GRANTS credits to a culprit already below the floor,
+	// only ever takes from someone above it - see the lobby param's own
+	// comment in description.ext for why the floor defaults to Radar's cost.
+	private _after = _before min _floor;
+	_culprit setVariable ["points", _after, true];
 	[
-		"JESTER KILLED", format ["Killing the Jester cost you %1 credits - no win condition advanced.", _penalty],
+		"JESTER KILLED", format ["Killing the Jester cost you %1 credits - no win condition advanced.", _before - _after],
 		"WARNING", 8, "TOP_RIGHT", "JESTERPENALTY", "TRAITOR"
 	] remoteExec ["Waldo_fnc_ShowUiNotification", _culprit];
 };

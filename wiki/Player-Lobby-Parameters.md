@@ -42,7 +42,7 @@ All lobby parameters are read by index in `Waldo_fnc_loadParams`, matching the o
 
 | Parameter | What it controls |
 |---|---|
-| Jester Kill Penalty (Traitor credits) | Credits docked from a Traitor who kills the Jester - severe by design, since it costs their team the round outright. Always floored at 1 credit remaining, so Radar (cost 1) stays affordable even after the hit. |
+| Jester Kill Penalty (credits left after) | Not an amount deducted - the number of credits a Traitor is left with after killing the Jester, however many they'd banked. Severe by design (costs their team the round outright), so this strips them down to the floor rather than a fixed deduction a well-stocked Traitor could shrug off. Default 1 credit, matching Radar's cost. |
 | Traitor Teamkill Penalty (credits) | Small credit penalty (plus a smaller karma hit than real RDM) for a Traitor killing a teammate - friendly fire between people who already know each other's role, not a mystery-breaking mistake, so it's punished but not severely. |
 
 ## Airdrop / loot

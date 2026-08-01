@@ -68,7 +68,9 @@ missionNamespace setVariable ["Waldo_arenaScale", param [32, 100], true];
 missionNamespace setVariable ["TestingFlag", (param [33, 0]) != 0, true];
 
 // --- Penalties ---
-missionNamespace setVariable ["Waldo_jesterKillPenalty",       param [34, 8], true];
+// Waldo_jesterKillFloor is credits LEFT after the penalty, not an amount
+// deducted - see the comment on this class in description.ext.
+missionNamespace setVariable ["Waldo_jesterKillFloor",         param [34, 1], true];
 missionNamespace setVariable ["Waldo_traitorTeamkillPenalty",  param [35, 2], true];
 
 // No HUD/role-crest-style param - that's a per-player preference now

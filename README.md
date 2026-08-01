@@ -30,11 +30,11 @@ For mechanics in more depth than fits here, see the [wiki](https://github.com/Ad
 
 ## What's in it
 
-**Arena generation.** The server scores candidate town locations by how many enterable, loot-bearing buildings sit inside the play radius, and picks the best one it finds rather than centering on an empty field. A circular wall goes up around it, measured at runtime against the actual wall asset so it doesn't develop gaps as the radius grows, and anyone who wanders too close to the edge gets warned back in.
+**Arena generation.** The server scores candidate town locations by how many enterable, loot-bearing buildings sit inside the play radius, and picks the best one it finds rather than centering on an empty field. A circular wall goes up around it, measured at runtime against the actual wall asset so it doesn't develop gaps as the radius grows, and anyone who wanders too close to the edge gets warned back in. If the town itself has a fence or compound wall cutting the play area in half, the server sweeps for it and cuts a gate through, favoring a reroll over carving up a good location for anything short of a genuine dead end.
 
-**Investigation and counter-investigation.** DNA left at a kill can be sampled and tracked, but the trace decays with age, and every different player who walks near the scene raises the odds the reading points at an innocent bystander instead of the real killer. A Detective's Enhanced Scanner passive cuts that risk in half and adds forensic detail: time of death, weapon used. Traitors get their own answer to it. Dead Ringer fakes a death outright, a ragdoll, a decoy corpse, twenty seconds face-down before getting back up. False Flag redirects a kill's DNA onto a random bystander instead of the Traitor who pulled the trigger. Calling in a body confirms the death to everyone, but only a Detective's identification reveals who they were.
+**Investigation and counter-investigation.** DNA left at a kill can be sampled and tracked, but the trace decays with age, and every different player who walks near the scene raises the odds the reading points at an innocent bystander instead of the real killer. A Detective's Enhanced Scanner passive cuts that risk in half and adds forensic detail: time of death, weapon used. Traitors get their own answers to it. Dead Ringer fakes a death outright, a ragdoll, a decoy corpse, twenty seconds face-down before getting back up. False Flag redirects a kill's DNA onto a random bystander instead of the Traitor who pulled the trigger. Disguiser goes further still, copying a living player's loadout for sixty seconds so both your appearance and anything you leave behind point at them, not you. Calling in a body confirms the death to everyone, but only a Detective's identification reveals who they were.
 
-**Shops.** Traitors and Detectives each get roughly fourteen items, split between weapons, passives, and one-press activation items: defibrillator, C4, body removal, the DNA scanner itself. A Purchased panel keeps a running log of what you've bought and how to use it, so you're never stuck trying to remember what an item does three purchases later.
+**Shops.** Traitors get eighteen items, Detectives fourteen, split between weapons, passives, and one-press activation items: defibrillator, C4, body removal, the DNA scanner itself. Pricing tracks how much an item disrupts the other side's investigation, not just raw firepower, so the cheap items (radar, a medkit) never compete with the round's real decisions. A Purchased panel keeps a running log of what you've bought and how to use it, so you're never stuck trying to remember what an item does three purchases later.
 
 **Traitor coordination.** A silent ping tells every fellow Traitor where to look, no chat or voice an Innocent could overhear. Aim at a living player and it's a tracked target marker. Aim at anything else and it's a static location pin.
 
@@ -42,9 +42,11 @@ For mechanics in more depth than fits here, see the [wiki](https://github.com/Ad
 
 **Revive.** Both shops carry a defibrillator. A Traitor's revives the target onto the Traitor team. A Detective's brings them back as whatever they were. Arma has no real "undo death," so a revive is a forced early respawn under the hood: the mission rebuilds the player's role, credits, kill count, and kit onto the new unit the moment it exists.
 
-**Karma.** Killing your own side is remembered across rounds, stored per player rather than per mission, since the mission itself restarts every round. Low karma costs you your starting credits next round and gets announced to the lobby, then decays back toward neutral over time.
+**Karma.** Killing your own side is remembered across rounds, stored per player rather than per mission, since the mission itself restarts every round. Low karma scales down next round's starting credits rather than zeroing them outright, and decays back toward neutral the longer you play clean. Killing the Jester or a fellow Traitor carries its own separate, smaller penalty on top.
 
 **Round MVP.** Whoever has the most kills gets a short celebration at round end: the intro music again, a burst of colored smoke over the arena, a banner with their name on it.
+
+**Onboarding.** A "How To Play" page in the map screen's diary covers the rules for anyone who's never played TTT before, and every round opens with a private card naming your role, your win condition, and whoever you're actually supposed to know about, colored to match a colorblind-safe palette throughout the HUD. The same briefing is one keypress away all round on the scoreboard, for whenever you forget.
 
 <p align="center">
   <img src="https://github.com/AdamWaldie/TTTARMA3/blob/main/wiki/Images/Scoreboard.jpg?raw=true" alt="In-round scoreboard" width="70%">
@@ -75,8 +77,9 @@ This lives in Arma's own difficulty settings, not in this mission's `description
 | Group | What you can set |
 |---|---|
 | Round | Base length, bonus time per player, Traitor bonus time, time added per death, warmup length |
-| Roles | Traitor chance range, min/max Traitor count, Detective on/off + minimum players, Jester on/off + always-appears + chance |
-| Gameplay | Karma on/off, starting shop credits |
+| Roles | Traitor chance range, min/max Traitor count, Detective on/off + minimum players, Jester on/off + always-appears + chance, whether spectators see every living role or just what their own role would grant them |
+| Gameplay | Karma on/off, starting shop credits (base + per-player scaling), kill reward credits, Traitor bonus credits per civilians killed |
+| Penalties | Credits a Traitor is left with after killing the Jester, credit penalty for a Traitor killing a teammate |
 | Airdrop / loot | Airdrops on/off, base + random timer, loadouts per drop, max ammo per magazine, loot power (low / balanced / anything) |
 | Environment | Rain on/off + chance, fog on/off + chance, time of day (random / dawn / day / dusk / night) |
 | Arena | Size (small / normal / large) |
@@ -105,7 +108,8 @@ Every category has a vanilla classname as a fallback, so a total-conversion mod 
 | B | Open your buy menu (Traitor / Detective only) |
 | Y / U / J | Use the activation item bound to slot 1 / 2 / 3 (assign items to a slot from the Purchased panel in the buy menu) |
 | L | Holster / lower weapon |
-| K | Toggle the in-round scoreboard |
+| K | Toggle the in-round scoreboard, including your role briefing |
+| H | Cycle your role crest style, including a colorblind-safe palette |
 | T | Hold to pick a ping type (Target / Location / Danger / Regroup Here / Enemy Spotted), release to send it (Traitors only) |
 | [ | Open the dev/test menu (Testing Mode only) |
 | ] | Instantly cycle your own role (Testing Mode only) |

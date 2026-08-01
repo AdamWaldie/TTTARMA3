@@ -136,6 +136,28 @@ if (!(missionNamespace getVariable ["gameOn", false]) && {_liveAt != _introPlaye
 	_musicStarted = true;
 	missionNamespace setVariable ["Waldo_introMusicPlayedFor", _liveAt];
 	diag_log "[Waldo][client] intro music: playMusic issued";
+
+	// Independent safety valve, same idea as the ace_medical_deathBlocked
+	// watchdog further down this file: the single `0 fadeMusic 1;` right
+	// above is a one-shot reset, issued once, the instant BEFORE playMusic
+	// - it does nothing to protect the track for the rest of the intro
+	// window if anything else (another mod's own periodic fadeMusic call,
+	// same class of interference ACE's hearing module already needed an
+	// opt-out for; a JIP client's fn_initClient re-running mid-window; or
+	// anything not yet identified) drags the multiplier back down to 0
+	// sometime AFTER that single reset but before the round actually goes
+	// live. Rather than trying to enumerate every possible culprit, this
+	// just keeps re-asserting fadeMusic 1 once a second for as long as the
+	// intro is supposed to be audible, and stops on its own the moment
+	// gameOn flips true - the round-live fade-out below is deliberate and
+	// must not be fought by this loop, so it only ever runs during the
+	// pregame/holding window, never after.
+	[] spawn {
+		while { !(missionNamespace getVariable ["gameOn", false]) } do {
+			0 fadeMusic 1;
+			sleep 1;
+		};
+	};
 } else {
 	diag_log "[Waldo][client] intro music: skipped, round already live (JIP) or already played for this round";
 };

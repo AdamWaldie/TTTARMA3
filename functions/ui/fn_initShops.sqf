@@ -208,6 +208,25 @@ Waldo_roleColor = {
 	};
 };
 
+// Role colour as a "#rrggbb" string - same accessibility-aware palette as
+// Waldo_roleColor (this just re-encodes whatever that already returned),
+// for anything building <t color='#...'> structured text rather than an
+// RGBA array (drawIcon3D, ctrlSetBackgroundColor, etc. want the array form
+// directly and should keep calling Waldo_roleColor). Was duplicated locally
+// in Waldo_fnc_openBuyMenu and (as a hardcoded, non-accessible map) in
+// Waldo_fnc_scoreboard - both now call this instead.
+Waldo_roleColorHex = {
+	params ["_role"];
+	private _c = [_role] call Waldo_roleColor;
+	private _byte = {
+		params ["_v"];
+		private _d = "0123456789abcdef";
+		private _n = (round (_v * 255)) max 0 min 255;
+		(_d select [floor (_n / 16), 1]) + (_d select [_n mod 16, 1])
+	};
+	"#" + ([_c select 0] call _byte) + ([_c select 1] call _byte) + ([_c select 2] call _byte)
+};
+
 // --- Traitor shop ---
 // Costs are ranked by power and, more importantly, by how much an item
 // undermines the OTHER team's ability to investigate - not by raw kill

@@ -102,9 +102,6 @@ if ((missionNamespace getVariable ["DetectiveEnabled", true]) && {_count >= _det
 		_det setVariable ["role", "Detective", true];
 		_det setVariable ["points", _startCredits, true];
 		_detectives pushBack _det;
-		[
-			"DETECTIVE", "There is a Detective this round.", "INFO", 6, "TOP_RIGHT", "ROLEANNOUNCE_DET", "ROUND"
-		] remoteExec ["Waldo_fnc_ShowUiNotification", -2];
 	};
 };
 missionNamespace setVariable ["DetectiveList", _detectives, true];
@@ -130,34 +127,33 @@ if ((missionNamespace getVariable ["JesterEnabled", true]) && {_count >= _jester
 			// is local, so install it on the Jester's own machine.
 			[] remoteExec ["Waldo_fnc_makeJester", _jester];
 			_jesters pushBack _jester;
-			[
-				"JESTER", "There is a Jester this round.", "INFO", 6, "TOP_RIGHT", "ROLEANNOUNCE_JESTER", "ROUND"
-			] remoteExec ["Waldo_fnc_ShowUiNotification", -2];
 		};
 	};
 };
 missionNamespace setVariable ["JesterList", _jesters, true];
 
-// --- Tell each Traitor who their teammates (and the Jester) are ---
-// TraitorList/JesterList were only ever broadcast as data - nothing ever
-// actually told a Traitor player any of this, despite it being the whole
-// documented point of being on a team (and of "Traitors are told who the
-// Jester is"). One private card per Traitor, teammates excluded from their
-// own list.
+// --- Round-start briefing: who you are, and who you're actually SUPPOSED to
+// know about, per the same visibility rules as everywhere else
+// (Waldo_fnc_scoreboard/Waldo_fnc_drawRoleIcons/Waldo_fnc_traitorRadar) -
+// Traitors see their whole team plus the Jester, everyone sees the public
+// Detective (by name), nobody outside the Traitor team is told the Jester's
+// identity, only that one exists. Redaction happens HERE, server-side,
+// before anything is sent - each player only ever receives the exact data
+// they're allowed to see, never a client-side "don't render this" filter
+// over data that already reached them. Replaces the old un-tailored "There
+// is a Detective/Jester this round" broadcasts and the Traitor-only team
+// card with one personalised notification per player
+// (Waldo_fnc_showRoleCard); the same content is also re-viewable any time
+// from the scoreboard's "Your Briefing" panel.
+private _detectiveName = if (count _detectives > 0) then { name (_detectives select 0) } else { "" };
+private _jesterExists = count _jesters > 0;
+private _jesterNamePublic = if (_jesterExists) then { name (_jesters select 0) } else { "" };
 {
-	private _teammates = (_traitors - [_x]) apply { name _x };
-	private _msg = if (count _teammates > 0) then {
-		format ["Fellow Traitors: %1", _teammates joinString ", "]
-	} else {
-		"You are the only Traitor this round."
-	};
-	if (count _jesters > 0) then {
-		_msg = _msg + format ["<br/>The Jester is %1.", name (_jesters select 0)];
-	};
-	[
-		"TRAITOR TEAM", _msg, "INFO", 15, "TOP_RIGHT", "TRAITORTEAM", "TRAITOR"
-	] remoteExec ["Waldo_fnc_ShowUiNotification", _x];
-} forEach _traitors;
+	private _r = _x getVariable ["role", "Innocent"];
+	private _mates = if (_r == "Traitor") then { (_traitors - [_x]) apply { name _x } } else { [] };
+	private _jn = if (_r == "Traitor") then { _jesterNamePublic } else { "" };
+	[_r, _mates, _detectiveName, _jesterExists, _jn] remoteExec ["Waldo_fnc_showRoleCard", _x];
+} forEach _players;
 
 // --- Karma: apply carry-over penalties now that starting points are set ---
 if (missionNamespace getVariable ["KarmaEnabled", true]) then { [] call Waldo_fnc_applyKarma; };

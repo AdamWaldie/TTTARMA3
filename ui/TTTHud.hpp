@@ -1437,21 +1437,75 @@ class WaldoScore {
 			colorBackground[] = WALDO_CASING;
 			style = 0;
 		};
-		class scKbHeaderBG: RscText {
+		// "Your Briefing" (top ~half of this column) - who you are and who
+		// you're actually supposed to know about this round, the same
+		// content the round-start card showed (Waldo_fnc_showRoleCard),
+		// re-viewable here any time via Waldo_fnc_roleBriefingText so a
+		// missed/expired notification doesn't lose it for the round.
+		// Keybinds (below) shrinks to make room rather than growing the
+		// whole column - this side panel's total footprint (scKbShadow/
+		// scKbBG above) stays exactly what it was.
+		class scBriefHeaderBG: RscText {
 			idc = -1;
 			x = safezoneX + (0.756 * safezoneW);
 			y = safezoneY + (0.17 * safezoneH);
 			w = 0.16 * safezoneW;
-			h = 0.05 * safezoneH;
+			h = 0.045 * safezoneH;
+			colorBackground[] = WALDO_HEADERBG;
+			style = 0;
+		};
+		class scBriefAccent: RscText {
+			idc = -1;
+			x = safezoneX + (0.756 * safezoneW);
+			y = safezoneY + (0.17 * safezoneH) + (0.045 * safezoneH);
+			w = 0.16 * safezoneW;
+			h = 0.004 * safezoneH;
+			colorBackground[] = WALDO_ACCENT;   // tinted to the viewer's own role colour at runtime
+			style = 0;
+		};
+		class scBriefTitle: RscText {
+			idc = -1;
+			text = "Your Briefing";
+			x = safezoneX + (0.756 * safezoneW);
+			y = safezoneY + (0.17 * safezoneH);
+			w = 0.16 * safezoneW;
+			h = 0.045 * safezoneH;
+			colorText[] = {0.95,0.93,0.86,1};
+			style = ST_CENTER;
+			font = "PuristaBold";
+			sizeEx = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1.0);
+			shadow = 1;
+		};
+		class scBriefList: RscStructuredText {
+			idc = 3330;
+			text = "";
+			x = safezoneX + (0.756 * safezoneW) + (0.010 * safezoneW);
+			y = safezoneY + (0.17 * safezoneH) + (0.052 * safezoneH);
+			w = (0.16 * safezoneW) - (0.020 * safezoneW);
+			h = 0.26 * safezoneH;
+			size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.85);
+			class Attributes {
+				font = "PuristaMedium";
+				color = "#D8D5C8";
+				align = "left";
+				shadow = 1;
+			};
+		};
+		class scKbHeaderBG: RscText {
+			idc = -1;
+			x = safezoneX + (0.756 * safezoneW);
+			y = safezoneY + (0.17 * safezoneH) + (0.332 * safezoneH);
+			w = 0.16 * safezoneW;
+			h = 0.045 * safezoneH;
 			colorBackground[] = WALDO_HEADERBG;
 			style = 0;
 		};
 		class scKbAccent: RscText {
 			idc = -1;
 			x = safezoneX + (0.756 * safezoneW);
-			y = safezoneY + (0.17 * safezoneH) + (0.05 * safezoneH);
+			y = safezoneY + (0.17 * safezoneH) + (0.377 * safezoneH);
 			w = 0.16 * safezoneW;
-			h = 0.005 * safezoneH;
+			h = 0.004 * safezoneH;
 			colorBackground[] = WALDO_ACCENT;
 			style = 0;
 		};
@@ -1459,9 +1513,9 @@ class WaldoScore {
 			idc = -1;
 			text = "Keybinds";
 			x = safezoneX + (0.756 * safezoneW);
-			y = safezoneY + (0.17 * safezoneH);
+			y = safezoneY + (0.17 * safezoneH) + (0.332 * safezoneH);
 			w = 0.16 * safezoneW;
-			h = 0.05 * safezoneH;
+			h = 0.045 * safezoneH;
 			colorText[] = {0.95,0.93,0.86,1};
 			style = ST_CENTER;
 			font = "PuristaBold";
@@ -1472,9 +1526,9 @@ class WaldoScore {
 			idc = 3320;
 			text = "";
 			x = safezoneX + (0.756 * safezoneW) + (0.010 * safezoneW);
-			y = safezoneY + (0.17 * safezoneH) + (0.06 * safezoneH);
+			y = safezoneY + (0.17 * safezoneH) + (0.385 * safezoneH);
 			w = (0.16 * safezoneW) - (0.020 * safezoneW);
-			h = (0.66 * safezoneH) - (0.07 * safezoneH);
+			h = 0.265 * safezoneH;
 			size = (((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 0.9);
 			class Attributes {
 				font = "PuristaMedium";

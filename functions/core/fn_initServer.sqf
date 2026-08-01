@@ -71,6 +71,29 @@ while { true } do {
 [] call Waldo_fnc_buildArena;
 ["arena-built"] call Waldo_logPhase;
 
+// If the arena has a wall/fence line dominating at least 55% of its width
+// in one direction (see Waldo_fnc_clearArenaPaths - deliberately a high bar
+// so ordinary town clutter never trips this), re-roll the whole arena and
+// try again rather than gate-cutting through something that severe.
+// Bounded at 2 retries; if it's STILL found after that, force-clear on the
+// last attempt anyway - a round with a gate cut through it is still better
+// than one that's genuinely uncrossable.
+private _pathsOk = [] call Waldo_fnc_clearArenaPaths;
+private _reselectTries = 0;
+while { !_pathsOk && {_reselectTries < 2} } do {
+	_reselectTries = _reselectTries + 1;
+	diag_log format ["[Waldo][server] arena has a dominating obstruction (attempt %1) - reselecting", _reselectTries];
+	[] call Waldo_fnc_selectArena;
+	[] call Waldo_fnc_populateLoot;
+	[] call Waldo_fnc_buildArena;
+	_pathsOk = [] call Waldo_fnc_clearArenaPaths;
+};
+if (!_pathsOk) then {
+	diag_log "[Waldo][server] arena still fragmented after retries - clearing anyway rather than leaving it uncrossable";
+	[true] call Waldo_fnc_clearArenaPaths;
+};
+["arena-paths-cleared"] call Waldo_logPhase;
+
 // --- Warmup: let clients teleport in while roles are picked ---
 missionNamespace setVariable ["mapDone", true, true];
 private _warmup = missionNamespace getVariable ["roundWarmupLength", 20];

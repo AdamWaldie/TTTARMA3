@@ -33,7 +33,7 @@ while { missionNamespace getVariable ["gameOn", false] } do {
 		[
 			"OVERTIME", "The round has run past its planned length - it continues as long as unresolved deaths keep extending the clock.",
 			"WARNING", 8, "TOP", "OVERTIME", "ROUND"
-		] remoteExec ["Waldo_fnc_ShowUiNotification", -2];
+		] call Waldo_fnc_ShowUiNotificationAll;
 	};
 
 	// Dev/test: a frozen round keeps rendering the HUD but stops the clock,

@@ -20,6 +20,19 @@
 if (!hasInterface) exitWith {};
 params ["_role", "_teammateNames", "_detectiveName", "_jesterExists", "_jesterName"];
 
+// This fires for every player at the start of every round - the one
+// guaranteed once-per-round hook every client hits, so it's also where
+// Waldo_fnc_ShowUiNotification's registry/queue get force-cleared. Normally
+// each card's own duration handles its own cleanup, but Waldo_fnc_ClearUiPanels
+// is otherwise only ever triggered by the LOCAL player's own death - a
+// notification channel (e.g. "IDENTIFY") whose cleanup thread got cut short
+// for any reason (a round ending mid-sleep, a JIP reconnect, anything) would
+// otherwise stay marked "occupied" in the registry forever for a player who
+// simply hasn't died yet, silently queueing every future card on that
+// channel and never actually showing any of them again - exactly the "no
+// feedback at all" report Identify Body's notifications ran into.
+[] call Waldo_fnc_ClearUiPanels;
+
 private _body = [_role, _teammateNames, _detectiveName, _jesterExists, _jesterName] call Waldo_fnc_roleBriefingText;
 
 [

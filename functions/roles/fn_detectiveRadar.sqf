@@ -27,7 +27,7 @@ player setVariable ["Waldo_radarNextPing", time + 45];
 
 // Same ping-icon redesign as Waldo_fnc_traitorRadar - see there for why
 // it's looked up from CfgMarkers rather than a hardcoded texture path.
-missionNamespace setVariable ["Waldo_radarPingIcon", getText (configFile >> "CfgMarkers" >> "hd_dot" >> "icon")];
+missionNamespace setVariable ["Waldo_radarPingIcon", getText (configFile >> "CfgMarkers" >> "mil_dot" >> "icon")];
 
 private _eh = addMissionEventHandler ["Draw3D", {
 	private _radar = player getVariable ["radar", 0];

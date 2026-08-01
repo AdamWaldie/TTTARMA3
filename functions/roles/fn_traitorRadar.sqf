@@ -38,12 +38,17 @@ player setVariable ["Waldo_radarNextPing", time + 30];
 diag_log format ["[Waldo][client] traitorRadar fired: allUnits=%1", allUnits apply { [_x, name _x, _x getVariable ["role", "Innocent"], isPlayer _x] }];
 
 // A real ring icon instead of a drawn "O" character - looked up from the
-// engine's own standard "hand-drawn dot" map marker rather than a
-// hardcoded texture path (avoids guessing at exact case/folder names,
-// which differ between Windows and case-sensitive Linux dedicated
-// servers): if it's ever missing for any reason, getText just returns ""
-// and drawIcon3D silently draws nothing, rather than throwing.
-missionNamespace setVariable ["Waldo_radarPingIcon", getText (configFile >> "CfgMarkers" >> "hd_dot" >> "icon")];
+// engine's own standard NATO "mil_dot" map marker rather than a hardcoded
+// texture path (avoids guessing at exact case/folder names, which differ
+// between Windows and case-sensitive Linux dedicated servers): if it's
+// ever missing for any reason, getText just returns "" and drawIcon3D
+// silently draws nothing, rather than throwing. Was "hd_dot" (the
+// hand-drawn doodle marker) - confirmed via .rpt spam ("Obsolete, sizeH
+// and sizeW calculation missing", once per frame) that it's missing size
+// metadata drawIcon3D needs for a real icon render. The "mil_" family is
+// the actual scalable tactical marker set (built to be resized for
+// unit/group size indicators), which is exactly this use case.
+missionNamespace setVariable ["Waldo_radarPingIcon", getText (configFile >> "CfgMarkers" >> "mil_dot" >> "icon")];
 
 private _eh = addMissionEventHandler ["Draw3D", {
 	private _radar = player getVariable ["radar", 0];

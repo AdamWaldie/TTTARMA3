@@ -209,37 +209,27 @@ Waldo_traitorShop = [
 
 	["Rocket Launcher", 2, "weapon",
 		{
-			// addWeapon auto-chambers a compatible magazine ALREADY IN
-			// INVENTORY at the moment the weapon is added - not the other
-			// way around. addMagazine after addWeapon (an earlier fix)
-			// still spawned it unloaded, because at that point there was
-			// nothing yet for the weapon to pick up; addMagazine has to run
-			// FIRST so the round is sitting there waiting when the launcher
-			// is added.
-			//
-			// Still reported unloaded after that reorder, though - and
-			// unlike a rifle/pistol mag, a launcher round is one of the
-			// bulkiest single items in the game. addMagazine on a person
-			// silently does nothing at all if there's no free cargo space
-			// anywhere (uniform/vest/backpack) at the moment it runs - no
-			// error, it just doesn't land - so a Traitor who'd already
-			// spent points filling their rig with other purchases first
-			// could easily have zero room left for the round specifically,
-			// while a small pistol/rifle mag still always found space.
-			// Verified, not guessed a third time: retry the magazine AFTER
-			// the (empty) launcher exists too - a person's own empty
-			// weapon can still take a compatible magazine directly even
-			// with cargo full, since a chambered round isn't stored in
-			// uniform/vest/backpack space at all. Logged either way so the
-			// next .rpt confirms which path actually delivered it (or that
-			// neither did, if this isn't a capacity issue after all).
+			// Confirmed via .rpt: magazine-before-weapon (correct order) AND
+			// a retry-after-weapon-exists (previous fix) BOTH still left it
+			// unloaded (launch_MRAWS_green_rail_F / MRAWS_HEAT_F, loaded=
+			// false) - the "empty weapon absorbs a magazine even with cargo
+			// full" theory behind that retry didn't hold up. addWeaponGlobal
+			// itself is the remaining suspect: BI's own docs note it
+			// REPLACES whatever's in that weapon slot, and it has a
+			// documented history of dedicated-server-specific bugs (weapon
+			// duplication if the old one isn't removed first, fixed only in
+			// a later engine version) - entirely plausible that a slot
+			// "replace" on a dedicated server clobbers the just-chambered
+			// magazine along with it. This code already runs locally on the
+			// buyer's own client (called directly from the shop, not
+			// remoteExec'd), so there was never a reason to need the
+			// "Global" broadcast variant in the first place - a player's own
+			// inventory changes already replicate normally. Switched to
+			// plain addWeapon.
 			private _launcherMag = missionNamespace getVariable ["TraitorLauncherMag", "NLAW_F"];
 			private _launcher = missionNamespace getVariable ["TraitorLauncher", "launch_NLAW_F"];
 			player addMagazine _launcherMag;
-			player addWeaponGlobal _launcher;
-			if !(_launcherMag in (magazines player)) then {
-				player addMagazine _launcherMag;
-			};
+			player addWeapon _launcher;
 			diag_log format ["[Waldo][client] Rocket Launcher purchase: launcher=%1 mag=%2 loaded=%3", _launcher, _launcherMag, _launcherMag in (magazines player)];
 		},
 		{},
@@ -263,9 +253,12 @@ Waldo_traitorShop = [
 			// spawned it unloaded, because at that point there was nothing
 			// yet for the weapon to pick up. Magazines (the chambered one
 			// AND the spares) have to go in first.
+			// See the Rocket Launcher entry above for why this is plain
+			// addWeapon now, not addWeaponGlobal - same latent risk, applied
+			// consistently even though only the launcher was reported broken.
 			private _rifleMag = missionNamespace getVariable ["TraitorRifleMag", "7Rnd_408_Mag"];
 			player addMagazines [_rifleMag, 3];
-			player addWeaponGlobal (missionNamespace getVariable ["TraitorRifle", "srifle_LRR_F"]);
+			player addWeapon (missionNamespace getVariable ["TraitorRifle", "srifle_LRR_F"]);
 			player addPrimaryWeaponItem (missionNamespace getVariable ["TraitorRifleOptics", "optic_LRPS"]);
 		},
 		{},
@@ -278,12 +271,13 @@ Waldo_traitorShop = [
 
 	["Silenced Pistol", 2, "weapon",
 		{
-			// See the Long Rifle entry above - magazines have to be in
-			// inventory BEFORE the weapon is added for addWeapon to find and
-			// chamber one; added after, they just sit as spares forever.
+			// See the Rocket Launcher entry above - plain addWeapon, not
+			// addWeaponGlobal (this already runs locally on the buyer's own
+			// client); magazines still have to be in inventory BEFORE the
+			// weapon is added for addWeapon to find and chamber one.
 			private _pistolMag = missionNamespace getVariable ["ShopPistolMag", "16Rnd_9x21_Mag"];
 			player addMagazines [_pistolMag, 3];
-			player addWeaponGlobal (missionNamespace getVariable ["ShopPistol", "hgun_P07_F"]);
+			player addWeapon (missionNamespace getVariable ["ShopPistol", "hgun_P07_F"]);
 			private _s = missionNamespace getVariable ["ShopPistolSuppressor", ""];
 			if (_s != "") then { player addHandgunItem _s; };
 		},

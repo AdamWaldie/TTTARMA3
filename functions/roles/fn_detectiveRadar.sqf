@@ -49,7 +49,7 @@ private _eh = addMissionEventHandler ["Draw3D", {
 		// glyph's number was carried over at (almost certainly why the ping
 		// wasn't visibly rendering at all). Real ring icon instead of a
 		// character, mild expand-as-it-fades ping feel.
-		private _base_size = (1.4 - (_distance / 60)) max 0.35;
+		private _base_size = (1.9 - (_distance / 80)) max 0.55;
 		private _size = _base_size * (1 + ((1 - _radar) * 0.5));
 		drawIcon3D [_icon, _color, getPosATL _x, _size, _size, 0, "", 0, 1, "PuristaMedium", "center"];
 	} forEach (allUnits + allDeadMen);

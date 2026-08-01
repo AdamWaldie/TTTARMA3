@@ -1,13 +1,16 @@
 //////////////////////////////////////////////////////////////////
 // Waldo_fnc_scoreboard
 // CLIENT: toggles an IN-ROUND scoreboard (bound to K). Lists every player with
-// their alive/dead status, whether their body has been FOUND, kills THIS round,
-// and their role — but role is shown only where the viewer is allowed to know
-// it: own role; any player once a Detective has identified their body
-// (Waldo_roleRevealed - publicly "confirmed"); the public Detective; Traitors
-// see fellow Traitors + the Jester (never the reverse - the Jester does not
-// see Traitors here, matching Waldo_fnc_drawRoleIcons); and a dead viewer
-// (out of the round) sees everything. Nothing is tracked between rounds.
+// their alive/dead status, whether their body has been FOUND, and their role
+// — but role is shown only where the viewer is allowed to know it: own role;
+// any player once a Detective has identified their body (Waldo_roleRevealed
+// - publicly "confirmed"); the public Detective; Traitors see fellow
+// Traitors + the Jester (never the reverse - the Jester does not see
+// Traitors here, matching Waldo_fnc_drawRoleIcons); and a dead viewer (out
+// of the round) sees everything. Per-round kill counts are shown ONLY to a
+// dead/spectating viewer - a live player never sees anyone's kill tally,
+// theirs included, since that number is its own metagaming tell regardless
+// of whether the role itself is hidden. Nothing is tracked between rounds.
 //
 // Being dead alone no longer reveals a role - identification does (see
 // Waldo_fnc_identifyBody), matching the Detective-only role-reveal design.
@@ -27,6 +30,14 @@ private _myRole    = player getVariable ["role", "Innocent"];
 // (own role, Detective, Traitor-sees-Traitor/Jester), which is what keeps a
 // dead Traitor seeing their team here too.
 private _viewerOut = !alive player && {missionNamespace getVariable ["Waldo_spectatorsSeeAllRoles", false]};
+// Separate from role visibility entirely: a per-round kill tally is its own
+// tell (a suspiciously active "Innocent" this round is exactly the kind of
+// metagaming clue an alive player shouldn't get handed on a silver platter
+// mid-round). Spectators - genuinely out of the round, nothing left for
+// them to act on - still get it, same reasoning as their broader
+// Waldo_spectatorsSeeAllRoles carve-out above, just unconditional since
+// there's no equivalent "own role" exception needed for a number.
+private _viewerIsSpectator = !alive player;
 private _traitors  = missionNamespace getVariable ["TraitorList", []];
 
 private _hexOf = {
@@ -61,10 +72,11 @@ private _rowFor = {
 	} else {
 		if (_found) then { "<t color='#F2BE55'>FOUND</t>" } else { "<t color='#9EA290'>MISSING</t>" };
 	};
+	private _killsTxt = if (_viewerIsSpectator) then { format ["<t color='#F2BE55'>%1</t> kills", _kills] } else { "" };
 
 	format [
-		"<t size='1.05' color='#F2EFE3'>%1</t>    %2    <t color='%3'>%4</t>    <t color='#F2BE55'>%5</t> kills<br/>",
-		name _p, _status, _hex, _roleTxt, _kills
+		"<t size='1.05' color='#F2EFE3'>%1</t>    %2    <t color='%3'>%4</t>    %5<br/>",
+		name _p, _status, _hex, _roleTxt, _killsTxt
 	]
 };
 

@@ -113,9 +113,9 @@ private _blacklist = [];    // overpowered optics excluded from loot
 					//      and Titan_AA, so index-0-only cleared it on whichever mode
 					//      sorted first even though both need a lock); the weapon's
 					//      own CfgWeapons-level canLock (some configs drive the lock
-					//      UI from here, not the ammo); a hard classname blacklist
-					//      for families confirmed lock-gated regardless of what their
-					//      config claims.
+					//      UI from here, not the ammo); a hard classname/display-name
+					//      blacklist for families confirmed lock-gated regardless of
+					//      what their config claims.
 					//   4. Needs manual guidance AFTER firing - a completely
 					//      different mechanic from needing a lock BEFORE firing, and
 					//      not caught by any canLock check at all. manualControl on
@@ -123,10 +123,33 @@ private _blacklist = [];    // overpowered optics excluded from loot
 					//      shooter's crosshairs point post-launch (SACLOS/wire-guided,
 					//      e.g. a TOW) - the shooter has to actively steer it instead
 					//      of firing and moving on, exactly as "not a simple
-					//      point-and-fire weapon" as needing a lock is. SOG Prairie
-					//      Fire ships a real TOW launcher, which is likely the
-					//      specific launcher that kept slipping through here despite
-					//      not requiring any lock at all.
+					//      point-and-fire weapon" as needing a lock is.
+					//   5. Confirmed live: ACE's own Spike missile (ace_spike_launcher)
+					//      slipped through both checks above entirely - it implements
+					//      guidance through ACE's OWN missileguidance framework
+					//      (a nested "class ace_missileguidance {...}" in its CfgAmmo
+					//      entry), not the vanilla canLock/manualControl properties
+					//      this filter reads. That framework isn't a safe blanket
+					//      exclusion on its own, though: ACE's own NLAW config (this
+					//      mission's safe vanilla fallback, genuinely fire-and-forget,
+					//      no lock or steering needed) ALSO carries a
+					//      class ace_missileguidance entry, just configured for its
+					//      real-world Predicted-Line-Of-Sight behaviour rather than an
+					//      active lock. No reliable per-mod property to tell those
+					//      apart from here, so back to an explicit blacklist - "spike"
+					//      and "dragon" (the M47 Super-Dragon, a real SACLOS wire-guided
+					//      system some support-weapon mods ship as a "launcher") added
+					//      for the same reason.
+					//   6. Confirmed live: several support-weapon mods (seen: CSW)
+					//      register deployable tripods, mortar tubes/baseplates, and
+					//      static heavy-weapon mounts (M2/XM307/XM312, a static
+					//      "Mini-Spike Launcher") as CfgWeapons Launcher-kind items
+					//      too, apparently for inventory-slot compatibility, even
+					//      though none of them are a genuine handheld launcher at all.
+					//      Their classnames rarely say so, but their in-game display
+					//      names reliably do ("[CSW] M3 Deployable Tripod", "[CSW]
+					//      Mortar Baseplate", "[CSW] Static M2 w/ Shield", ...) -
+					//      checked here too, alongside the classname.
 					private _weaponNeedsLock = (getNumber (configFile >> "CfgWeapons" >> _cls >> "canLock")) != 0;
 					private _anyMagNeedsLock = (_mags findIf {
 						private _ammo = getText (configFile >> "CfgMagazines" >> _x >> "ammo");
@@ -137,9 +160,20 @@ private _blacklist = [];    // overpowered optics excluded from loot
 						(getNumber (configFile >> "CfgAmmo" >> _ammo >> "manualControl")) != 0
 					}) != -1;
 					private _lc = toLower _cls;
-					private _blacklisted = (["titan", "igla", "strela", "javelin", "stinger", "verba", "manpad", "9k38", "9m133", "fim92", "tow", "bgm71", "bgm-71", "malyutka", "9m14", "konkurs", "9m113", "fagot", "9m111", "metis"] findIf {
-						_lc find _x != -1
-					}) != -1;
+					private _dispLc = toLower (getText (_cfg >> "displayName"));
+					private _blacklistWords = [
+						// Guided/lock-required munition families (Titan MPRL and its
+						// vanilla siblings, plus every mod/ACE family confirmed to slip
+						// past the config-property checks above).
+						"titan", "igla", "strela", "javelin", "stinger", "verba", "manpad",
+						"9k38", "9m133", "fim92", "tow", "bgm71", "bgm-71", "malyutka",
+						"9m14", "konkurs", "9m113", "fagot", "9m111", "metis",
+						"spike", "dragon", "kornet", "milan",
+						// Not a handheld launcher at all - a deployable/static support-
+						// weapon mount that just happens to inherit the Launcher class.
+						"tripod", "baseplate", "deployable", "static", "mortar", "emplacement"
+					];
+					private _blacklisted = (_blacklistWords findIf { (_lc find _x != -1) || (_dispLc find _x != -1) }) != -1;
 					if (!_weaponNeedsLock && !_anyMagNeedsLock && !_anyMagManualControl && !_blacklisted) then { _launchers pushBack _cls; };
 				};
 				case (_cls isKindOf ["Rifle", _root]): {          // rifle-family primary

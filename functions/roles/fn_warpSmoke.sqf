@@ -41,10 +41,22 @@ private _eh = player addEventHandler ["Fired", {
 			_flare attachTo [_projectile];
 			triggerAmmo _flare;
 			sleep 2;
-			playSound3D [getMissionPath "audio\portalIn.ogg", _unit];
-			sleep 1;   // let the ~1s "in" cue finish before the "out" cue - they were firing back to back with zero gap, overlapping almost entirely
-			_unit setPos getPos _projectile;
-			playSound3D [getMissionPath "audio\portalOut.ogg", _unit];
+			// A landing spot outside the real arena boundary (mapPos/mapRadius,
+			// the same source of truth Waldo_fnc_confineToArena polices) doesn't
+			// get warped to at all - a strong throw could otherwise chuck this
+			// clean over the fence and step the thrower straight out of the
+			// play area.
+			private _land = getPos _projectile;
+			private _center = missionNamespace getVariable ["mapPos", _land];
+			private _radius = missionNamespace getVariable ["mapRadius", 1e6];
+			if ((_land distance2D _center) <= _radius) then {
+				playSound3D [getMissionPath "audio\portalIn.ogg", _unit];
+				sleep 1;   // let the ~1s "in" cue finish before the "out" cue - they were firing back to back with zero gap, overlapping almost entirely
+				_unit setPos _land;
+				playSound3D [getMissionPath "audio\portalOut.ogg", _unit];
+			} else {
+				["TELEPORT GRENADES", "That landed outside the arena - no teleport.", "WARNING", 4, "BOTTOM_LEFT", "WARPSMOKE", "TRAITOR"] call Waldo_fnc_ShowUiNotification;
+			};
 			sleep 0.5;
 			deleteVehicle _flare;
 		};
@@ -69,10 +81,18 @@ if (!isNil "CBA_fnc_addEventHandler") then {
 				_flare attachTo [_projectile];
 				triggerAmmo _flare;
 				sleep 2;
-				playSound3D [getMissionPath "audio\portalIn.ogg", _unit];
-				sleep 1;   // let the ~1s "in" cue finish before the "out" cue - they were firing back to back with zero gap, overlapping almost entirely
-				_unit setPos getPos _projectile;
-				playSound3D [getMissionPath "audio\portalOut.ogg", _unit];
+				// See the vanilla Fired handler above - same arena-boundary guard.
+				private _land = getPos _projectile;
+				private _center = missionNamespace getVariable ["mapPos", _land];
+				private _radius = missionNamespace getVariable ["mapRadius", 1e6];
+				if ((_land distance2D _center) <= _radius) then {
+					playSound3D [getMissionPath "audio\portalIn.ogg", _unit];
+					sleep 1;   // let the ~1s "in" cue finish before the "out" cue - they were firing back to back with zero gap, overlapping almost entirely
+					_unit setPos _land;
+					playSound3D [getMissionPath "audio\portalOut.ogg", _unit];
+				} else {
+					["TELEPORT GRENADES", "That landed outside the arena - no teleport.", "WARNING", 4, "BOTTOM_LEFT", "WARPSMOKE", "TRAITOR"] call Waldo_fnc_ShowUiNotification;
+				};
 				sleep 0.5;
 				deleteVehicle _flare;
 			};

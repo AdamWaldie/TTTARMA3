@@ -292,7 +292,7 @@ if (_victimRole == "Traitor" && {_culpritRole == "Traitor"} && {!isNull _culprit
 	[
 		"YOU TEAMKILLED",
 		format [
-			"That was %1 - a fellow Traitor, not a target. %2 credit%3 gone, down to %4. Watch your fire.",
+			"That was %1 - a fellow Traitor, not a target. I hope you knew what you were doing when you killed them... %2 credit%3 gone, down to %4.",
 			name _unit, _lost, ["", "s"] select (_lost != 1), _after
 		],
 		"WARNING", 8, "TOP_RIGHT", "TRAITORTK", "TRAITOR"

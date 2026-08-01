@@ -71,7 +71,26 @@ while { true } do {
 [] call Waldo_fnc_buildArena;
 ["arena-built"] call Waldo_logPhase;
 
-[] call Waldo_fnc_clearArenaPaths;
+// If the arena turns out to be too fragmented to sensibly gate-cut (more
+// than 2 separate dividing wall/fence runs - see Waldo_fnc_clearArenaPaths),
+// re-roll the whole arena and try again rather than turning one location
+// into Swiss cheese. Bounded at 2 retries; if it's STILL fragmented after
+// that, force-clear on the last attempt anyway - a round with a few extra
+// gates cut is still better than one that's genuinely uncrossable.
+private _pathsOk = [] call Waldo_fnc_clearArenaPaths;
+private _reselectTries = 0;
+while { !_pathsOk && {_reselectTries < 2} } do {
+	_reselectTries = _reselectTries + 1;
+	diag_log format ["[Waldo][server] arena too fragmented (attempt %1) - reselecting", _reselectTries];
+	[] call Waldo_fnc_selectArena;
+	[] call Waldo_fnc_populateLoot;
+	[] call Waldo_fnc_buildArena;
+	_pathsOk = [] call Waldo_fnc_clearArenaPaths;
+};
+if (!_pathsOk) then {
+	diag_log "[Waldo][server] arena still fragmented after retries - clearing anyway rather than leaving it uncrossable";
+	[true] call Waldo_fnc_clearArenaPaths;
+};
 ["arena-paths-cleared"] call Waldo_logPhase;
 
 // --- Warmup: let clients teleport in while roles are picked ---

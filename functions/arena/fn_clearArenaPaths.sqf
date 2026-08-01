@@ -69,9 +69,17 @@ if (!isServer) exitWith { true };
 private _center = missionNamespace getVariable ["mapPos", [0,0,0]];
 private _radius = missionNamespace getVariable ["mapRadius", 50];
 
+// Takes X/Y as two separate args, not a position array - every call site
+// passes [_p1 select 0, _p1 select 1] call _groundZ, which hands this
+// _this = [x, y] (two numbers), not a single [x,y] array wrapped as one
+// arg. A single "_p" param name was only ever binding to the first of the
+// two (the X value alone, a Number) - confirmed via RPT ("Type Number,
+// expected Array" on "_p select 0", the instant this was first exercised
+// live), so the signature has to actually match two arguments instead of
+// pretending they arrive pre-wrapped.
 private _groundZ = {
-	params ["_p"];
-	private _probe = "groundweaponholder" createVehicle [_p select 0, _p select 1, 0];
+	params ["_x", "_y"];
+	private _probe = "groundweaponholder" createVehicle [_x, _y, 0];
 	private _z = getPosWorld _probe select 2;
 	deleteVehicle _probe;
 	_z

@@ -29,7 +29,16 @@
 // can both change between calls, and this list stays short enough (bounded by
 // what a round's credits can afford) that a full rebuild is simpler and safer
 // than tracking per-row diffs. Previously created controls are tracked by idc
-// (via a display variable) so they can be torn down before rebuilding.
+// (via a display variable) so they can be torn down before rebuilding - since
+// every render is a full teardown+recreate, a row's idc has no meaning across
+// two different renders, so display order is free to change between calls
+// (see below) without anything relying on a row keeping the same idc.
+//
+// Rendered newest-purchase-first (most recent at the top, everything already
+// there shifts down beneath it) - Waldo_purchases itself stays append-only
+// (oldest at index 0, see Waldo_fnc_buyItem's pushBack) so a fresh purchase
+// is always about-to-be-bought-again context, worth seeing without scrolling
+// past everything bought earlier in the round.
 Waldo_shopRenderPurchased = {
 	params ["_display"];
 	private _group = _display displayCtrl 1107;
@@ -38,7 +47,11 @@ Waldo_shopRenderPurchased = {
 		forEach (_display getVariable ["Waldo_purchRowIds", []]);
 	private _newIds = [];
 
-	private _purchases = player getVariable ["Waldo_purchases", []];
+	// Displayed newest-first - a reversed COPY, never the stored array itself
+	// (that has to stay append-only/oldest-first for Waldo_fnc_buyItem's
+	// pushBack, and SQF's reverse mutates in place).
+	private _purchases = +(player getVariable ["Waldo_purchases", []]);
+	reverse _purchases;
 	private _slots      = player getVariable ["Waldo_activationSlots", [-1, -1, -1]];
 	private _backlog     = player getVariable ["Waldo_activationBacklog", []];
 	private _keyLabels   = ["Y", "U", "J"];

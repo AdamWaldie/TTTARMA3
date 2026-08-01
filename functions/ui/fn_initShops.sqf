@@ -375,14 +375,14 @@ Waldo_traitorShop = [
 // contamination trade-offs, following a track) rather than a single
 // instant-reveal button. Portable Tester is a guaranteed, immediate role
 // reveal with none of that - trivial to use, trivially ends the mystery -
-// so it's now the single most expensive item in the shop. The DNA Scanner
-// path (Scanner + its Enhanced Scanner upgrade) is priced cheap by
-// comparison to make it the shop's clear "correct" investigative purchase.
-// Radar and Medical Kit stay at their floor price (1) so map awareness and
+// so it's the single most expensive item in the shop. The DNA Scanner path
+// (Scanner + its cheaper Enhanced Scanner upgrade) costs less in total to
+// make it the shop's clear "correct" investigative purchase. Radar and
+// Medical Kit stay at their floor price (1) so map awareness and
 // self-sufficiency are never the credit decision that's gating real
 // investigative spending.
 Waldo_detectiveShop = [
-	["Portable Tester", 4, "activation",
+	["Portable Tester", 3, "activation",
 		{},
 		{ [] call Waldo_fnc_tester },
 		// Raised from 2 to the top of the shop - an instant, guaranteed role
@@ -390,20 +390,17 @@ Waldo_detectiveShop = [
 		// deliberately the most expensive item a Detective can buy.
 		"Aim at a player or body within 3m and press your assigned key to reveal their role"],
 
-	["DNA Scanner", 1, "activation",
+	["DNA Scanner", 2, "activation",
 		{ player setVariable ["Waldo_dnaScannerCharges", 3, true]; },
 		{ [] call Waldo_fnc_dnaScanner },
-		// Lowered from 2, alongside Radar/Medical Kit - this is meant to be
-		// the shop's default, affordable investigative purchase, now that
-		// Portable Tester (the instant-reveal shortcut) costs real credits.
 		"Aim at a body and press your assigned key to sample the killer's DNA, then track them down (3 uses)"],
 
-	["Enhanced Scanner", 2, "passive",
+	["Enhanced Scanner", 1, "passive",
 		{ player setVariable ["Waldo_enhancedScanner", true, true]; },
 		{},
-		// Lowered from 3 - rewards committing further to the DNA path
-		// (better odds, more detail) rather than gating it behind a second
-		// expensive purchase on top of the base Scanner.
+		// Cheapest upgrade in the shop - rewards committing further to the
+		// DNA path (better odds, more detail) rather than gating it behind
+		// another expensive purchase on top of the base Scanner.
 		"Upgrades the DNA Scanner: longer/steadier tracking, half the contamination risk, and reveals time-of-death + weapon",
 		"DNA Scanner"],   // _requires: does nothing without the base scanner - greyed out in the shop until owned
 
